@@ -646,6 +646,10 @@ const $ = id => document.getElementById(id);
 const fmt = n => Math.round(n).toLocaleString('zh-CN');
 const fmt2 = n => n.toFixed(2);
 
+function isDesktopWorkspace() {
+  return window.matchMedia && window.matchMedia('(min-width: 960px)').matches;
+}
+
 function showToast(msg) {
   const t = $('toast');
   t.textContent = msg;
@@ -841,35 +845,43 @@ function switchType(type) {
 async function shareResult() {
   const d = readInputs();
   const r = calculate(d);
-  const typeLabel = currentType === 'gas' ? '油车' : '电车';
-
+  const typeLabel = currentType === 'gas' ? '\u6cb9\u8f66' : '\u7535\u8f66';
   const lines = [
-    `🚗 我的${typeLabel}养车成本`,
-    ``,
-    `每周花费：¥${fmt(r.weekTotal)} 元`,
-    `每年花费：¥${fmt(r.yearTotal)} 元`,
-    `每公里成本：¥${fmt2(r.perKm)} 元/km`,
-    ``,
-    `成本构成（每年）：`,
+    '\uD83D\uDE97 \u6211\u7684' + typeLabel + '\u517b\u8f66\u6210\u672c',
+    '',
+    '\u6bcf\u5468\u82b1\u8d39\uff1a\u00a5' + fmt(r.weekTotal) + ' \u5143',
+    '\u6bcf\u5e74\u82b1\u8d39\uff1a\u00a5' + fmt(r.yearTotal) + ' \u5143',
+    '\u6bcf\u516c\u91cc\u6210\u672c\uff1a\u00a5' + fmt2(r.perKm) + ' \u5143/km',
+    '',
+    '\u6210\u672c\u6784\u6210\uff08\u6bcf\u5e74\uff09\uff1a',
   ];
   r.items.filter(it => it.value > 0).forEach(it => {
     const pct = (it.value / r.yearTotal * 100).toFixed(1);
-    lines.push(`• ${LABELS[it.key]}：¥${fmt(it.value)}（${pct}%）`);
+    lines.push('\u2022 ' + LABELS[it.key] + '\uff1a\u00a5' + fmt(it.value) + '\uff08' + pct + '%\uff09');
   });
-  lines.push('', `—— 由「私家车成本计算器」计算`);
-
+  lines.push('', '\u2014\u2014 \u7531\u300c\u79c1\u5bb6\u8f66\u6210\u672c\u8ba1\u7b97\u5668\u300d\u8ba1\u7b97');
   const text = lines.join('\n');
+
+  if (isDesktopWorkspace()) {
+    try {
+      await navigator.clipboard.writeText(text);
+      showToast('\u7ed3\u679c\u5df2\u590d\u5236\uff0c\u53ef\u7c98\u8d34\u5230\u804a\u5929\u6216\u6587\u6863');
+    } catch (e) {
+      fallbackCopy(text);
+    }
+    return;
+  }
 
   if (navigator.share) {
     try {
-      await navigator.share({ title: '私家车养车成本', text });
+      await navigator.share({ title: '\u79c1\u5bb6\u8f66\u517b\u8f66\u6210\u672c', text });
     } catch (e) {
-      if (e.name !== 'AbortError') showToast('分享已取消');
+      if (e.name !== 'AbortError') showToast('\u5206\u4eab\u5df2\u53d6\u6d88');
     }
   } else if (navigator.clipboard) {
     try {
       await navigator.clipboard.writeText(text);
-      showToast('✅ 结果已复制到剪贴板');
+      showToast('\u7ed3\u679c\u5df2\u590d\u5236\u5230\u526a\u8d34\u677f');
     } catch (e) {
       fallbackCopy(text);
     }
@@ -877,7 +889,6 @@ async function shareResult() {
     fallbackCopy(text);
   }
 }
-
 function fallbackCopy(text) {
   const ta = document.createElement('textarea');
   ta.value = text;
@@ -983,6 +994,78 @@ if ('serviceWorker' in navigator) {
     });
   });
 }
+</script>
+<style>
+  @media (min-width: 960px) {
+    body { padding-bottom: 32px; }
+    .wrap { max-width: 1480px; padding: 24px; }
+    .desktop-toolbar { display:grid; grid-template-columns:minmax(220px,1fr) minmax(360px,460px) auto; align-items:center; gap:24px; min-height:74px; margin-bottom:18px; padding:10px 16px; background:var(--card); border-radius:8px; box-shadow:0 4px 14px rgba(0,0,0,.06); }
+    .desktop-toolbar .nav-title { padding:0; font-size:20px; text-align:left; }
+    .desktop-toolbar .card { box-shadow:none; }
+    .desktop-toolbar .card[style] { padding:0!important; margin:0; }
+    .desktop-toolbar .segmented { margin:0; }
+    .desktop-toolbar .segmented button { padding:10px 18px; font-size:15px; }
+    .desktop-actions { display:flex; gap:8px; }
+    .desktop-actions .btn { min-width:104px; flex:0 0 auto; padding:11px 14px; font-size:14px; border-radius:8px; }
+    .footer-bar { display:none; }
+    .desktop-workspace { display:grid; grid-template-columns:minmax(320px,.92fr) minmax(450px,1.25fr) minmax(300px,.83fr); gap:18px; align-items:start; }
+    .desktop-parameters,.desktop-analysis,.desktop-breakdown { min-width:0; }
+    .desktop-parameters { padding:10px 18px 14px; border-radius:8px; }
+    .desktop-panel-title { margin:3px 0 8px; font-size:15px; font-weight:700; color:var(--text); }
+    .desktop-parameters details.group { margin:0; border-radius:0; box-shadow:none; background:transparent; border-bottom:1px solid var(--separator); }
+    .desktop-parameters details.group:last-child { border-bottom:0; }
+    .desktop-parameters details.group > summary { padding:13px 0; }
+    .desktop-parameters details.group > .group-body { padding:0 0 8px; }
+    .desktop-parameters .row { min-height:46px; padding:8px 0; }
+    .desktop-parameters .row .label { font-size:14px; }
+    .desktop-parameters .hint { margin-top:2px; }
+    .desktop-analysis { display:grid; gap:18px; }
+    .desktop-analysis .hero { min-height:218px; margin:0; padding:28px 24px 24px; border-radius:8px; }
+    .desktop-analysis .hero .amount-week { font-size:58px; }
+    .desktop-analysis .hero .sub-row { margin-top:14px; }
+    .desktop-analysis .chart-card { margin:0; min-height:388px; padding:18px; border-radius:8px; }
+    .desktop-analysis .chart-box { height:320px; max-width:430px; }
+    .desktop-breakdown .detail-card { min-height:624px; margin:0; padding:14px 18px; border-radius:8px; }
+    .desktop-breakdown .detail-card h3 { margin-bottom:6px; }
+    .desktop-breakdown .detail-item { padding:11px 0; }
+    .desktop-breakdown .detail-item .name,.desktop-breakdown .detail-item .val { font-size:14px; }
+  }
+  @media (min-width: 960px) and (max-width: 1180px) {
+    .desktop-toolbar { grid-template-columns:1fr auto; }
+    .desktop-toolbar > .card { grid-column:1/-1; grid-row:2; }
+    .desktop-workspace { grid-template-columns:minmax(300px,.9fr) minmax(430px,1.1fr); }
+    .desktop-breakdown { grid-column:1/-1; }
+    .desktop-breakdown .detail-card { min-height:auto; }
+  }
+</style>
+<script>
+(function(){
+  function mountDesktopWorkspace(){
+    if(!window.matchMedia('(min-width: 960px)').matches)return;
+    const wrap=document.querySelector('.wrap');
+    const nav=wrap&&wrap.querySelector('.nav-title');
+    const hero=wrap&&wrap.querySelector('.hero');
+    const typeCard=document.querySelector('#typeSegment')?.closest('.card');
+    const groups=wrap?[...wrap.querySelectorAll(':scope > details.group')]:[];
+    const chart=wrap&&wrap.querySelector('.chart-card');
+    const detail=wrap&&wrap.querySelector('.detail-card');
+    const reset=document.getElementById('resetBtn');
+    const share=document.getElementById('shareBtn');
+    if(!wrap||!nav||!hero||!typeCard||groups.length!==3||!chart||!detail||!reset||!share)return;
+    const toolbar=document.createElement('header'); toolbar.className='desktop-toolbar';
+    const actions=document.createElement('div'); actions.className='desktop-actions'; actions.append(reset,share);
+    const workspace=document.createElement('main'); workspace.className='desktop-workspace';
+    const parameters=document.createElement('section'); parameters.className='desktop-parameters card'; parameters.innerHTML='<h2 class="desktop-panel-title">&#21442;&#25968;&#37197;&#32622;</h2>';
+    const analysis=document.createElement('section'); analysis.className='desktop-analysis';
+    const breakdown=document.createElement('aside'); breakdown.className='desktop-breakdown';
+    toolbar.append(nav,typeCard,actions);
+    share.textContent='\u590d\u5236\u7ed3\u679c';
+    parameters.append(...groups); analysis.append(hero,chart); breakdown.append(detail);
+    workspace.append(parameters,analysis,breakdown); wrap.append(toolbar,workspace);
+    groups.forEach(group=>{group.open=true;});
+  }
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',mountDesktopWorkspace);else mountDesktopWorkspace();
+})();
 </script>
 </body>
 </html>
