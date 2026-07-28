@@ -431,7 +431,7 @@
 <body>
 <div class="wrap">
 
-  <div class="nav-title">🚗 私家车成本计算器</div>
+  <div class="nav-title"><span class="brand-mark">&#128663;</span><span>&#31169;&#23478;&#36710;&#25104;&#26412;&#35745;&#31639;&#22120;</span><span class="visit-counter hidden" id="visitCounter">&#32047;&#35745;&#35775;&#38382; <strong id="visitCount">0</strong></span></div>
 
   <!-- 顶部概览 -->
   <div class="card hero">
@@ -1065,6 +1065,31 @@ if ('serviceWorker' in navigator) {
     groups.forEach(group=>{group.open=true;});
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',mountDesktopWorkspace);else mountDesktopWorkspace();
+})();
+</script>
+<style>
+  .nav-title{display:flex;align-items:center;justify-content:center;gap:7px}
+  .visit-counter{display:inline-flex;align-items:baseline;gap:3px;margin-left:5px;color:var(--text-2);font-size:12px;font-weight:500}
+  .visit-counter strong{color:var(--text);font-variant-numeric:tabular-nums}
+  .visit-counter.hidden{display:none}
+  @media (min-width:960px){.desktop-toolbar .nav-title{justify-content:flex-start}.desktop-toolbar .visit-counter{margin-left:4px}}
+</style>
+<script>
+(function(){
+  async function loadVisitCount(){
+    const counter=document.getElementById('visitCounter');
+    const target=document.getElementById('visitCount');
+    if(!counter||!target)return;
+    try{
+      const response=await fetch('/api/visit',{method:'POST'});
+      if(!response.ok)return;
+      const data=await response.json();
+      if(!Number.isFinite(data.count))return;
+      target.textContent=data.count.toLocaleString('zh-CN');
+      counter.classList.remove('hidden');
+    }catch(error){}
+  }
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',loadVisitCount);else loadVisitCount();
 })();
 </script>
 </body>
