@@ -447,6 +447,7 @@
         <div class="v green" id="perKm">¥0.00</div>
       </div>
     </div>
+    <div class="cost-insight" id="costInsight" aria-live="polite"></div>
   </div>
 
   <!-- 车辆类型分段选择器 -->
@@ -716,6 +717,59 @@ function calculate(d) {
 }
 
 /* ---------- 渲染 ---------- */
+function getCostInsight(d, r) {
+  const energySensitivity = d.mileage / 100 * d.energy1;
+  const energyItem = r.items.find(it => it.key === 'energy');
+  const energyShare = energyItem ? energyItem.value / r.yearTotal : 0;
+  const fixedCost = r.items.filter(it => ['depreciation', 'opportunity', 'insurance', 'parking', 'fine'].includes(it.key)).reduce((sum, it) => sum + it.value, 0);
+  const fixedShare = fixedCost / r.yearTotal;
+  const topItem = r.items.reduce((top, item) => item.value > top.value ? item : top, r.items[0]);
+  if (d.mileage < 8000 && fixedShare >= .5) {
+    return '\u5e74\u91cc\u7a0b\u8f83\u4f4e\uff0c\u56fa\u5b9a\u6210\u672c\u5360\u5168\u5e74\u652f\u51fa ' + (fixedShare * 100).toFixed(0) + '%\uff0c\u5f00\u5f97\u5c11\u65f6\u6bcf\u516c\u91cc\u6210\u672c\u66f4\u5bb9\u6613\u504f\u9ad8\u3002';
+  }
+  if (energyShare >= .25) {
+    return '\u80fd\u6e90\u8d39\u5360\u5168\u5e74\u6210\u672c ' + (energyShare * 100).toFixed(0) + '%\uff1b\u6bcf\u5347/\u5ea6\u6da8 1 \u5143\uff0c\u6bcf\u5e74\u7ea6\u591a\u82b1 \u00a5' + fmt(energySensitivity) + '\u3002';
+  }
+  return LABELS[topItem.key] + '\u5360\u5168\u5e74\u6210\u672c ' + (topItem.value / r.yearTotal * 100).toFixed(0) + '%\uff0c\u662f\u5f53\u524d\u6700\u5927\u652f\u51fa\u3002';
+}
+
+function buildShareUrl() {
+  const params = new URLSearchParams({
+    type: currentType,
+    carPrice: $('carPrice').value,
+    mileage: $('mileage').value,
+    insurance: $('insurance').value,
+    parking: $('parking').value,
+    fine: $('fine').value,
+    depYears: $('depYears').value,
+    residual: $('residual').value,
+    oppRate: $('oppRate').value,
+    energy1: $('energy1').value,
+    energy2: $('energy2').value,
+    maintenance: $('maintenance').value,
+  });
+  const url = new URL(window.location.href);
+  url.search = params.toString();
+  url.hash = '';
+  return url.toString();
+}
+
+function applySharedScenario() {
+  const params = new URLSearchParams(window.location.search);
+  if (!params.has('carPrice')) return;
+  const type = params.get('type');
+  if (type === 'gas' || type === 'ev') switchType(type);
+  ['carPrice', 'mileage', 'insurance', 'parking', 'fine', 'depYears', 'residual', 'oppRate', 'energy1', 'energy2', 'maintenance'].forEach(id => {
+    const raw = params.get(id);
+    if (raw === null) return;
+    const value = Number(raw);
+    if (!Number.isFinite(value)) return;
+    const input = $(id);
+    if (!input) return;
+    input.value = value;
+    input.dispatchEvent(new Event('input'));
+  });
+}
 function render() {
   const d = readInputs();
   const r = calculate(d);
@@ -734,6 +788,8 @@ function render() {
 
   // 更新明细列表（每周）
   renderDetail(items, r.weekTotal);
+  const insight = $('costInsight');
+  if (insight) insight.textContent = getCostInsight(d, r);
 }
 
 function updateChart(items, total) {
@@ -843,6 +899,7 @@ function switchType(type) {
 
 /* ---------- 分享 ---------- */
 async function shareResult() {
+  const shareUrl = buildShareUrl();
   const d = readInputs();
   const r = calculate(d);
   const typeLabel = currentType === 'gas' ? '\u6cb9\u8f66' : '\u7535\u8f66';
@@ -860,12 +917,13 @@ async function shareResult() {
     lines.push('\u2022 ' + LABELS[it.key] + '\uff1a\u00a5' + fmt(it.value) + '\uff08' + pct + '%\uff09');
   });
   lines.push('', '\u2014\u2014 \u7531\u300c\u79c1\u5bb6\u8f66\u6210\u672c\u8ba1\u7b97\u5668\u300d\u8ba1\u7b97');
+  lines.push('\u67e5\u770b\u6216\u590d\u7b97\uff1a' + shareUrl);
   const text = lines.join('\n');
 
   if (isDesktopWorkspace()) {
     try {
       await navigator.clipboard.writeText(text);
-      showToast('\u7ed3\u679c\u5df2\u590d\u5236\uff0c\u53ef\u7c98\u8d34\u5230\u804a\u5929\u6216\u6587\u6863');
+      showToast('\u7ed3\u679c\u4e0e\u53c2\u6570\u94fe\u63a5\u5df2\u590d\u5236');
     } catch (e) {
       fallbackCopy(text);
     }
@@ -874,7 +932,7 @@ async function shareResult() {
 
   if (navigator.share) {
     try {
-      await navigator.share({ title: '\u79c1\u5bb6\u8f66\u517b\u8f66\u6210\u672c', text });
+      await navigator.share({ title: '\u79c1\u5bb6\u8f66\u517b\u8f66\u6210\u672c', text, url: shareUrl });
     } catch (e) {
       if (e.name !== 'AbortError') showToast('\u5206\u4eab\u5df2\u53d6\u6d88');
     }
@@ -949,7 +1007,8 @@ function init() {
 
   // 分享与重置
   $('shareBtn').addEventListener('click', shareResult);
-  $('resetBtn').addEventListener('click', reset);
+  resetBtn.addEventListener('click', reset);
+  applySharedScenario();
 
   // 窗口尺寸变化时重绘图表（避免首次 canvas 尺寸异常）
   let resizeTimer;
@@ -1074,6 +1133,7 @@ if ('serviceWorker' in navigator) {
   .visit-counter-value{display:flex;align-items:center;padding:0 7px 0 8px;color:var(--blue);font-size:14px;font-variant-numeric:tabular-nums;letter-spacing:0}
   .visit-counter-unit{display:flex;align-items:center;padding:0 7px 0 0;color:#8b98aa;font-size:10px}
   .visit-counter.hidden{display:none}
+  .cost-insight{max-width:360px;margin:16px auto 0;padding:8px 10px;border-left:3px solid var(--blue);border-radius:0 5px 5px 0;background:#f3f8ff;color:#53647b;font-size:12px;line-height:1.55;text-align:left}
   .visit-milestone{--milestone-x:-50%;position:absolute;z-index:8;top:calc(100% + 7px);left:50%;display:flex;align-items:center;gap:7px;min-width:max-content;padding:9px 12px;border:1px solid #f2d79d;border-radius:6px;background:#fff9ed;box-shadow:0 8px 20px rgba(118,83,16,.12);color:#895f10;font-size:12px;font-weight:600;line-height:1.25;opacity:0;pointer-events:none;transform:translate(var(--milestone-x),-7px) scale(.98)}
   .visit-milestone strong{font-variant-numeric:tabular-nums}
   .visit-milestone-spark{font-size:16px;line-height:1}
