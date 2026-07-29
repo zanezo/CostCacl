@@ -13,4 +13,6 @@ assert.match(page, /ctx\.arc\(/, 'card must draw a cost composition ring chart')
 assert.match(page, /canvas\.toBlob\(/, 'card must export a PNG image');
 assert.match(page, /imageCardBtn\.addEventListener\('click', createResultCard\)/, 'image-card action must be wired to its button');
 
+assert.match(page, /function drawCardParagraph[\s\S]*?ctx\.textAlign\s*=\s*'left'/, 'insight paragraph must reset canvas text alignment before drawing');
+
 console.log('result card contract passed');

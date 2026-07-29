@@ -984,6 +984,7 @@ function drawCardRing(ctx, items, total, centerX, centerY, radius, lineWidth) {
 }
 
 function drawCardParagraph(ctx, text, x, y, maxWidth, lineHeight) {
+  ctx.textAlign = 'left';
   let line = '';
   let cursorY = y;
   Array.from(text).forEach(char => {
