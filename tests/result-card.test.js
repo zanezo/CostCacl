@@ -5,6 +5,7 @@ const path = require('node:path');
 const page = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
 
 assert.match(page, /id="imageCardBtn"/, 'page needs an image-card action');
+assert.match(page, /id="imageCardBtn">&#29983;&#25104;&#22270;&#29255;<\//, 'image-card action must use a font-stable text label');
 assert.match(page, /function createResultCard\(\)/, 'page must generate a shareable result card');
 assert.match(page, /canvas\.width\s*=\s*1080/, 'card must use a phone-friendly 1080px width');
 assert.match(page, /canvas\.height\s*=\s*1920/, 'card must use a phone-friendly 9:16 height');
