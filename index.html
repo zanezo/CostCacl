@@ -580,6 +580,7 @@
 <div class="footer-bar">
   <div class="inner">
     <button class="btn btn-secondary" id="resetBtn">重置</button>
+    <button class="btn btn-secondary" id="imageCardBtn">&#128444; &#29983;&#25104;&#22270;&#29255;</button>
     <button class="btn btn-primary" id="shareBtn">分享结果</button>
   </div>
 </div>
@@ -953,6 +954,137 @@ async function shareResult() {
     fallbackCopy(text);
   }
 }
+/* ---------- Share image card ---------- */
+function drawCardRoundRect(ctx, x, y, width, height, radius, fill) {
+  ctx.beginPath();
+  ctx.roundRect(x, y, width, height, radius);
+  ctx.fillStyle = fill;
+  ctx.fill();
+}
+
+function drawCardText(ctx, text, x, y, font, color, align = 'left') {
+  ctx.font = font;
+  ctx.fillStyle = color;
+  ctx.textAlign = align;
+  ctx.textBaseline = 'alphabetic';
+  ctx.fillText(text, x, y);
+}
+
+function drawCardRing(ctx, items, total, centerX, centerY, radius, lineWidth) {
+  let angle = -Math.PI / 2;
+  items.forEach(item => {
+    const section = total > 0 ? item.value / total * Math.PI * 2 : 0;
+    ctx.beginPath();
+    ctx.strokeStyle = COLORS[item.key];
+    ctx.lineWidth = lineWidth;
+    ctx.arc(centerX, centerY, radius, angle + .018, angle + section - .018);
+    ctx.stroke();
+    angle += section;
+  });
+}
+
+function drawCardParagraph(ctx, text, x, y, maxWidth, lineHeight) {
+  let line = '';
+  let cursorY = y;
+  Array.from(text).forEach(char => {
+    const next = line + char;
+    if (ctx.measureText(next).width > maxWidth && line) {
+      ctx.fillText(line, x, cursorY);
+      cursorY += lineHeight;
+      line = char;
+    } else {
+      line = next;
+    }
+  });
+  if (line) ctx.fillText(line, x, cursorY);
+}
+
+function downloadResultCard(canvas) {
+  canvas.toBlob(blob => {
+    if (!blob) {
+      showToast('\u56fe\u7247\u751f\u6210\u5931\u8d25');
+      return;
+    }
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = 'car-cost-result.png';
+    link.click();
+    URL.revokeObjectURL(link.href);
+    showToast('\u7ed3\u679c\u56fe\u7247\u5df2\u4fdd\u5b58');
+  }, 'image/png');
+}
+
+function createResultCard() {
+  const d = readInputs();
+  const r = calculate(d);
+  const items = r.items.filter(item => item.value > 0);
+  const topItem = items.reduce((top, item) => item.value > top.value ? item : top, items[0]);
+  const insight = getCostInsight(d, r);
+  const canvas = document.createElement('canvas');
+  canvas.width = 1080;
+  canvas.height = 1920;
+  const ctx = canvas.getContext('2d');
+  const navy = '#172033';
+  const muted = '#667085';
+  const blue = '#0878F9';
+  const bg = '#F7F9FD';
+  const left = 82;
+
+  ctx.fillStyle = bg;
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  ctx.strokeStyle = '#E6ECF5';
+  ctx.lineWidth = 1;
+  for (let i = 0; i < 1080; i += 48) {
+    ctx.beginPath(); ctx.moveTo(i, 0); ctx.lineTo(i, 280); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(0, i); ctx.lineTo(1080, i); ctx.stroke();
+  }
+
+  drawCardText(ctx, '\ud83d\ude97  \u79c1\u5bb6\u8f66\u6210\u672c\u8ba1\u7b97\u5668', left, 106, '700 34px "Microsoft YaHei", sans-serif', navy);
+  drawCardRoundRect(ctx, 745, 62, 250, 56, 14, '#E8F3FF');
+  drawCardText(ctx, currentType === 'ev' ? '\ud83d\udd0b \u7535\u8f66' : '\u26fd \u6cb9\u8f66', 870, 99, '700 24px "Microsoft YaHei", sans-serif', blue, 'center');
+
+  drawCardRoundRect(ctx, left, 158, 916, 208, 22, '#EAF4FF');
+  ctx.fillStyle = blue; ctx.fillRect(left, 158, 8, 208);
+  ctx.font = '700 30px "Microsoft YaHei", sans-serif';
+  ctx.fillStyle = navy;
+  drawCardParagraph(ctx, insight, left + 34, 226, 838, 50);
+
+  drawCardText(ctx, '\u6bcf\u5468\u9884\u8ba1\u82b1\u8d39', left, 468, '400 28px "Microsoft YaHei", sans-serif', muted);
+  drawCardText(ctx, '\u00a5' + fmt(r.weekTotal), left, 595, '800 128px "Microsoft YaHei", sans-serif', blue);
+  drawCardText(ctx, '/ \u5468', 565, 590, '700 32px "Microsoft YaHei", sans-serif', navy);
+  drawCardText(ctx, '\u5e74\u5ea6\u603b\u6210\u672c  \u00a5' + fmt(r.yearTotal) + '    \u00b7    \u6bcf\u516c\u91cc  \u00a5' + fmt2(r.perKm), left, 650, '400 26px "Microsoft YaHei", sans-serif', muted);
+
+  ctx.strokeStyle = '#DCE4EE'; ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.moveTo(left, 720); ctx.lineTo(998, 720); ctx.stroke();
+  drawCardText(ctx, '\u5e74\u5ea6\u6210\u672c\u6784\u6210', left, 782, '700 30px "Microsoft YaHei", sans-serif', navy);
+  drawCardRing(ctx, items, r.yearTotal, 540, 1025, 210, 74);
+  drawCardText(ctx, '\u5e74\u5ea6\u603b\u6210\u672c', 540, 1012, '400 22px "Microsoft YaHei", sans-serif', muted, 'center');
+  drawCardText(ctx, '\u00a5' + fmt(r.yearTotal), 540, 1060, '800 42px "Microsoft YaHei", sans-serif', navy, 'center');
+
+  const legendLeft = [left, 556];
+  items.forEach((item, index) => {
+    const column = index % 2;
+    const row = Math.floor(index / 2);
+    const x = legendLeft[column];
+    const y = 1320 + row * 58;
+    ctx.fillStyle = COLORS[item.key];
+    ctx.fillRect(x, y - 18, 16, 16);
+    drawCardText(ctx, LABELS[item.key], x + 28, y - 4, '400 24px "Microsoft YaHei", sans-serif', navy);
+    drawCardText(ctx, (item.value / r.yearTotal * 100).toFixed(1) + '%', x + 390, y - 4, '400 22px "Microsoft YaHei", sans-serif', muted, 'right');
+  });
+
+  ctx.strokeStyle = '#DCE4EE'; ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.moveTo(left, 1534); ctx.lineTo(998, 1534); ctx.stroke();
+  drawCardText(ctx, '\u8d2d\u8f66\u4ef7\u683c', left, 1595, '400 22px "Microsoft YaHei", sans-serif', muted);
+  drawCardText(ctx, '\u00a5' + fmt(d.carPrice), left, 1642, '700 34px "Microsoft YaHei", sans-serif', navy);
+  drawCardText(ctx, '\u9884\u8ba1\u5e74\u91cc\u7a0b', 570, 1595, '400 22px "Microsoft YaHei", sans-serif', muted);
+  drawCardText(ctx, fmt(d.mileage) + ' km', 570, 1642, '700 34px "Microsoft YaHei", sans-serif', navy);
+  drawCardRoundRect(ctx, left, 1710, 916, 72, 18, '#FFF7DF');
+  drawCardText(ctx, '\u6700\u5927\u6210\u672c\u9879  ' + LABELS[topItem.key] + '  \u00a5' + fmt(topItem.value), 110, 1757, '700 25px "Microsoft YaHei", sans-serif', '#8A620F');
+  drawCardText(ctx, '\u7ed3\u679c\u4ec5\u4f9b\u4f30\u7b97', left, 1846, '400 20px "Microsoft YaHei", sans-serif', muted);
+  drawCardText(ctx, 'cost.ahopig.com', 998, 1846, '400 20px "Microsoft YaHei", sans-serif', muted, 'right');
+  downloadResultCard(canvas);
+}
 function fallbackCopy(text) {
   const ta = document.createElement('textarea');
   ta.value = text;
@@ -1013,6 +1145,8 @@ function init() {
 
   // 分享与重置
   $('shareBtn').addEventListener('click', shareResult);
+  const imageCardBtn = $('imageCardBtn');
+  imageCardBtn.addEventListener('click', createResultCard);
   resetBtn.addEventListener('click', reset);
   applySharedScenario();
 
@@ -1116,9 +1250,10 @@ if ('serviceWorker' in navigator) {
     const detail=wrap&&wrap.querySelector('.detail-card');
     const reset=document.getElementById('resetBtn');
     const share=document.getElementById('shareBtn');
-    if(!wrap||!nav||!hero||!typeCard||groups.length!==3||!chart||!detail||!reset||!share)return;
+    const imageCard=document.getElementById('imageCardBtn');
+    if(!wrap||!nav||!hero||!typeCard||groups.length!==3||!chart||!detail||!reset||!share||!imageCard)return;
     const toolbar=document.createElement('header'); toolbar.className='desktop-toolbar';
-    const actions=document.createElement('div'); actions.className='desktop-actions'; actions.append(reset,share);
+    const actions=document.createElement('div'); actions.className='desktop-actions'; actions.append(reset,imageCard,share);
     const workspace=document.createElement('main'); workspace.className='desktop-workspace';
     const parameters=document.createElement('section'); parameters.className='desktop-parameters card'; parameters.innerHTML='<h2 class="desktop-panel-title">&#21442;&#25968;&#37197;&#32622;</h2>';
     const analysis=document.createElement('section'); analysis.className='desktop-analysis';
