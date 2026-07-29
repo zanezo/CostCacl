@@ -733,20 +733,24 @@ function getCostInsight(d, r) {
   return LABELS[topItem.key] + '\u5360\u5168\u5e74\u6210\u672c ' + (topItem.value / r.yearTotal * 100).toFixed(0) + '%\uff0c\u662f\u5f53\u524d\u6700\u5927\u652f\u51fa\u3002';
 }
 
+const SHARE_PARAM_KEYS = {
+  type: 't', carPrice: 'p', mileage: 'm', insurance: 'i', parking: 'k', fine: 'f',
+  depYears: 'd', residual: 'r', oppRate: 'o', energy1: 'a', energy2: 'b', maintenance: 'h',
+};
+const SHARE_INPUT_IDS = ['carPrice', 'mileage', 'insurance', 'parking', 'fine', 'depYears', 'residual', 'oppRate', 'energy1', 'energy2', 'maintenance'];
+const SHARE_DEFAULTS = {
+  carPrice: '15', mileage: '12500', parking: '4560', fine: '400', depYears: '6', oppRate: '3',
+  gas: { insurance: '4500', residual: '40', energy1: '8', energy2: '7.5', maintenance: '800' },
+  ev: { insurance: '5000', residual: '35', energy1: '15', energy2: '0.8', maintenance: '300' },
+};
+
 function buildShareUrl() {
-  const params = new URLSearchParams({
-    type: currentType,
-    carPrice: $('carPrice').value,
-    mileage: $('mileage').value,
-    insurance: $('insurance').value,
-    parking: $('parking').value,
-    fine: $('fine').value,
-    depYears: $('depYears').value,
-    residual: $('residual').value,
-    oppRate: $('oppRate').value,
-    energy1: $('energy1').value,
-    energy2: $('energy2').value,
-    maintenance: $('maintenance').value,
+  const defaults = { ...SHARE_DEFAULTS, ...SHARE_DEFAULTS[currentType] };
+  const params = new URLSearchParams();
+  if (currentType === 'ev') params.set(SHARE_PARAM_KEYS.type, 'e');
+  SHARE_INPUT_IDS.forEach(id => {
+    const value = $(id).value;
+    if (String(value) !== String(defaults[id])) params.set(SHARE_PARAM_KEYS[id], value);
   });
   const url = new URL(window.location.href);
   url.search = params.toString();
@@ -756,11 +760,13 @@ function buildShareUrl() {
 
 function applySharedScenario() {
   const params = new URLSearchParams(window.location.search);
-  if (!params.has('carPrice')) return;
-  const type = params.get('type');
+  const hasCompactScenario = Object.values(SHARE_PARAM_KEYS).some(key => params.has(key));
+  if (!hasCompactScenario && !params.has('carPrice')) return;
+  const typeCode = params.get(SHARE_PARAM_KEYS.type) || params.get('type');
+  const type = typeCode === 'e' ? 'ev' : typeCode === 'g' ? 'gas' : typeCode;
   if (type === 'gas' || type === 'ev') switchType(type);
-  ['carPrice', 'mileage', 'insurance', 'parking', 'fine', 'depYears', 'residual', 'oppRate', 'energy1', 'energy2', 'maintenance'].forEach(id => {
-    const raw = params.get(id);
+  SHARE_INPUT_IDS.forEach(id => {
+    const raw = params.get(SHARE_PARAM_KEYS[id]) ?? params.get(id);
     if (raw === null) return;
     const value = Number(raw);
     if (!Number.isFinite(value)) return;
