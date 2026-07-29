@@ -10,6 +10,12 @@ assert.match(page, /id="visitCount"/, 'page needs a compact visit counter target
 assert.match(page, /fetch\('\/api\/visit'/, 'page must request the server-side visit endpoint');
 assert.doesNotMatch(page, /UPSTASH_REDIS_REST_TOKEN/, 'Redis credentials must not be exposed in the browser');
 assert.ok(fs.existsSync(apiPath), 'Vercel visit endpoint must exist');
+assert.match(page, /class="visit-counter-label"/, 'counter needs a flat label segment');
+assert.match(page, /class="visit-counter-value"/, 'counter needs a stable numeric value segment');
+assert.match(page, /id="visitMilestone"/, 'page needs a milestone feedback region');
+assert.match(page, /function isPowerOfTen\(count\)/, 'page must identify exact powers of ten');
+assert.match(page, /sessionStorage\.getItem\(milestoneKey\)/, 'page must avoid replaying a milestone in one session');
+assert.match(page, /milestone\.classList\.add\('show'\)/, 'page must show a milestone animation when reached');
 
 const api = fs.readFileSync(apiPath, 'utf8');
 assert.match(api, /process\.env\.UPSTASH_REDIS_REST_URL/, 'endpoint must read the Redis URL from environment variables');

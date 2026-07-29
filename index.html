@@ -431,7 +431,7 @@
 <body>
 <div class="wrap">
 
-  <div class="nav-title"><span class="brand-mark">&#128663;</span><span>&#31169;&#23478;&#36710;&#25104;&#26412;&#35745;&#31639;&#22120;</span><span class="visit-counter hidden" id="visitCounter">&#32047;&#35745;&#35775;&#38382; <strong id="visitCount">0</strong></span></div>
+  <div class="nav-title"><span class="brand-mark">&#128663;</span><span>&#31169;&#23478;&#36710;&#25104;&#26412;&#35745;&#31639;&#22120;</span><span class="visit-counter hidden" id="visitCounter"><span class="visit-counter-label">&#32047;&#35745;&#35775;&#38382;</span><strong class="visit-counter-value" id="visitCount">0</strong><span class="visit-counter-unit">&#27425;</span></span><div class="visit-milestone" id="visitMilestone" role="status" aria-live="polite"><span class="visit-milestone-spark">&#10024;</span><span>&#31532; <strong id="visitMilestoneCount">0</strong> &#27425;&#35775;&#38382;&#65281;&#24863;&#35874;&#20320;&#20154;&#27668;&#21152;&#25345;&#12290;</span></div></div>
 
   <!-- 顶部概览 -->
   <div class="card hero">
@@ -1068,14 +1068,41 @@ if ('serviceWorker' in navigator) {
 })();
 </script>
 <style>
-  .nav-title{display:flex;align-items:center;justify-content:center;gap:7px}
-  .visit-counter{display:inline-flex;align-items:baseline;gap:3px;margin-left:5px;color:var(--text-2);font-size:12px;font-weight:500}
-  .visit-counter strong{color:var(--text);font-variant-numeric:tabular-nums}
+  .nav-title{position:relative;display:flex;align-items:center;justify-content:center;gap:7px}
+  .visit-counter{display:inline-flex;align-items:stretch;min-height:28px;margin-left:5px;overflow:hidden;border:1px solid #d8e7fb;border-radius:5px;background:#fff;color:var(--text-2);font-size:11px;font-weight:600;line-height:1}
+  .visit-counter-label{display:flex;align-items:center;padding:0 7px;background:#f3f8ff;color:#64758d;white-space:nowrap}
+  .visit-counter-value{display:flex;align-items:center;padding:0 7px 0 8px;color:var(--blue);font-size:14px;font-variant-numeric:tabular-nums;letter-spacing:0}
+  .visit-counter-unit{display:flex;align-items:center;padding:0 7px 0 0;color:#8b98aa;font-size:10px}
   .visit-counter.hidden{display:none}
-  @media (min-width:960px){.desktop-toolbar .nav-title{justify-content:flex-start}.desktop-toolbar .visit-counter{margin-left:4px}}
+  .visit-milestone{--milestone-x:-50%;position:absolute;z-index:8;top:calc(100% + 7px);left:50%;display:flex;align-items:center;gap:7px;min-width:max-content;padding:9px 12px;border:1px solid #f2d79d;border-radius:6px;background:#fff9ed;box-shadow:0 8px 20px rgba(118,83,16,.12);color:#895f10;font-size:12px;font-weight:600;line-height:1.25;opacity:0;pointer-events:none;transform:translate(var(--milestone-x),-7px) scale(.98)}
+  .visit-milestone strong{font-variant-numeric:tabular-nums}
+  .visit-milestone-spark{font-size:16px;line-height:1}
+  .visit-milestone.show{animation:visit-milestone 2.8s ease-in-out both}
+  .visit-milestone.show .visit-milestone-spark{animation:visit-spark .72s ease-out both}@keyframes visit-milestone{0%{opacity:0;transform:translate(var(--milestone-x),-7px) scale(.98)}14%,74%{opacity:1;transform:translate(var(--milestone-x),0) scale(1)}100%{opacity:0;transform:translate(var(--milestone-x),-4px) scale(.99)}}@keyframes visit-spark{0%{transform:scale(.72) rotate(-12deg)}55%{transform:scale(1.18) rotate(8deg)}100%{transform:scale(1) rotate(0)}}
+  @media (min-width:960px){.desktop-toolbar .nav-title{justify-content:flex-start}.desktop-toolbar .visit-counter{margin-left:4px}.desktop-toolbar .visit-milestone{--milestone-x:0;left:0}}
+  @media (max-width:420px){.nav-title{flex-wrap:wrap;padding-bottom:3px}.visit-counter{margin-left:0}.visit-milestone{font-size:11px;white-space:normal;min-width:0;width:min(320px,calc(100vw - 32px))}}
 </style>
 <script>
 (function(){
+  function isPowerOfTen(count){
+    if(!Number.isSafeInteger(count)||count<10)return false;
+    while(count%10===0)count/=10;
+    return count===1;
+  }
+  function showVisitMilestone(count){
+    const milestone=document.getElementById('visitMilestone');
+    const target=document.getElementById('visitMilestoneCount');
+    if(!milestone||!target||!isPowerOfTen(count))return;
+    const milestoneKey=`cost-calc:visit-milestone:${count}`;
+    try{
+      if(sessionStorage.getItem(milestoneKey))return;
+      sessionStorage.setItem(milestoneKey,'shown');
+    }catch(error){}
+    target.textContent=count.toLocaleString('zh-CN');
+    milestone.classList.remove('show');
+    void milestone.offsetWidth;
+    milestone.classList.add('show');
+  }
   async function loadVisitCount(){
     const counter=document.getElementById('visitCounter');
     const target=document.getElementById('visitCount');
@@ -1087,6 +1114,7 @@ if ('serviceWorker' in navigator) {
       if(!Number.isFinite(data.count))return;
       target.textContent=data.count.toLocaleString('zh-CN');
       counter.classList.remove('hidden');
+      showVisitMilestone(data.count);
     }catch(error){}
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',loadVisitCount);else loadVisitCount();
