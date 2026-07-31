@@ -1375,5 +1375,64 @@ if ('serviceWorker' in navigator) {
             <span>&copy; 2026 cost.ahopig.com</span>
             <span>&#32467;&#26524;&#20165;&#20379;&#20272;&#31639;&#65292;&#19981;&#26500;&#25104;&#36141;&#36710;&#12289;&#25237;&#36164;&#25110;&#29702;&#36130;&#24314;&#35758;&#12290;</span>
         </div>
-    </footer></body>
+    </footer><script>
+  (() => {
+    const visitorKey = 'costcalc:visitor-id';
+    const visitDayKey = 'costcalc:last-visit-day';
+    const completedKey = 'costcalc:completed-session';
+    const visitorId = (() => {
+      try {
+        let id = localStorage.getItem(visitorKey);
+        if (!id) {
+          id = (crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random().toString(36).slice(2)}`);
+          localStorage.setItem(visitorKey, id);
+        }
+        return id;
+      } catch { return ''; }
+    })();
+
+    function sendAnalyticsEvent(event) {
+      fetch('/api/event', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ event, visitorId })
+      }).catch(() => {});
+    }
+
+    try {
+      const today = new Date().toISOString().slice(0, 10);
+      const lastVisit = localStorage.getItem(visitDayKey);
+      if (lastVisit && lastVisit !== today) sendAnalyticsEvent('return_visit');
+      localStorage.setItem(visitDayKey, today);
+    } catch {}
+
+    let completionTimer;
+    document.addEventListener('input', (event) => {
+      if (!(event.target instanceof HTMLInputElement)) return;
+      clearTimeout(completionTimer);
+      completionTimer = setTimeout(() => {
+        try {
+          if (sessionStorage.getItem(completedKey)) return;
+          sessionStorage.setItem(completedKey, '1');
+        } catch {}
+        sendAnalyticsEvent('calculation_completed');
+      }, 1500);
+    }, { passive: true });
+
+    document.addEventListener('click', (event) => {
+      const button = event.target.closest('button');
+      const link = event.target.closest('a');
+      if (link && link.matches('.footer-link[href*="/issues"]')) {
+        sendAnalyticsEvent('feedback_clicked');
+      }
+      if (!button) return;
+      if (button.id === 'imageCardBtn') {
+        setTimeout(() => sendAnalyticsEvent('result_card_generated'), 400);
+      }
+      if (/share|copy/i.test(button.id)) {
+        setTimeout(() => sendAnalyticsEvent('result_shared'), 200);
+      }
+    });
+  })();
+</script></body>
 </html>
