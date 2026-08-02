@@ -431,7 +431,7 @@
 <body>
 <div class="wrap">
 
-  <div class="nav-title"><span class="brand-mark">&#128663;</span><span>&#31169;&#23478;&#36710;&#25104;&#26412;&#35745;&#31639;&#22120;</span><span class="visit-counter hidden" id="visitCounter"><span class="visit-counter-label">&#32047;&#35745;&#35775;&#38382;</span><strong class="visit-counter-value" id="visitCount">0</strong><span class="visit-counter-unit">&#27425;</span></span><div class="visit-milestone" id="visitMilestone" role="status" aria-live="polite"><span class="visit-milestone-spark">&#10024;</span><span>&#31532; <strong id="visitMilestoneCount">0</strong> &#27425;&#35775;&#38382;&#65281;&#24863;&#35874;&#20320;&#20154;&#27668;&#21152;&#25345;&#12290;</span></div></div>
+  <div class="nav-title"><span class="brand-mark">&#128663;</span><span>&#36710;&#36742;&#25104;&#26412;&#35745;&#31639;&#22120;</span><span class="visit-counter hidden" id="visitCounter"><span class="visit-counter-label">&#32047;&#35745;&#35775;&#38382;</span><strong class="visit-counter-value" id="visitCount">0</strong><span class="visit-counter-unit">&#27425;</span></span><div class="visit-milestone" id="visitMilestone" role="status" aria-live="polite"><span class="visit-milestone-spark">&#10024;</span><span>&#31532; <strong id="visitMilestoneCount">0</strong> &#27425;&#35775;&#38382;&#65281;&#24863;&#35874;&#20320;&#20154;&#27668;&#21152;&#25345;&#12290;</span></div></div>
 
   <!-- 顶部概览 -->
   <div class="card hero">
@@ -923,7 +923,7 @@ async function shareResult() {
     const pct = (it.value / r.yearTotal * 100).toFixed(1);
     lines.push('\u2022 ' + LABELS[it.key] + '\uff1a\u00a5' + fmt(it.value) + '\uff08' + pct + '%\uff09');
   });
-  lines.push('', '\u2014\u2014 \u7531\u300c\u79c1\u5bb6\u8f66\u6210\u672c\u8ba1\u7b97\u5668\u300d\u8ba1\u7b97');
+  lines.push('', '\u2014\u2014 \u7531\u300c\u8f66\u8f86\u6210\u672c\u8ba1\u7b97\u5668\u300d\u8ba1\u7b97');
   lines.push('\u67e5\u770b\u6216\u590d\u7b97\uff1a' + shareUrl);
   const text = lines.join('\n');
 
@@ -939,7 +939,7 @@ async function shareResult() {
 
   if (navigator.share) {
     try {
-      await navigator.share({ title: '\u79c1\u5bb6\u8f66\u517b\u8f66\u6210\u672c', text, url: shareUrl });
+      await navigator.share({ title: '\u8f66\u8f86\u517b\u8f66\u6210\u672c', text, url: shareUrl });
     } catch (e) {
       if (e.name !== 'AbortError') showToast('\u5206\u4eab\u5df2\u53d6\u6d88');
     }
@@ -1040,7 +1040,7 @@ function createResultCard() {
     ctx.beginPath(); ctx.moveTo(0, i); ctx.lineTo(1080, i); ctx.stroke();
   }
 
-  drawCardText(ctx, '\ud83d\ude97  \u79c1\u5bb6\u8f66\u6210\u672c\u8ba1\u7b97\u5668', left, 106, '700 34px "Microsoft YaHei", sans-serif', navy);
+  drawCardText(ctx, '\ud83d\ude97  \u8f66\u8f86\u6210\u672c\u8ba1\u7b97\u5668', left, 106, '700 34px "Microsoft YaHei", sans-serif', navy);
   drawCardRoundRect(ctx, 745, 62, 250, 56, 14, '#E8F3FF');
   drawCardText(ctx, currentType === 'ev' ? '\ud83d\udd0b \u7535\u8f66' : '\u26fd \u6cb9\u8f66', 870, 99, '700 24px "Microsoft YaHei", sans-serif', blue, 'center');
 
@@ -1352,7 +1352,7 @@ if ('serviceWorker' in navigator) {
     <footer class="site-footer" aria-label="&#31449;&#28857;&#20449;&#24687;">
         <div class="footer-top">
             <section class="footer-identity">
-                <p class="footer-kicker">&#31169;&#23478;&#36710;&#25104;&#26412;&#35745;&#31639;&#22120;</p>
+                <p class="footer-kicker">&#36710;&#36742;&#25104;&#26412;&#35745;&#31639;&#22120;</p>
                 <p class="footer-title">&#31639;&#28165;&#27599;&#19968;&#31508;&#20859;&#36710;&#25104;&#26412;</p>
                 <p class="footer-copy">&#36755;&#20837;&#20165;&#29992;&#20110;&#24403;&#21069;&#27983;&#35272;&#22120;&#26412;&#22320;&#35745;&#31639;&#65292;&#19981;&#20250;&#19978;&#20256;&#25110;&#20445;&#23384;&#12290;</p>
             </section>
