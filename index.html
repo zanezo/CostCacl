@@ -579,9 +579,9 @@
 <!-- 底部按钮 -->
 <div class="footer-bar">
   <div class="inner">
-    <button class="btn btn-secondary" id="resetBtn">重置</button>
-    <button class="btn btn-secondary" id="imageCardBtn">&#29983;&#25104;&#22270;&#29255;</button>
-    <button class="btn btn-primary" id="shareBtn">分享结果</button>
+    <button class="btn btn-secondary" id="resetBtn">&#21442;&#25968;&#37325;&#32622;</button>
+    <button class="btn btn-secondary" id="imageCardBtn">&#22270;&#29255;&#20998;&#20139;</button>
+    <button class="btn btn-primary" id="shareBtn">&#25991;&#23383;&#20998;&#20139;</button>
   </div>
 </div>
 
@@ -1260,7 +1260,9 @@ if ('serviceWorker' in navigator) {
     const analysis=document.createElement('section'); analysis.className='desktop-analysis';
     const breakdown=document.createElement('aside'); breakdown.className='desktop-breakdown';
     toolbar.append(nav,typeCard,actions);
-    share.textContent='\u590d\u5236\u7ed3\u679c';
+    reset.textContent='\u53c2\u6570\u91cd\u7f6e';
+    imageCard.textContent='\u56fe\u7247\u5206\u4eab';
+    share.textContent='\u6587\u5b57\u5206\u4eab';
     parameters.append(...groups); analysis.append(hero,chart); breakdown.append(detail);
     workspace.append(parameters,analysis,breakdown); wrap.append(toolbar,workspace);
     groups.forEach(group=>{group.open=true;});
@@ -1283,32 +1285,61 @@ if ('serviceWorker' in navigator) {
   .visit-milestone.show .visit-milestone-spark{animation:visit-spark .72s ease-out both}@keyframes visit-milestone{0%{opacity:0;transform:translate(var(--milestone-x),-7px) scale(.98)}14%,74%{opacity:1;transform:translate(var(--milestone-x),0) scale(1)}100%{opacity:0;transform:translate(var(--milestone-x),-4px) scale(.99)}}@keyframes visit-spark{0%{transform:scale(.72) rotate(-12deg)}55%{transform:scale(1.18) rotate(8deg)}100%{transform:scale(1) rotate(0)}}
   @media (min-width:960px){.desktop-toolbar .nav-title{justify-content:flex-start}.desktop-toolbar .visit-counter{margin-left:4px}.desktop-toolbar .visit-milestone{--milestone-x:0;left:0}}
   @media (max-width:420px){.nav-title{flex-wrap:wrap;padding-bottom:3px}.visit-counter{margin-left:0}.visit-milestone{font-size:11px;white-space:normal;min-width:0;width:min(320px,calc(100vw - 32px))}}
-
         .site-footer {
-            width: min(calc(100% - 40px), 1720px);
-            margin: 32px auto 36px;
-            padding: 30px 34px 18px;
-            background: #fff;
-            border: 1px solid #e5e9f0;
-            border-radius: 12px;
-            color: #5f6d84;
+            width: min(calc(100% - 48px), 1480px);
+            margin: 20px auto 36px;
+            padding: 28px 0 0;
+            background: transparent;
+            border: 0;
+            border-top: 1px solid #e2e7f0;
+            border-radius: 0;
+            color: #718097;
         }
-        .footer-top { display:grid; grid-template-columns:minmax(0,1.45fr) minmax(180px,.7fr) minmax(190px,.8fr); gap:32px; }
-        .footer-kicker { margin:0 0 8px; color:#0a7cff; font-size:13px; font-weight:700; }
-        .footer-title { margin:0; color:#17243a; font-size:22px; font-weight:800; line-height:1.25; }
-        .footer-copy { max-width:390px; margin:9px 0 0; font-size:13px; line-height:1.65; }
-        .footer-label { margin:2px 0 13px; color:#17243a; font-size:14px; font-weight:800; }
-        .footer-list { display:flex; flex-direction:column; align-items:flex-start; gap:9px; margin:0; padding:0; list-style:none; font-size:13px; line-height:1.45; }
-        .footer-contact { display:flex; flex-wrap:wrap; gap:8px; }
-        .footer-link { display:inline-flex; align-items:center; min-height:34px; padding:0 11px; color:#1769d9; background:#f3f8ff; border:1px solid #d9e9ff; border-radius:7px; font-size:13px; font-weight:700; text-decoration:none; }
-        .footer-link:hover { color:#075fcf; background:#eaf4ff; border-color:#bcdcff; }
-        .footer-bottom { display:flex; justify-content:space-between; gap:16px; margin-top:25px; padding-top:16px; border-top:1px solid #edf0f5; color:#8a96a8; font-size:12px; line-height:1.5; }
+        .footer-end {
+            display: grid;
+            justify-items: center;
+            gap: 10px;
+            text-align: center;
+        }
+        .footer-end-title {
+            margin: 0;
+            color: #5c6778;
+            font-size: 15px;
+            font-weight: 700;
+            letter-spacing: .02em;
+        }
+        .footer-end-copy,
+        .footer-meta {
+            margin: 0;
+            font-size: 13px;
+            line-height: 1.7;
+            color: #8d98aa;
+        }
+        .footer-deeper {
+            display: inline-flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            font-size: 13px;
+            line-height: 1.6;
+            color: #8d98aa;
+        }
+        .footer-link {
+            color: #6f86a6;
+            text-decoration: none;
+        }
+        .footer-link:hover {
+            color: #3e6fb0;
+            text-decoration: underline;
+        }
         @media (max-width: 680px) {
-            .site-footer { width:calc(100% - 28px); margin:22px auto 28px; padding:24px 20px 16px; border-radius:10px; }
-            .footer-top { grid-template-columns:1fr; gap:23px; }
-            .footer-title { font-size:20px; }
-            .footer-copy { max-width:none; }
-            .footer-bottom { flex-direction:column; gap:4px; margin-top:22px; }
+            .site-footer { width:calc(100% - 28px); margin:18px auto 28px; padding-top:22px; }
+            .footer-end { gap: 9px; }
+            .footer-end-title { font-size:14px; }
+            .footer-end-copy,
+            .footer-meta,
+            .footer-deeper { font-size:12px; }
         }</style>
 <script>
 (function(){
@@ -1348,32 +1379,17 @@ if ('serviceWorker' in navigator) {
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',loadVisitCount);else loadVisitCount();
 })();
 </script>
-
     <footer class="site-footer" aria-label="&#31449;&#28857;&#20449;&#24687;">
-        <div class="footer-top">
-            <section class="footer-identity">
-                <p class="footer-kicker">&#36710;&#36742;&#25104;&#26412;&#35745;&#31639;&#22120;</p>
-                <p class="footer-title">&#31639;&#28165;&#27599;&#19968;&#31508;&#20859;&#36710;&#25104;&#26412;</p>
-                <p class="footer-copy">&#36755;&#20837;&#20165;&#29992;&#20110;&#24403;&#21069;&#27983;&#35272;&#22120;&#26412;&#22320;&#35745;&#31639;&#65292;&#19981;&#20250;&#19978;&#20256;&#25110;&#20445;&#23384;&#12290;</p>
-            </section>
-            <section aria-label="&#20351;&#29992;&#35828;&#26126;">
-                <p class="footer-label">&#20351;&#29992;&#35828;&#26126;</p>
-                <ul class="footer-list">
-                    <li>&#35745;&#31639;&#32467;&#26524;&#20379;&#21442;&#32771;</li>
-                    <li>&#36153;&#29992;&#21487;&#38543;&#21442;&#25968;&#35843;&#25972;</li>
-                </ul>
-            </section>
-            <section aria-label="&#32852;&#31995;&#19982;&#21453;&#39304;">
-                <p class="footer-label">&#32852;&#31995;&#19982;&#21453;&#39304;</p>
-                <div class="footer-contact">
-                    <a class="footer-link" href="https://github.com/zanezo/CostCacl/issues" target="_blank" rel="noreferrer">&#25552;&#20132;&#21453;&#39304;</a>
-                    <a class="footer-link" href="https://github.com/zanezo/CostCacl" target="_blank" rel="noreferrer">&#39033;&#30446;&#28304;&#30721;</a>
-                </div>
-            </section>
-        </div>
-        <div class="footer-bottom">
-            <span>&copy; 2026 cost.ahopig.com</span>
-            <span>&#32467;&#26524;&#20165;&#20379;&#20272;&#31639;&#65292;&#19981;&#26500;&#25104;&#36141;&#36710;&#12289;&#25237;&#36164;&#25110;&#29702;&#36130;&#24314;&#35758;&#12290;</span>
+        <div class="footer-end">
+            <p class="footer-end-title">&#26412;&#39029;&#20869;&#23481;&#21040;&#36825;&#37324;&#32467;&#26463;</p>
+            <p class="footer-end-copy">&#22914;&#38656;&#32487;&#32493;&#23545;&#27604;&#65292;&#21487;&#22238;&#21040;&#19978;&#26041;&#35843;&#25972;&#21442;&#25968;&#12290;</p>
+            <p class="footer-deeper">
+                <span>&#32487;&#32493;&#20102;&#35299;&#65306;</span>
+                <a class="footer-link" href="https://github.com/zanezo/CostCacl" target="_blank" rel="noreferrer">&#39033;&#30446;&#28304;&#30721;</a>
+                <span aria-hidden="true">/</span>
+                <a class="footer-link" href="https://github.com/zanezo/CostCacl/issues" target="_blank" rel="noreferrer">&#25552;&#20132;&#21453;&#39304;</a>
+            </p>
+            <p class="footer-meta">&copy; 2026 cost.ahopig.com &#183; &#32467;&#26524;&#20165;&#20379;&#20272;&#31639;&#65292;&#19981;&#26500;&#25104;&#36141;&#36710;&#12289;&#25237;&#36164;&#25110;&#29702;&#36130;&#24314;&#35758;&#12290;</p>
         </div>
     </footer><script>
   (() => {

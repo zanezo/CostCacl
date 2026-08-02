@@ -1,0 +1,65 @@
+﻿<h2>页尾弱化方向对比</h2>
+<p class="subtitle">目标：让用户明确感觉“这一页到这里结束了”，同时给愿意继续了解的人一个很低调的 GitHub / 反馈入口。</p>
+
+<div class="section">
+  <div class="label">按钮文案（3 个方案统一）</div>
+  <div class="mockup" style="margin-top:10px;">
+    <div class="mockup-body" style="display:flex;gap:12px;flex-wrap:wrap;align-items:center;">
+      <button class="mock-button" style="opacity:.82;">参数重置</button>
+      <button class="mock-button" style="opacity:.82;">图片分享</button>
+      <button class="mock-button" style="background:#1f7aff;color:#fff;border-color:#1f7aff;">文字分享</button>
+    </div>
+  </div>
+</div>
+
+<div class="cards">
+  <div class="card" data-choice="a1" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div style="background:#f6f7fb;border-radius:18px;padding:20px 18px;min-height:250px;display:flex;flex-direction:column;justify-content:flex-end;">
+        <div style="height:1px;background:#dfe4ee;margin-bottom:18px;"></div>
+        <div style="text-align:center;color:#8a93a5;font-size:13px;letter-spacing:.04em;">— 本页内容到这里结束 —</div>
+        <div style="margin-top:12px;text-align:center;font-size:12px;color:#a1a9b8;">继续了解：GitHub · 反馈</div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>A1 纯结束分隔线</h3>
+      <p>最像“页面收尾”，存在感最低。适合把页尾从功能区降成结束提示。</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="a2" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div style="background:#f6f7fb;border-radius:18px;padding:18px;min-height:250px;display:flex;flex-direction:column;justify-content:flex-end;">
+        <div style="border-top:1px solid #e3e7f0;padding-top:16px;display:flex;justify-content:space-between;align-items:flex-end;gap:16px;">
+          <div>
+            <div style="font-size:14px;color:#6f788a;">已经到底啦</div>
+            <div style="font-size:12px;color:#a0a8b7;margin-top:6px;">结果仅供估算，参数可随时回到上方调整。</div>
+          </div>
+          <div style="font-size:12px;color:#8a93a5;white-space:nowrap;">继续了解 → GitHub / 反馈</div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>A2 结束提示 + 深入入口</h3>
+      <p>结束感明确，但仍保留一条很轻的“继续了解”路径。我最推荐这个。</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="a3" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div style="background:#f6f7fb;border-radius:18px;padding:18px;min-height:250px;display:flex;flex-direction:column;justify-content:flex-end;">
+        <div style="border-top:1px solid #e3e7f0;padding-top:14px;display:grid;gap:10px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;font-size:12px;color:#8e97a8;">
+            <span>© 2026 cost.ahopig.com</span>
+            <span>项目源码 · 提交反馈</span>
+          </div>
+          <div style="font-size:12px;color:#a2a9b6;">结果仅供估算，不构成购车、投资或理财建议。</div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>A3 极简信息行</h3>
+      <p>最克制，也最像网站标准页脚。但“本页结束”的暗示会比前两个更弱一点。</p>
+    </div>
+  </div>
+</div>
