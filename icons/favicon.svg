@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" role="img" aria-label="ahopig cost light">
+  <g transform="translate(18 8) scale(.92)"><path fill="#8B929C" fill-rule="evenodd" d="M52 33C35 42 27 65 34 88c7 23 27 35 46 45-19 15-31 32-30 52 1 26 24 43 49 37 20-5 32-26 43-45 14 15 31 33 53 34 24 1 38-19 30-40-6-17-24-28-42-39 21-18 39-38 37-62-2-25-24-40-47-35-22 5-36 23-49 40-19-25-49-53-72-42ZM69 68c13-8 30 1 46 18-11 17-23 31-37 38-14-10-20-25-17-38 1-8 4-14 8-18Zm85 71c12-11 27-12 39-3 11 9 14 22 8 33-7 12-24 15-38 6-11-8-15-25-9-36Z"/></g>
+  <path d="M25 182A15 15 0 0 1 47 194" fill="none" stroke="#AEB4BC" stroke-width="6" stroke-linecap="round"/>
+  <circle cx="24" cy="199" r="4" fill="#AEB4BC"/>
+</svg>
