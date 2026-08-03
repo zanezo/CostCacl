@@ -12,6 +12,7 @@ assert.match(page, /canvas\.height\s*=\s*1920/, 'card must use a phone-friendly 
 assert.match(page, /getCostInsight\(d, r\)/, 'card must include the current cost insight');
 assert.match(page, /getTaxiComparison\(d, r\)/, 'card should derive taxi comparison data for the share image');
 assert.match(page, /打车参考|\\u6253\\u8f66\\u53c2\\u8003/, 'card should include a taxi comparison summary');
+assert.match(page, /drawCardText\(ctx,\s*'(?:\\u6253\\u8f66\\u53c2\\u8003|\u6253\u8f66\u53c2\u8003)/, 'share image should render a readable taxi summary title');
 assert.match(page, /ctx\.arc\(/, 'card must draw a cost composition ring chart');
 assert.match(page, /canvas\.toBlob\(/, 'card must export a PNG image');
 assert.match(page, /imageCardBtn\.addEventListener\('click', createResultCard\)/, 'image-card action must be wired to its button');

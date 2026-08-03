@@ -615,7 +615,7 @@
   <!-- 明细列表 -->
     <!-- 打车对比 -->
   <div class="card taxi-card" id="taxiComparisonCard">
-    <h3>????</h3>
+    <h3>&#25171;&#36710;&#21442;&#32771;</h3>
     <div class="taxi-hero">
       <div class="taxi-hero-head">
         <div class="taxi-hero-chip" id="taxiComparisonChip">轻量参考</div>
@@ -1195,10 +1195,10 @@ function createResultCard() {
   drawCardText(ctx, '\u9884\u8ba1\u5e74\u91cc\u7a0b', 570, 1595, '400 22px "Microsoft YaHei", sans-serif', muted);
   drawCardText(ctx, fmt(d.mileage) + ' km', 570, 1642, '700 34px "Microsoft YaHei", sans-serif', navy);
   drawCardRoundRect(ctx, left, 1694, 916, 104, 18, '#FFF7DF');
-  drawCardText(ctx, '?????  ' + LABELS[topItem.key] + '  ?' + fmt(topItem.value), 110, 1726, '700 24px "Microsoft YaHei", sans-serif', '#8A620F');
-  drawCardText(ctx, taxi.deltaYear >= 0 ? ('????  ???? ?' + fmt(taxi.deltaYear) + ' / ?') : ('????  ???? ?' + fmt(Math.abs(taxi.deltaYear)) + ' / ?'), 110, 1758, '400 21px "Microsoft YaHei", sans-serif', '#8A620F');
-  drawCardText(ctx, taxi.breakEvenMileage ? ('?????  ' + fmt(taxi.breakEvenMileage) + ' km / ?') : '???????', 110, 1790, '400 19px "Microsoft YaHei", sans-serif', '#A17317');
-  drawCardText(ctx, '??????', left, 1838, '400 19px "Microsoft YaHei", sans-serif', muted);
+  drawCardText(ctx, '\u6253\u8f66\u53c2\u8003  ' + LABELS[topItem.key] + '  \u00a5' + fmt(topItem.value), 110, 1726, '700 24px "Microsoft YaHei", sans-serif', '#8A620F');
+  drawCardText(ctx, taxi.deltaYear >= 0 ? ('\u7ed3\u8bba  \u6253\u8f66\u6bd4\u517b\u8f66\u8d35 \u00a5' + fmt(taxi.deltaYear) + ' / \u5e74') : ('\u7ed3\u8bba  \u6253\u8f66\u6bd4\u517b\u8f66\u7701 \u00a5' + fmt(Math.abs(taxi.deltaYear)) + ' / \u5e74'), 110, 1758, '400 21px "Microsoft YaHei", sans-serif', '#8A620F');
+  drawCardText(ctx, taxi.breakEvenMileage ? ('\u6301\u5e73\u91cc\u7a0b  ' + fmt(taxi.breakEvenMileage) + ' km / \u5e74') : '\u5f53\u524d\u6682\u65e0\u6301\u5e73\u70b9', 110, 1790, '400 19px "Microsoft YaHei", sans-serif', '#A17317');
+  drawCardText(ctx, '\u7ed3\u679c\u4ec5\u4f9b\u4f30\u7b97', left, 1838, '400 19px "Microsoft YaHei", sans-serif', muted);
   drawCardText(ctx, 'cost.ahopig.com', 998, 1838, '400 19px "Microsoft YaHei", sans-serif', muted, 'right');
   downloadResultCard(canvas);
 }
