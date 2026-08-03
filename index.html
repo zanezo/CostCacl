@@ -355,6 +355,30 @@
   }
   .detail-item.total .name { font-weight: 600; }
   .detail-item.total .val { color: var(--blue); font-size: 16px; }
+  .taxi-detail-card { padding: 6px 16px 14px; }
+  .taxi-detail-card h3 {
+    font-size: 16px;
+    font-weight: 600;
+    padding: 10px 0 6px;
+  }
+  .taxi-detail-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 10px 0;
+    border-bottom: 0.5px solid var(--separator);
+    color: var(--text-2);
+    font-size: 13px;
+  }
+  .taxi-detail-item:last-child { border-bottom: 0; }
+  .taxi-detail-item strong {
+    color: var(--text);
+    font-size: 14px;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    text-align: right;
+  }
 
   /* ===== 底部按钮 ===== */
   .footer-bar {
@@ -621,6 +645,10 @@
 <div class="card detail-card">
     <h3>📋 每周明细</h3>
     <div id="detailList"></div>
+  </div>
+  <div class="card taxi-detail-card" id="taxiDetailCard">
+    <h3>&#25171;&#36710;&#26126;&#32454;</h3>
+    <div id="taxiDetailList"></div>
   </div>
 
 </div>
@@ -895,6 +923,20 @@ function renderTaxiComparison(d, r) {
     { k: '均摊单价', v: '¥' + fmt2(taxi.taxiPerKm), s: fmt2(d.taxiTripKm) + ' km / 单次' },
     { k: '持平里程', v: breakEvenText, s: taxi.breakEvenMileage ? '超过后养车更划算' : '当前变量成本更低' },
   ].map(item => '<div class="taxi-mini"><div class="k">' + item.k + '</div><div class="v">' + item.v + '</div><div class="s">' + item.s + '</div></div>').join('');
+
+  const detailList = $('taxiDetailList');
+  if (detailList) {
+    const annualTrips = d.taxiTripKm > 0 ? d.mileage / d.taxiTripKm : 0;
+    detailList.innerHTML = [
+      { k: '\u8d77\u6b65\u4ef7', v: '\u00a5' + fmt2(d.taxiStartFare) },
+      { k: '\u8d77\u6b65\u91cc\u7a0b', v: fmt2(d.taxiStartKm) + ' km' },
+      { k: '\u6bcf\u516c\u91cc\u4ef7', v: '\u00a5' + fmt2(d.taxiPerKm) + '/km' },
+      { k: '\u5e73\u5747\u5355\u6b21\u91cc\u7a0b', v: fmt2(d.taxiTripKm) + ' km' },
+      { k: '\u5355\u6b21\u6253\u8f66\u8d39\u7528', v: '\u00a5' + fmt(taxi.taxiSingleTrip) },
+      { k: '\u9884\u8ba1\u5e74\u6253\u8f66\u6b21\u6570', v: fmt(annualTrips) + ' \u6b21' },
+      { k: '\u9884\u8ba1\u5e74\u6253\u8f66\u8d39\u7528', v: '\u00a5' + fmt(taxi.taxiYear) },
+    ].map(item => '<div class="taxi-detail-item"><span>' + item.k + '</span><strong>' + item.v + '</strong></div>').join('');
+  }
 }
 
 function updateChart(items, total) {
@@ -1353,19 +1395,23 @@ if ('serviceWorker' in navigator) {
 <script>
 (function(){
   function mountDesktopWorkspace(){
-    if(!window.matchMedia('(min-width: 960px)').matches)return;
     const wrap=document.querySelector('.wrap');
+    const taxiCard=wrap&&wrap.querySelector('.taxi-card');
+    const chart=wrap&&wrap.querySelector('.chart-card');
+    if(!window.matchMedia('(min-width: 960px)').matches){
+      if(taxiCard&&chart&&taxiCard.parentNode===chart.parentNode)taxiCard.parentNode.insertBefore(chart,taxiCard);
+      return;
+    }
     const nav=wrap&&wrap.querySelector('.nav-title');
     const hero=wrap&&wrap.querySelector('.hero');
     const typeCard=document.querySelector('#typeSegment')?.closest('.card');
     const groups=wrap?[...wrap.querySelectorAll(':scope > details.group')]:[];
-    const taxiCard=wrap&&wrap.querySelector('.taxi-card');
-    const chart=wrap&&wrap.querySelector('.chart-card');
     const detail=wrap&&wrap.querySelector('.detail-card');
+    const taxiDetail=wrap&&wrap.querySelector('.taxi-detail-card');
     const reset=document.getElementById('resetBtn');
     const share=document.getElementById('shareBtn');
     const imageCard=document.getElementById('imageCardBtn');
-    if(!wrap||!nav||!hero||!typeCard||groups.length!==4||!taxiCard||!chart||!detail||!reset||!share||!imageCard)return;
+    if(!wrap||!nav||!hero||!typeCard||groups.length!==4||!taxiCard||!chart||!detail||!taxiDetail||!reset||!share||!imageCard)return;
     const toolbar=document.createElement('header'); toolbar.className='desktop-toolbar';
     const actions=document.createElement('div'); actions.className='desktop-actions'; actions.append(reset,imageCard,share);
     const workspace=document.createElement('main'); workspace.className='desktop-workspace';
@@ -1376,7 +1422,7 @@ if ('serviceWorker' in navigator) {
     reset.textContent='\u53c2\u6570\u91cd\u7f6e';
     imageCard.textContent='\u56fe\u7247\u5206\u4eab';
     share.textContent='\u6587\u5b57\u5206\u4eab';
-    parameters.append(...groups); analysis.append(hero,taxiCard,chart); breakdown.append(detail);
+    parameters.append(...groups); analysis.append(hero,chart,taxiCard); breakdown.append(detail,taxiDetail);
     workspace.append(parameters,analysis,breakdown); wrap.append(toolbar,workspace);
     groups.forEach(group=>{group.open=true;});
   }
