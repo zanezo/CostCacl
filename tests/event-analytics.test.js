@@ -1,4 +1,4 @@
-const assert = require('node:assert/strict');
+﻿const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
 
@@ -21,5 +21,7 @@ assert.match(page, /localStorage/, 'visitor identity should stay client-side');
 assert.match(api, /req\.method\s*!==\s*['"]POST['"]/, 'event API should only accept POST');
 assert.match(api, /INCR/, 'event API should increment counters');
 assert.match(api, /SET/, 'event API should support deduplication locks');
+assert.match(api, /cf-connecting-ip|x-forwarded-for|x-real-ip/i, 'event API should inspect the client IP');
+assert.match(api, /429|thrott/i, 'event API should rate-limit analytics traffic');
 
 console.log('event analytics contract passed');

@@ -3,7 +3,21 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+
 <meta name="theme-color" content="#007AFF">
+<link rel="canonical" href="https://cost.ahopig.com/">
+<meta property="og:type" content="website">
+<meta property="og:title" content="???????">
+<meta property="og:description" content="?????????????????????????">
+<meta property="og:url" content="https://cost.ahopig.com/">
+<meta property="og:image" content="https://cost.ahopig.com/social-preview.svg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="???????">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="???????">
+<meta name="twitter:description" content="?????????????????????????">
+<meta name="twitter:image" content="https://cost.ahopig.com/social-preview.svg">
 <meta name="description" content="计算车辆每周/每年的持有和出行成本">
 
 <!-- PWA Manifest -->
@@ -557,7 +571,37 @@
   </details>
 
   <!-- 图表 -->
-  <div class="card chart-card">
+    <!-- 分组四：打车对比 -->
+  <details class="group" open>
+    <summary>
+      <div class="dot" style="background:#FF9500">4</div>
+      <div class="title">打车对比<span style="font-weight:400;color:var(--text-2);font-size:13px;">（轻量预估）</span></div>
+      <div class="chev"></div>
+    </summary>
+    <div class="group-body" id="taxiBody">
+      <div class="row">
+        <div class="label">起步价</div>
+        <input type="number" class="num-input" id="taxiStartFare" value="12">
+        <span class="suffix">元</span>
+      </div>
+      <div class="row">
+        <div class="label">起步里程</div>
+        <input type="number" class="num-input" id="taxiStartKm" value="3">
+        <span class="suffix">公里</span>
+      </div>
+      <div class="row">
+        <div class="label">每公里价</div>
+        <input type="number" class="num-input" id="taxiPerKm" value="2.6" step="0.1">
+        <span class="suffix">元</span>
+      </div>
+      <div class="row">
+        <div class="label">平均单次里程</div>
+        <input type="number" class="num-input" id="taxiTripKm" value="12" step="0.5">
+        <span class="suffix">公里</span>
+      </div>
+    </div>
+  </details>
+<div class="card chart-card">
     <h3>📊 成本占比</h3>
     <div class="chart-box">
       <canvas id="pieChart"></canvas>
@@ -569,7 +613,20 @@
   </div>
 
   <!-- 明细列表 -->
-  <div class="card detail-card">
+    <!-- 打车对比 -->
+  <div class="card taxi-card" id="taxiComparisonCard">
+    <h3>????</h3>
+    <div class="taxi-hero">
+      <div class="taxi-hero-head">
+        <div class="taxi-hero-chip" id="taxiComparisonChip">轻量参考</div>
+        <div class="taxi-hero-kicker" id="taxiComparisonTitle">同样里程下的打车参考</div>
+      </div>
+      <div class="taxi-hero-amount" id="taxiComparisonAmount">¥0</div>
+      <div class="taxi-hero-note" id="taxiComparisonNote">先填上参数，看看打车和养车谁更省。</div>
+    </div>
+    <div class="taxi-mini-grid" id="taxiMiniGrid"></div>
+  </div>
+<div class="card detail-card">
     <h3>📋 每周明细</h3>
     <div id="detailList"></div>
   </div>
@@ -579,9 +636,9 @@
 <!-- 底部按钮 -->
 <div class="footer-bar">
   <div class="inner">
-    <button class="btn btn-secondary" id="resetBtn">&#21442;&#25968;&#37325;&#32622;</button>
-    <button class="btn btn-secondary" id="imageCardBtn">&#22270;&#29255;&#20998;&#20139;</button>
-    <button class="btn btn-primary" id="shareBtn">&#25991;&#23383;&#20998;&#20139;</button>
+    <button class="btn btn-secondary" id="resetBtn">参数重置</button>
+    <button class="btn btn-secondary" id="imageCardBtn">图片分享</button>
+    <button class="btn btn-primary" id="shareBtn">文字分享</button>
   </div>
 </div>
 
@@ -674,6 +731,10 @@ function readInputs() {
     energy1:    parseFloat($('energy1').value) || 0,  // 百公里能耗
     energy2:    parseFloat($('energy2').value) || 0,  // 单位能源价格
     maintenance:parseFloat($('maintenance').value) || 0, // 元/万公里
+    taxiStartFare: parseFloat($('taxiStartFare').value) || 0,
+    taxiStartKm: parseFloat($('taxiStartKm').value) || 0,
+    taxiPerKm: parseFloat($('taxiPerKm').value) || 0,
+    taxiTripKm: parseFloat($('taxiTripKm').value) || 0,
   };
 }
 
@@ -734,13 +795,27 @@ function getCostInsight(d, r) {
   return LABELS[topItem.key] + '\u5360\u5168\u5e74\u6210\u672c ' + (topItem.value / r.yearTotal * 100).toFixed(0) + '%\uff0c\u662f\u5f53\u524d\u6700\u5927\u652f\u51fa\u3002';
 }
 
+function getTaxiComparison(d, r) {
+  const taxiSingleTrip = d.taxiStartFare + Math.max(0, d.taxiTripKm - d.taxiStartKm) * d.taxiPerKm;
+  const taxiPerKm = d.taxiTripKm > 0 ? taxiSingleTrip / d.taxiTripKm : 0;
+  const taxiYear = d.taxiTripKm > 0 ? d.mileage / d.taxiTripKm * taxiSingleTrip : 0;
+  const variableYear = d.mileage / 100 * d.energy1 * d.energy2 + d.mileage / 10000 * d.maintenance;
+  const fixedYear = Math.max(r.yearTotal - variableYear, 0);
+  const carVariablePerKm = d.mileage > 0 ? variableYear / d.mileage : 0;
+  const breakEvenMileage = taxiPerKm > carVariablePerKm ? fixedYear / (taxiPerKm - carVariablePerKm) : null;
+  const deltaYear = taxiYear - r.yearTotal;
+  return { taxiSingleTrip, taxiPerKm, taxiYear, variableYear, fixedYear, carVariablePerKm, breakEvenMileage, deltaYear };
+}
+
 const SHARE_PARAM_KEYS = {
   type: 't', carPrice: 'p', mileage: 'm', insurance: 'i', parking: 'k', fine: 'f',
   depYears: 'd', residual: 'r', oppRate: 'o', energy1: 'a', energy2: 'b', maintenance: 'h',
+  taxiStartFare: 's', taxiStartKm: 'q', taxiPerKm: 'u', taxiTripKm: 'v',
 };
-const SHARE_INPUT_IDS = ['carPrice', 'mileage', 'insurance', 'parking', 'fine', 'depYears', 'residual', 'oppRate', 'energy1', 'energy2', 'maintenance'];
+const SHARE_INPUT_IDS = ['carPrice', 'mileage', 'insurance', 'parking', 'fine', 'depYears', 'residual', 'oppRate', 'energy1', 'energy2', 'maintenance', 'taxiStartFare', 'taxiStartKm', 'taxiPerKm', 'taxiTripKm'];
 const SHARE_DEFAULTS = {
   carPrice: '15', mileage: '12500', parking: '4560', fine: '400', depYears: '6', oppRate: '3',
+  taxiStartFare: '12', taxiStartKm: '3', taxiPerKm: '2.6', taxiTripKm: '12',
   gas: { insurance: '4500', residual: '40', energy1: '8', energy2: '7.5', maintenance: '800' },
   ev: { insurance: '5000', residual: '35', energy1: '15', energy2: '0.8', maintenance: '300' },
 };
@@ -797,6 +872,37 @@ function render() {
   renderDetail(items, r.weekTotal);
   const insight = $('costInsight');
   if (insight) insight.textContent = getCostInsight(d, r);
+  renderTaxiComparison(d, r);
+}
+
+function renderTaxiComparison(d, r) {
+  const taxi = getTaxiComparison(d, r);
+  const chip = $('taxiComparisonChip');
+  const title = $('taxiComparisonTitle');
+  const amount = $('taxiComparisonAmount');
+  const note = $('taxiComparisonNote');
+  const grid = $('taxiMiniGrid');
+  if (!chip || !title || !amount || !note || !grid) return;
+
+  const deltaAbs = Math.abs(taxi.deltaYear);
+  const state = taxi.deltaYear > 0 ? 'costly' : taxi.deltaYear < 0 ? 'saving' : 'neutral';
+  chip.className = 'taxi-hero-chip is-' + state;
+  chip.textContent = taxi.deltaYear > 0 ? '打车更贵' : taxi.deltaYear < 0 ? '打车更省' : '大致持平';
+  title.textContent = d.mileage > 0 ? '按 ' + fmt(d.mileage) + ' km/年 估算' : '先填里程，再看打车参考';
+  amount.textContent = '¥' + fmt(taxi.taxiYear);
+  note.textContent = taxi.deltaYear >= 0
+    ? '如果全年都按这组打车参数出行，预计会比当前养车方案多花 ¥' + fmt(deltaAbs) + '。'
+    : '如果全年都按这组打车参数出行，预计会比当前养车方案少花 ¥' + fmt(deltaAbs) + '。';
+
+  const breakEvenText = taxi.breakEvenMileage
+    ? '约 ' + fmt(taxi.breakEvenMileage) + ' km/年'
+    : '暂无明确持平点';
+
+  grid.innerHTML = [
+    { k: '单次打车', v: '¥' + fmt(taxi.taxiSingleTrip), s: fmt2(d.taxiStartKm) + ' km 起步 · ¥' + fmt2(d.taxiPerKm) + '/km' },
+    { k: '均摊单价', v: '¥' + fmt2(taxi.taxiPerKm), s: fmt2(d.taxiTripKm) + ' km / 单次' },
+    { k: '持平里程', v: breakEvenText, s: taxi.breakEvenMileage ? '超过后养车更划算' : '当前变量成本更低' },
+  ].map(item => '<div class="taxi-mini"><div class="k">' + item.k + '</div><div class="v">' + item.v + '</div><div class="s">' + item.s + '</div></div>').join('');
 }
 
 function updateChart(items, total) {
@@ -909,6 +1015,7 @@ async function shareResult() {
   const shareUrl = buildShareUrl();
   const d = readInputs();
   const r = calculate(d);
+  const taxi = getTaxiComparison(d, r);
   const typeLabel = currentType === 'gas' ? '\u6cb9\u8f66' : '\u7535\u8f66';
   const lines = [
     '\uD83D\uDE97 \u6211\u7684' + typeLabel + '\u517b\u8f66\u6210\u672c',
@@ -916,6 +1023,12 @@ async function shareResult() {
     '\u6bcf\u5468\u82b1\u8d39\uff1a\u00a5' + fmt(r.weekTotal) + ' \u5143',
     '\u6bcf\u5e74\u82b1\u8d39\uff1a\u00a5' + fmt(r.yearTotal) + ' \u5143',
     '\u6bcf\u516c\u91cc\u6210\u672c\uff1a\u00a5' + fmt2(r.perKm) + ' \u5143/km',
+    '',
+    '\u7b80\u8981\u7ed3\u8bba\uff1a' + getCostInsight(d, r),
+    '',
+    '打车对比：' + (taxi.deltaYear >= 0 ? '打车比养车贵 ¥' + fmt(taxi.deltaYear) + ' / 年' : '打车比养车省 ¥' + fmt(Math.abs(taxi.deltaYear)) + ' / 年'),
+    '单次打车：¥' + fmt(taxi.taxiSingleTrip) + '（约 ' + fmt2(d.taxiTripKm) + ' km）',
+    taxi.breakEvenMileage ? '持平里程：' + fmt(taxi.breakEvenMileage) + ' km / 年' : '持平里程：暂无明确持平点',
     '',
     '\u6210\u672c\u6784\u6210\uff08\u6bcf\u5e74\uff09\uff1a',
   ];
@@ -1018,6 +1131,7 @@ function downloadResultCard(canvas) {
 function createResultCard() {
   const d = readInputs();
   const r = calculate(d);
+  const taxi = getTaxiComparison(d, r);
   const items = r.items.filter(item => item.value > 0);
   const topItem = items.reduce((top, item) => item.value > top.value ? item : top, items[0]);
   const insight = getCostInsight(d, r);
@@ -1080,10 +1194,12 @@ function createResultCard() {
   drawCardText(ctx, '\u00a5' + fmt(d.carPrice), left, 1642, '700 34px "Microsoft YaHei", sans-serif', navy);
   drawCardText(ctx, '\u9884\u8ba1\u5e74\u91cc\u7a0b', 570, 1595, '400 22px "Microsoft YaHei", sans-serif', muted);
   drawCardText(ctx, fmt(d.mileage) + ' km', 570, 1642, '700 34px "Microsoft YaHei", sans-serif', navy);
-  drawCardRoundRect(ctx, left, 1710, 916, 72, 18, '#FFF7DF');
-  drawCardText(ctx, '\u6700\u5927\u6210\u672c\u9879  ' + LABELS[topItem.key] + '  \u00a5' + fmt(topItem.value), 110, 1757, '700 25px "Microsoft YaHei", sans-serif', '#8A620F');
-  drawCardText(ctx, '\u7ed3\u679c\u4ec5\u4f9b\u4f30\u7b97', left, 1846, '400 20px "Microsoft YaHei", sans-serif', muted);
-  drawCardText(ctx, 'cost.ahopig.com', 998, 1846, '400 20px "Microsoft YaHei", sans-serif', muted, 'right');
+  drawCardRoundRect(ctx, left, 1694, 916, 104, 18, '#FFF7DF');
+  drawCardText(ctx, '?????  ' + LABELS[topItem.key] + '  ?' + fmt(topItem.value), 110, 1726, '700 24px "Microsoft YaHei", sans-serif', '#8A620F');
+  drawCardText(ctx, taxi.deltaYear >= 0 ? ('????  ???? ?' + fmt(taxi.deltaYear) + ' / ?') : ('????  ???? ?' + fmt(Math.abs(taxi.deltaYear)) + ' / ?'), 110, 1758, '400 21px "Microsoft YaHei", sans-serif', '#8A620F');
+  drawCardText(ctx, taxi.breakEvenMileage ? ('?????  ' + fmt(taxi.breakEvenMileage) + ' km / ?') : '???????', 110, 1790, '400 19px "Microsoft YaHei", sans-serif', '#A17317');
+  drawCardText(ctx, '??????', left, 1838, '400 19px "Microsoft YaHei", sans-serif', muted);
+  drawCardText(ctx, 'cost.ahopig.com', 998, 1838, '400 19px "Microsoft YaHei", sans-serif', muted, 'right');
   downloadResultCard(canvas);
 }
 function fallbackCopy(text) {
@@ -1121,6 +1237,10 @@ function reset() {
   // 重置停车与罚单（switchType 不覆盖这两项）
   $('parking').value = 4560;
   $('fine').value = 400;
+  $('taxiStartFare').value = 12;
+  $('taxiStartKm').value = 3;
+  $('taxiPerKm').value = 2.6;
+  $('taxiTripKm').value = 12;
   render();
   showToast('已重置为默认值');
 }
@@ -1135,7 +1255,7 @@ function init() {
   bindSlider('oppRate', 'oppRateVal', '%', v => parseFloat(v).toFixed(1) + '%');
 
   // 数字输入框联动
-  ['insurance','parking','fine','energy1','energy2','maintenance'].forEach(id => {
+  ['insurance','parking','fine','energy1','energy2','maintenance','taxiStartFare','taxiStartKm','taxiPerKm','taxiTripKm'].forEach(id => {
     $(id).addEventListener('input', render);
   });
 
@@ -1247,12 +1367,13 @@ if ('serviceWorker' in navigator) {
     const hero=wrap&&wrap.querySelector('.hero');
     const typeCard=document.querySelector('#typeSegment')?.closest('.card');
     const groups=wrap?[...wrap.querySelectorAll(':scope > details.group')]:[];
+    const taxiCard=wrap&&wrap.querySelector('.taxi-card');
     const chart=wrap&&wrap.querySelector('.chart-card');
     const detail=wrap&&wrap.querySelector('.detail-card');
     const reset=document.getElementById('resetBtn');
     const share=document.getElementById('shareBtn');
     const imageCard=document.getElementById('imageCardBtn');
-    if(!wrap||!nav||!hero||!typeCard||groups.length!==3||!chart||!detail||!reset||!share||!imageCard)return;
+    if(!wrap||!nav||!hero||!typeCard||groups.length!==4||!taxiCard||!chart||!detail||!reset||!share||!imageCard)return;
     const toolbar=document.createElement('header'); toolbar.className='desktop-toolbar';
     const actions=document.createElement('div'); actions.className='desktop-actions'; actions.append(reset,imageCard,share);
     const workspace=document.createElement('main'); workspace.className='desktop-workspace';
@@ -1263,7 +1384,7 @@ if ('serviceWorker' in navigator) {
     reset.textContent='\u53c2\u6570\u91cd\u7f6e';
     imageCard.textContent='\u56fe\u7247\u5206\u4eab';
     share.textContent='\u6587\u5b57\u5206\u4eab';
-    parameters.append(...groups); analysis.append(hero,chart); breakdown.append(detail);
+    parameters.append(...groups); analysis.append(hero,taxiCard,chart); breakdown.append(detail);
     workspace.append(parameters,analysis,breakdown); wrap.append(toolbar,workspace);
     groups.forEach(group=>{group.open=true;});
   }
@@ -1278,7 +1399,125 @@ if ('serviceWorker' in navigator) {
   .visit-counter-unit{display:flex;align-items:center;padding:0 7px 0 0;color:#8b98aa;font-size:10px}
   .visit-counter.hidden{display:none}
   .cost-insight{max-width:360px;margin:16px auto 0;padding:8px 10px;border-left:3px solid var(--blue);border-radius:0 5px 5px 0;background:#f3f8ff;color:#53647b;font-size:12px;line-height:1.55;text-align:left}
-  .visit-milestone{--milestone-x:-50%;position:absolute;z-index:8;top:calc(100% + 7px);left:50%;display:flex;align-items:center;gap:7px;min-width:max-content;padding:9px 12px;border:1px solid #f2d79d;border-radius:6px;background:#fff9ed;box-shadow:0 8px 20px rgba(118,83,16,.12);color:#895f10;font-size:12px;font-weight:600;line-height:1.25;opacity:0;pointer-events:none;transform:translate(var(--milestone-x),-7px) scale(.98)}
+  .taxi-card {
+    margin: 0 0 12px;
+    padding: 12px 14px 14px;
+    background: linear-gradient(180deg, rgba(247,250,255,.98) 0%, #FFFFFF 100%);
+    border: 1px solid rgba(221,233,248,.88);
+    box-shadow: 0 4px 12px rgba(23,50,77,.03);
+  }
+  .taxi-card h3 {
+    margin: 0 0 8px;
+    color: #708097;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: .02em;
+  }
+  .taxi-hero {
+    padding: 14px 14px 13px;
+    border-radius: 18px;
+    background: linear-gradient(180deg, rgba(233,244,255,.92) 0%, rgba(255,255,255,.98) 100%);
+    border: 1px solid rgba(213,227,247,.95);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.75);
+    text-align: left;
+  }
+  .taxi-hero-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  .taxi-hero-chip {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 26px;
+    padding: 0 10px;
+    border-radius: 999px;
+    background: rgba(255,255,255,.92);
+    border: 1px solid #D8E7FB;
+    color: #5C789E;
+    font-size: 11px;
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: .02em;
+    white-space: nowrap;
+  }
+  .taxi-hero-chip.is-saving {
+    color: #167C4E;
+    border-color: rgba(52,199,89,.28);
+    background: rgba(236,251,242,.96);
+  }
+  .taxi-hero-chip.is-costly {
+    color: #9A5B00;
+    border-color: rgba(255,149,0,.28);
+    background: rgba(255,247,223,.96);
+  }
+  .taxi-hero-chip.is-neutral {
+    color: #5C789E;
+    border-color: #D8E7FB;
+    background: rgba(255,255,255,.92);
+  }
+  .taxi-hero-kicker {
+    color: #6780A0;
+    font-size: 12px;
+    line-height: 1.4;
+    letter-spacing: .01em;
+    flex: 1 1 180px;
+    text-align: right;
+  }
+  .taxi-hero-amount {
+    margin-top: 8px;
+    color: #0878F9;
+    font-size: 32px;
+    font-weight: 800;
+    line-height: 1.04;
+    font-variant-numeric: tabular-nums;
+  }
+  .taxi-hero-note {
+    margin-top: 8px;
+    color: #5A6C82;
+    font-size: 13px;
+    line-height: 1.6;
+  }
+  .taxi-mini-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 10px;
+    margin-top: 12px;
+  }
+  .taxi-mini {
+    padding: 11px 11px 12px;
+    border-radius: 14px;
+    background: rgba(255,255,255,.92);
+    border: 1px solid #E7EEF8;
+    box-shadow: 0 2px 8px rgba(23,50,77,.03);
+  }
+  .taxi-mini .k {
+    color: #7A8796;
+    font-size: 11px;
+    line-height: 1.2;
+  }
+  .taxi-mini .v {
+    margin-top: 5px;
+    color: #172033;
+    font-size: 15px;
+    font-weight: 700;
+    line-height: 1.25;
+    font-variant-numeric: tabular-nums;
+  }
+  .taxi-mini .s {
+    margin-top: 5px;
+    color: #8B97A7;
+    font-size: 11px;
+    line-height: 1.4;
+  }
+  @media (max-width: 640px) {
+    .taxi-hero-kicker { text-align: left; }
+    .taxi-mini-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .taxi-mini:last-child { grid-column: 1 / -1; }
+  }  .visit-milestone{--milestone-x:-50%;position:absolute;z-index:8;top:calc(100% + 7px);left:50%;display:flex;align-items:center;gap:7px;min-width:max-content;padding:9px 12px;border:1px solid #f2d79d;border-radius:6px;background:#fff9ed;box-shadow:0 8px 20px rgba(118,83,16,.12);color:#895f10;font-size:12px;font-weight:600;line-height:1.25;opacity:0;pointer-events:none;transform:translate(var(--milestone-x),-7px) scale(.98)}
   .visit-milestone strong{font-variant-numeric:tabular-nums}
   .visit-milestone-spark{font-size:16px;line-height:1}
   .visit-milestone.show{animation:visit-milestone 2.8s ease-in-out both}

@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
@@ -68,14 +68,16 @@
       <div>
         <p class="eyebrow"><span class="status-dot"></span>PRIVATE ANALYTICS</p>
         <h1>车辆成本计算器 · 数据概览</h1>
-        <p class="subtitle">仅展示聚合行为数据，不包含访客身份或参数明细。</p>
+        <p class="subtitle">仅展示聚合行为数据，不包含访客身份或参数明细。建议同时配合平台侧路由保护使用。</p>
       </div>
     </header>
 
     <section class="access-panel" id="accessPanel" aria-labelledby="accessTitle">
       <h2 id="accessTitle">验证访问口令</h2>
-      <p>口令仅用于本次请求，关闭或刷新页面后需要重新输入。</p>
+      <p>本页采用双层访问保护：先输入访问门禁，再输入管理口令。两者只在本次会话中保留，刷新后需要重新输入。</p>
       <form class="access-form" id="accessForm">
+        <label for="accessGate">访问门禁</label>
+        <input id="accessGate" type="password" autocomplete="off" required>
         <label for="accessToken">管理口令</label>
         <input id="accessToken" type="password" autocomplete="current-password" required>
         <button class="primary-button" type="submit">查看数据</button>
@@ -95,8 +97,8 @@
         <div class="metric-grid">
           <article class="metric"><p class="metric-label">累计访问</p><p class="metric-value" data-metric="visit">0</p><p class="metric-hint">页面打开总次数</p></article>
           <article class="metric"><p class="metric-label">完成计算</p><p class="metric-value" data-metric="calculation_completed">0</p><p class="metric-hint">修改参数后获得结果</p></article>
-          <article class="metric"><p class="metric-label">生成图片</p><p class="metric-value" data-metric="result_card_generated">0</p><p class="metric-hint">点击生成分享卡片</p></article>
-          <article class="metric"><p class="metric-label">复制 / 分享</p><p class="metric-value" data-metric="result_shared">0</p><p class="metric-hint">点击复制或分享结果</p></article>
+          <article class="metric"><p class="metric-label">图片分享</p><p class="metric-value" data-metric="result_card_generated">0</p><p class="metric-hint">点击图片分享</p></article>
+          <article class="metric"><p class="metric-label">文字分享</p><p class="metric-value" data-metric="result_shared">0</p><p class="metric-hint">点击文字分享或系统分享</p></article>
           <article class="metric"><p class="metric-label">反馈意愿</p><p class="metric-value" data-metric="feedback_clicked">0</p><p class="metric-hint">点击提交反馈</p></article>
           <article class="metric"><p class="metric-label">再次访问</p><p class="metric-value" data-metric="return_visit">0</p><p class="metric-hint">同浏览器隔天回访</p></article>
         </div>
@@ -104,8 +106,8 @@
         <h3 class="section-title">核心转化</h3>
         <div class="insight-grid">
           <article class="insight"><p>访问后开始计算</p><strong data-conversion="calculationRate">0.0%</strong></article>
-          <article class="insight"><p>计算后生成图片</p><strong data-conversion="cardRate">0.0%</strong></article>
-          <article class="insight"><p>计算后复制 / 分享</p><strong data-conversion="shareRate">0.0%</strong></article>
+          <article class="insight"><p>计算后图片分享</p><strong data-conversion="cardRate">0.0%</strong></article>
+          <article class="insight"><p>计算后文字分享</p><strong data-conversion="shareRate">0.0%</strong></article>
         </div>
         <p class="updated-at" id="updatedAt"></p>
       </div>
@@ -117,8 +119,10 @@
       const accessPanel = document.querySelector('#accessPanel');
       const dashboard = document.querySelector('#dashboard');
       const form = document.querySelector('#accessForm');
-      const input = document.querySelector('#accessToken');
+      const gateInput = document.querySelector('#accessGate');
+      const tokenInput = document.querySelector('#accessToken');
       const error = document.querySelector('#formError');
+      let activeGate = '';
       let activeToken = '';
 
       const formatNumber = (value) => new Intl.NumberFormat('zh-CN').format(Number(value || 0));
@@ -136,23 +140,31 @@
 
       async function loadStats() {
         const response = await fetch('/api/stats', {
-          headers: { Authorization: `Bearer ${activeToken}` },
+          headers: {
+            Authorization: `Bearer ${activeToken}`,
+            'X-Analytics-Gate': activeGate,
+          },
           cache: 'no-store'
         });
-        if (!response.ok) throw new Error(response.status === 401 ? '口令不正确或已失效。' : '暂时无法读取统计数据。');
+        if (!response.ok) {
+          throw new Error(response.status === 403 ? '访问门禁不正确。' : response.status === 401 ? '管理口令不正确或已失效。' : '暂时无法读取统计数据。');
+        }
         return response.json();
       }
 
       form.addEventListener('submit', async (event) => {
         event.preventDefault();
         error.textContent = '';
-        activeToken = input.value;
+        activeGate = gateInput.value;
+        activeToken = tokenInput.value;
         try {
           render(await loadStats());
-          input.value = '';
+          gateInput.value = '';
+          tokenInput.value = '';
           accessPanel.hidden = true;
           dashboard.hidden = false;
         } catch (requestError) {
+          activeGate = '';
           activeToken = '';
           error.textContent = requestError.message;
         }
@@ -163,10 +175,11 @@
       });
 
       document.querySelector('#logoutButton').addEventListener('click', () => {
+        activeGate = '';
         activeToken = '';
         dashboard.hidden = true;
         accessPanel.hidden = false;
-        input.focus();
+        gateInput.focus();
       });
     })();
   </script>
