@@ -851,24 +851,25 @@ function renderTaxiComparison(d, r) {
 
   const deltaAbs = Math.abs(taxi.deltaYear);
   const state = taxi.deltaYear > 0 ? 'costly' : taxi.deltaYear < 0 ? 'saving' : 'neutral';
-  chip.className = 'taxi-hero-chip is-' + state;
-  chip.textContent = taxi.deltaYear > 0 ? '\u6253\u8f66\u66f4\u8d35' : taxi.deltaYear < 0 ? '\u6253\u8f66\u66f4\u7701' : '\u5927\u81f4\u6301\u5e73';
-  title.textContent = d.mileage > 0 ? '\u6309 ' + fmt(d.mileage) + ' km/\u5e74\u4f30\u7b97' : '\u5148\u586b\u91cc\u7a0b\uff0c\u518d\u770b\u6253\u8f66\u53c2\u8003';
-  amount.textContent = '?' + fmt(taxi.taxiYear);
+
+  chip.className = 'taxi-hero-chip ' + state;
+  chip.textContent = taxi.deltaYear > 0 ? '打车更贵' : taxi.deltaYear < 0 ? '打车更省' : '成本持平';
+  title.textContent = d.mileage > 0 ? '按 ' + fmt(d.mileage) + ' km/年估算' : '先填里程，再看打车参考';
+  amount.textContent = '¥' + fmt(taxi.taxiYear);
   note.textContent = taxi.deltaYear > 0
-    ? '\u6253\u8f66\u6bd4\u5f53\u524d\u517b\u8f66\u65b9\u6848\u591a\u82b1 ?' + fmt(deltaAbs) + ' / \u5e74\u3002'
+    ? '打车比当前养车方案多花 ¥' + fmt(deltaAbs) + ' / 年。'
     : taxi.deltaYear < 0
-      ? '\u6253\u8f66\u6bd4\u5f53\u524d\u517b\u8f66\u65b9\u6848\u5c11\u82b1 ?' + fmt(deltaAbs) + ' / \u5e74\u3002'
-      : '\u6253\u8f66\u548c\u517b\u8f66\u5e74\u5ea6\u6210\u672c\u5927\u81f4\u6301\u5e73\u3002';
+      ? '打车比当前养车方案少花 ¥' + fmt(deltaAbs) + ' / 年。'
+      : '打车和养车年度成本大致持平。';
 
   const breakEvenText = taxi.breakEvenMileage
-    ? '\u7ea6 ' + fmt(taxi.breakEvenMileage) + ' km/\u5e74'
-    : '\u6682\u65e0\u660e\u786e\u6301\u5e73\u70b9';
+    ? '约 ' + fmt(taxi.breakEvenMileage) + ' km/年'
+    : '暂无明确持平点';
 
   grid.innerHTML = [
-    { k: '\u5355\u6b21\u6253\u8f66', v: '?' + fmt(taxi.taxiSingleTrip), s: fmt2(TAXI_DEFAULTS.taxiStartKm) + ' km \u8d77\u6b65 ? ?' + fmt2(TAXI_DEFAULTS.taxiPerKm) + '/km' },
-    { k: '\u5747\u644a\u5355\u4ef7', v: '?' + fmt2(taxi.taxiPerKm), s: fmt2(TAXI_DEFAULTS.taxiTripKm) + ' km / \u5355\u6b21' },
-    { k: '\u6301\u5e73\u91cc\u7a0b', v: breakEvenText, s: taxi.breakEvenMileage ? '\u8d85\u8fc7\u540e\u517b\u8f66\u66f4\u5212\u7b97' : '\u5f53\u524d\u53d8\u91cf\u6210\u672c\u66f4\u4f4e' },
+    { k: '单次打车', v: '¥' + fmt(taxi.taxiSingleTrip), s: fmt2(TAXI_DEFAULTS.taxiStartKm) + ' km 起步 · ¥' + fmt2(TAXI_DEFAULTS.taxiPerKm) + '/km' },
+    { k: '均摊单价', v: '¥' + fmt2(taxi.taxiPerKm), s: fmt2(TAXI_DEFAULTS.taxiTripKm) + ' km / 单次' },
+    { k: '持平里程', v: breakEvenText, s: taxi.breakEvenMileage ? '超过后养车更划算' : '当前变量成本更低' },
   ].map(item => '<div class="taxi-mini"><div class="k">' + item.k + '</div><div class="v">' + item.v + '</div><div class="s">' + item.s + '</div></div>').join('');
 }
 
@@ -1292,7 +1293,7 @@ if ('serviceWorker' in navigator) {
     .desktop-actions .btn { min-width:104px; flex:0 0 auto; padding:11px 14px; font-size:14px; border-radius:8px; }
     .footer-bar { display:none; }
     .desktop-workspace { display:grid; grid-template-columns:minmax(320px,.92fr) minmax(450px,1.25fr) minmax(300px,.83fr); gap:18px; align-items:start; }
-    .desktop-parameters,.desktop-analysis,.desktop-breakdown,.desktop-taxi-band { min-width:0; }
+    .desktop-parameters,.desktop-analysis,.desktop-breakdown { min-width:0; }
     .desktop-parameters { padding:10px 18px 14px; border-radius:8px; }
     .desktop-panel-title { margin:3px 0 8px; font-size:15px; font-weight:700; color:var(--text); }
     .desktop-parameters details.group { margin:0; border-radius:0; box-shadow:none; background:transparent; border-bottom:1px solid var(--separator); }
@@ -1308,18 +1309,24 @@ if ('serviceWorker' in navigator) {
     .desktop-analysis .hero .sub-row { margin-top:14px; }
     .desktop-analysis .chart-card { margin:0; min-height:388px; padding:18px; border-radius:8px; }
     .desktop-analysis .chart-box { height:320px; max-width:430px; }
-    .desktop-breakdown .detail-card { min-height:624px; margin:0; padding:14px 18px; border-radius:8px; }
-    .desktop-breakdown .detail-card h3 { margin-bottom:6px; }
-    .desktop-breakdown .detail-item { padding:11px 0; }
-    .desktop-breakdown .detail-item .name,.desktop-breakdown .detail-item .val { font-size:14px; }
-    .desktop-taxi-band { display:grid; grid-template-columns:minmax(0,1fr); gap:18px; grid-column:2 / 4; align-items:start; }
-    .desktop-taxi-band .taxi-card { margin:0; min-height:auto; padding:12px 14px 14px; border-radius:8px; }
-    .desktop-taxi-band .taxi-card h3 { margin:0 0 6px; }
-    .desktop-taxi-band .taxi-hero { padding:12px 14px; border-radius:14px; }
-    .desktop-taxi-band .taxi-hero-kicker { text-align:left; flex:1 1 auto; }
-    .desktop-taxi-band .taxi-hero-amount { margin-top:6px; font-size:28px; }
-    .desktop-taxi-band .taxi-hero-note { margin-top:6px; font-size:12px; line-height:1.55; }
-    .desktop-taxi-band .taxi-mini-grid { display:none; }
+    .desktop-breakdown { display:grid; gap:18px; align-content:start; }
+    .desktop-breakdown .detail-card { min-height:398px; margin:0; padding:12px 16px 12px; border-radius:8px; }
+    .desktop-breakdown .detail-card h3 { margin-bottom:4px; }
+    .desktop-breakdown .detail-item { padding:9px 0; }
+    .desktop-breakdown .detail-item .name,.desktop-breakdown .detail-item .val { font-size:13px; }
+    .desktop-breakdown .taxi-card { margin:0; padding:10px 12px 12px; }
+    .desktop-breakdown .taxi-card h3 { margin:0 0 6px; }
+    .desktop-breakdown .taxi-hero { padding:10px 12px; border-radius:14px; }
+    .desktop-breakdown .taxi-hero-head { gap:8px; }
+    .desktop-breakdown .taxi-hero-chip { min-height:24px; padding:0 8px; font-size:11px; }
+    .desktop-breakdown .taxi-hero-kicker { flex:1 1 160px; font-size:11px; }
+    .desktop-breakdown .taxi-hero-amount { margin-top:6px; font-size:28px; }
+    .desktop-breakdown .taxi-hero-note { margin-top:6px; font-size:12px; line-height:1.45; }
+    .desktop-breakdown .taxi-mini-grid { margin-top:10px; gap:8px; }
+    .desktop-breakdown .taxi-mini { padding:9px 9px 10px; border-radius:12px; }
+    .desktop-breakdown .taxi-mini .k { font-size:10px; }
+    .desktop-breakdown .taxi-mini .v { margin-top:4px; font-size:14px; }
+    .desktop-breakdown .taxi-mini .s { margin-top:4px; font-size:10px; line-height:1.35; }
   }
   @media (min-width: 960px) and (max-width: 1180px) {
     .desktop-toolbar { grid-template-columns:1fr auto; }
@@ -1327,7 +1334,6 @@ if ('serviceWorker' in navigator) {
     .desktop-workspace { grid-template-columns:minmax(300px,.9fr) minmax(430px,1.1fr); }
     .desktop-breakdown { grid-column:1/-1; }
     .desktop-breakdown .detail-card { min-height:auto; }
-    .desktop-taxi-band { grid-column:1/-1; }
   }
 </style>
 <script>
@@ -1352,13 +1358,12 @@ if ('serviceWorker' in navigator) {
     const parameters=document.createElement('section'); parameters.className='desktop-parameters card'; parameters.innerHTML='<h2 class="desktop-panel-title">&#21442;&#25968;&#37197;&#32622;</h2>';
     const analysis=document.createElement('section'); analysis.className='desktop-analysis';
     const breakdown=document.createElement('aside'); breakdown.className='desktop-breakdown';
-    const taxiBand=document.createElement('section'); taxiBand.className='desktop-taxi-band';
     toolbar.append(nav,typeCard,actions);
     reset.textContent='参数重置';
     imageCard.textContent='图片分享';
     share.textContent='文字分享';
-    parameters.append(...groups); analysis.append(hero,chart); breakdown.append(detail); taxiBand.append(taxiCard);
-    workspace.append(parameters,analysis,breakdown,taxiBand); wrap.append(toolbar,workspace);
+    parameters.append(...groups); analysis.append(hero,chart); breakdown.append(detail,taxiCard);
+    workspace.append(parameters,analysis,breakdown); wrap.append(toolbar,workspace);
     groups.forEach(group=>{group.open=true;});
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',mountDesktopWorkspace);else mountDesktopWorkspace();

@@ -1,0 +1,48 @@
+﻿name: encoding-guard
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  encoding-guard:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Verify encoding safeguards
+        run: node tests/encoding-guard.test.js
+
+      - name: Scan changed text files only
+        shell: bash
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            BASE_SHA="${{ github.event.pull_request.base.sha }}"
+            HEAD_SHA="${{ github.event.pull_request.head.sha }}"
+          else
+            BASE_SHA="${{ github.event.before }}"
+            HEAD_SHA="${{ github.sha }}"
+          fi
+
+          if [ -z "$BASE_SHA" ] || [ "$BASE_SHA" = "0000000000000000000000000000000000000000" ]; then
+            echo "No comparable base SHA; skip changed-file encoding scan."
+            exit 0
+          fi
+
+          mapfile -t changed_files < <(git diff --name-only "$BASE_SHA" "$HEAD_SHA" -- '*.html' '*.js' '*.css' '*.json' '*.md' '*.svg' '*.txt' '*.yml' '*.yaml')
+
+          if [ ${#changed_files[@]} -eq 0 ]; then
+            echo "No changed text files to scan."
+            exit 0
+          fi
+
+          node scripts/check-encoding.js "${changed_files[@]}"
