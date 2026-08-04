@@ -18,13 +18,13 @@
 <meta name="twitter:title" content="&#36710;&#36742;&#25104;&#26412;&#35745;&#31639;&#22120;">
 <meta name="twitter:description" content="&#35745;&#31639;&#36710;&#36742;&#27599;&#21608;/&#27599;&#24180;&#30340;&#25345;&#26377;&#21644;&#20986;&#34892;&#25104;&#26412;">
 <meta name="twitter:image" content="https://cost.ahopig.com/social-preview.svg">
-<meta name="description" content="计算车辆每周/每年的持有和出行成本">
+<meta name="description" content="璁＄畻杞﹁締姣忓懆/姣忓勾鐨勬寔鏈夊拰鍑鸿鎴愭湰">
 
 <link rel="icon" type="image/png" sizes="16x16" href="/icons/favicon-16.png">
 <link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32.png">
 <link rel="icon" type="image/svg+xml" href="/icons/favicon.svg">
 
-<title>车辆成本计算器</title>
+<title>杞﹁締鎴愭湰璁＄畻鍣?/title>
 <script>
 /* === Chart.js v4.4.0 (inlined) === */
 /**
@@ -49,7 +49,7 @@
 //# sourceMappingURL=chart.umd.js.map
 </script>
 <style>
-  /* ===== 全局重置与基础变量 ===== */
+  /* ===== 鍏ㄥ眬閲嶇疆涓庡熀纭€鍙橀噺 ===== */
   :root {
     --blue: #007AFF;
     --green: #34C759;
@@ -80,14 +80,14 @@
   body { padding-bottom: calc(96px + var(--safe-bottom)); }
   button, input, select { font-family: inherit; font-size: inherit; color: inherit; }
 
-  /* ===== 容器 ===== */
+  /* ===== 瀹瑰櫒 ===== */
   .wrap {
     max-width: 680px;
     margin: 0 auto;
     padding: calc(16px + var(--safe-top)) 14px 20px;
   }
 
-  /* ===== 顶部标题 ===== */
+  /* ===== 椤堕儴鏍囬 ===== */
   .nav-title {
     font-size: 17px;
     font-weight: 600;
@@ -96,7 +96,7 @@
     color: var(--text);
   }
 
-  /* ===== 卡片 ===== */
+  /* ===== 鍗＄墖 ===== */
   .card {
     background: var(--card);
     border-radius: var(--radius);
@@ -105,7 +105,7 @@
     overflow: hidden;
   }
 
-  /* ===== 顶部概览区 ===== */
+  /* ===== 椤堕儴姒傝鍖?===== */
   .hero {
     text-align: center;
     padding: 24px 16px 22px;
@@ -148,7 +148,7 @@
   }
   .hero .sub-item .v.green { color: var(--green); }
 
-  /* ===== 分段选择器 Segmented Control ===== */
+  /* ===== 鍒嗘閫夋嫨鍣?Segmented Control ===== */
   .segmented {
     display: flex;
     background: var(--fill);
@@ -177,7 +177,7 @@
     font-weight: 600;
   }
 
-  /* ===== 折叠分组 details ===== */
+  /* ===== 鎶樺彔鍒嗙粍 details ===== */
   details.group {
     background: var(--card);
     border-radius: var(--radius);
@@ -218,7 +218,7 @@
     border-top: 0.5px solid var(--separator);
   }
 
-  /* ===== 表单行 ===== */
+  /* ===== 琛ㄥ崟琛?===== */
   .row {
     display: flex;
     align-items: center;
@@ -235,7 +235,7 @@
   }
   .row .label .hint { display: block; font-size: 12px; color: var(--text-2); margin-top: 1px; font-weight: 400; }
 
-  /* 数字输入框 */
+  /* 鏁板瓧杈撳叆妗?*/
   .num-input {
     flex: 1;
     text-align: right;
@@ -252,7 +252,7 @@
   .num-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
   .suffix { font-size: 14px; color: var(--text-2); flex-shrink: 0; }
 
-  /* 滑块 */
+  /* 婊戝潡 */
   .slider-wrap {
     flex: 1;
     display: flex;
@@ -298,7 +298,7 @@
     flex-shrink: 0;
   }
 
-  /* ===== 图表区 ===== */
+  /* ===== 鍥捐〃鍖?===== */
   .chart-card { padding: 16px; }
   .chart-card h3 {
     font-size: 16px;
@@ -323,7 +323,7 @@
   .chart-center .l { font-size: 11px; color: var(--text-2); }
   .chart-center .v { font-size: 17px; font-weight: 700; color: var(--text); font-variant-numeric: tabular-nums; }
 
-  /* ===== 明细列表 ===== */
+  /* ===== 鏄庣粏鍒楄〃 ===== */
   .detail-card { padding: 6px 16px 14px; }
   .detail-card h3 {
     font-size: 16px;
@@ -356,7 +356,7 @@
   .detail-item.total .name { font-weight: 600; }
   .detail-item.total .val { color: var(--blue); font-size: 16px; }
 
-  /* ===== 底部按钮 ===== */
+  /* ===== 搴曢儴鎸夐挳 ===== */
   .footer-bar {
     position: fixed;
     bottom: 0; left: 0; right: 0;
@@ -387,7 +387,7 @@
   .btn-primary { background: var(--blue); color: #fff; }
   .btn-secondary { background: var(--fill); color: var(--text); }
 
-  /* ===== 提示 toast ===== */
+  /* ===== 鎻愮ず toast ===== */
   .toast {
     position: fixed;
     top: 50%; left: 50%;
@@ -406,7 +406,7 @@
   }
   .toast.show { opacity: 1; transform: translate(-50%, -50%) scale(1); }
 
-  /* ===== 响应式 ===== */
+  /* ===== 鍝嶅簲寮?===== */
   @media (max-width: 360px) {
     .hero .amount-week { font-size: 44px; }
     .hero .sub-row { gap: 20px; }
@@ -439,48 +439,48 @@
 
   <div class="nav-title"><span class="brand-mark">&#128663;</span><span>&#36710;&#36742;&#25104;&#26412;&#35745;&#31639;&#22120;</span><span class="visit-counter hidden" id="visitCounter"><span class="visit-counter-label">&#32047;&#35745;&#35775;&#38382;</span><strong class="visit-counter-value" id="visitCount">0</strong><span class="visit-counter-unit">&#27425;</span></span><div class="visit-milestone" id="visitMilestone" role="status" aria-live="polite"><span class="visit-milestone-spark">&#10024;</span><span>&#31532; <strong id="visitMilestoneCount">0</strong> &#27425;&#35775;&#38382;&#65281;&#24863;&#35874;&#20320;&#20154;&#27668;&#21152;&#25345;&#12290;</span></div></div>
 
-  <!-- 顶部概览 -->
+  <!-- 椤堕儴姒傝 -->
   <div class="card hero">
-    <div class="label">每周预估花费</div>
-    <div class="amount-week">¥<span id="weekAmount">0</span><span class="unit">元</span></div>
+    <div class="label">姣忓懆棰勪及鑺辫垂</div>
+    <div class="amount-week">楼<span id="weekAmount">0</span><span class="unit">鍏?/span></div>
     <div class="sub-row">
       <div class="sub-item">
-        <div class="l">每年花费</div>
-        <div class="v" id="yearAmount">¥0</div>
+        <div class="l">姣忓勾鑺辫垂</div>
+        <div class="v" id="yearAmount">楼0</div>
       </div>
       <div class="sub-item">
-        <div class="l">每公里成本</div>
-        <div class="v green" id="perKm">¥0.00</div>
+        <div class="l">姣忓叕閲屾垚鏈?/div>
+        <div class="v green" id="perKm">楼0.00</div>
       </div>
     </div>
     <div class="cost-insight" id="costInsight" aria-live="polite"></div>
   </div>
 
-  <!-- 车辆类型分段选择器 -->
+  <!-- 杞﹁締绫诲瀷鍒嗘閫夋嫨鍣?-->
   <div class="card" style="padding: 14px 0 0;">
     <div class="segmented" id="typeSegment">
-      <button data-type="gas" class="active">⛽ 油车</button>
-      <button data-type="ev">🔋 电车</button>
+      <button data-type="gas" class="active">鉀?娌硅溅</button>
+      <button data-type="ev">馃攱 鐢佃溅</button>
     </div>
   </div>
 
-  <!-- 分组一：基础信息 -->
+  <!-- 鍒嗙粍涓€锛氬熀纭€淇℃伅 -->
   <details class="group" open>
     <summary>
       <div class="dot" style="background:#007AFF">1</div>
-      <div class="title">基础信息</div>
+      <div class="title">鍩虹淇℃伅</div>
       <div class="chev"></div>
     </summary>
     <div class="group-body">
       <div class="row">
-        <div class="label">购车价格</div>
+        <div class="label">璐溅浠锋牸</div>
         <div class="slider-wrap">
           <input type="range" id="carPrice" min="5" max="40" step="0.5" value="15">
-          <div class="slider-val" id="carPriceVal">15万</div>
+          <div class="slider-val" id="carPriceVal">15涓?/div>
         </div>
       </div>
       <div class="row">
-        <div class="label">年行驶里程</div>
+        <div class="label">骞磋椹堕噷绋?/div>
         <div class="slider-wrap">
           <input type="range" id="mileage" min="5000" max="30000" step="500" value="12500">
           <div class="slider-val" id="mileageVal">12500km</div>
@@ -489,45 +489,45 @@
     </div>
   </details>
 
-  <!-- 分组二：持有成本 -->
+  <!-- 鍒嗙粍浜岋細鎸佹湁鎴愭湰 -->
   <details class="group" open>
     <summary>
       <div class="dot" style="background:#FF9500">2</div>
-      <div class="title">持有成本<span style="font-weight:400;color:var(--text-2);font-size:13px;">（固定开销）</span></div>
+      <div class="title">鎸佹湁鎴愭湰<span style="font-weight:400;color:var(--text-2);font-size:13px;">锛堝浐瀹氬紑閿€锛?/span></div>
       <div class="chev"></div>
     </summary>
     <div class="group-body">
       <div class="row">
-        <div class="label">保险年费</div>
+        <div class="label">淇濋櫓骞磋垂</div>
         <input type="number" class="num-input" id="insurance" value="4500">
-        <span class="suffix">元/年</span>
+        <span class="suffix">鍏?骞?/span>
       </div>
       <div class="row">
-        <div class="label">停车年费<span class="hint">小区+外出停车</span></div>
+        <div class="label">鍋滆溅骞磋垂<span class="hint">灏忓尯+澶栧嚭鍋滆溅</span></div>
         <input type="number" class="num-input" id="parking" value="4560">
-        <span class="suffix">元/年</span>
+        <span class="suffix">鍏?骞?/span>
       </div>
       <div class="row">
-        <div class="label">预估罚单</div>
+        <div class="label">棰勪及缃氬崟</div>
         <input type="number" class="num-input" id="fine" value="400">
-        <span class="suffix">元/年</span>
+        <span class="suffix">鍏?骞?/span>
       </div>
       <div class="row">
-        <div class="label">折旧年限</div>
+        <div class="label">鎶樻棫骞撮檺</div>
         <div class="slider-wrap">
           <input type="range" id="depYears" min="1" max="15" step="1" value="6">
-          <div class="slider-val" id="depYearsVal">6年</div>
+          <div class="slider-val" id="depYearsVal">6骞?/div>
         </div>
       </div>
       <div class="row">
-        <div class="label">残值比例</div>
+        <div class="label">娈嬪€兼瘮渚?/div>
         <div class="slider-wrap">
           <input type="range" id="residual" min="0" max="80" step="1" value="40">
           <div class="slider-val" id="residualVal">40%</div>
         </div>
       </div>
       <div class="row">
-        <div class="label">机会成本利率<span class="hint">即理财收益</span></div>
+        <div class="label">鏈轰細鎴愭湰鍒╃巼<span class="hint">鍗崇悊璐㈡敹鐩?/span></div>
         <div class="slider-wrap">
           <input type="range" id="oppRate" min="0" max="8" step="0.1" value="3">
           <div class="slider-val" id="oppRateVal">3.0%</div>
@@ -536,101 +536,71 @@
     </div>
   </details>
 
-  <!-- 分组三：使用成本 -->
+  <!-- 鍒嗙粍涓夛細浣跨敤鎴愭湰 -->
   <details class="group" open>
     <summary>
       <div class="dot" style="background:#34C759">3</div>
-      <div class="title">使用成本<span style="font-weight:400;color:var(--text-2);font-size:13px;">（变动开销）</span></div>
+      <div class="title">浣跨敤鎴愭湰<span style="font-weight:400;color:var(--text-2);font-size:13px;">锛堝彉鍔ㄥ紑閿€锛?/span></div>
       <div class="chev"></div>
     </summary>
     <div class="group-body" id="usageBody">
       <div class="row" id="energyRow1">
-        <div class="label" id="energyLabel1">百公里油耗</div>
+        <div class="label" id="energyLabel1">鐧惧叕閲屾补鑰?/div>
         <input type="number" class="num-input" id="energy1" value="8" step="0.1">
         <span class="suffix" id="energyUnit1">L</span>
       </div>
       <div class="row" id="energyRow2">
-        <div class="label" id="energyLabel2">油价</div>
+        <div class="label" id="energyLabel2">娌逛环</div>
         <input type="number" class="num-input" id="energy2" value="7.5" step="0.01">
-        <span class="suffix" id="energyUnit2">元/L</span>
+        <span class="suffix" id="energyUnit2">鍏?L</span>
       </div>
       <div class="row">
-        <div class="label">保养费率</div>
+        <div class="label">淇濆吇璐圭巼</div>
         <input type="number" class="num-input" id="maintenance" value="800">
-        <span class="suffix">元/万公里</span>
+        <span class="suffix">鍏?涓囧叕閲?/span>
       </div>
     </div>
   </details>
 
-  <!-- 图表 -->
-    <!-- 分组四：打车对比 -->
-  <details class="group" open>
-    <summary>
-      <div class="dot" style="background:#FF9500">4</div>
-      <div class="title">打车对比<span style="font-weight:400;color:var(--text-2);font-size:13px;">（轻量预估）</span></div>
-      <div class="chev"></div>
-    </summary>
-    <div class="group-body" id="taxiBody">
-      <div class="row">
-        <div class="label">起步价</div>
-        <input type="number" class="num-input" id="taxiStartFare" value="12">
-        <span class="suffix">元</span>
-      </div>
-      <div class="row">
-        <div class="label">起步里程</div>
-        <input type="number" class="num-input" id="taxiStartKm" value="3">
-        <span class="suffix">公里</span>
-      </div>
-      <div class="row">
-        <div class="label">每公里价</div>
-        <input type="number" class="num-input" id="taxiPerKm" value="2.6" step="0.1">
-        <span class="suffix">元</span>
-      </div>
-      <div class="row">
-        <div class="label">平均单次里程</div>
-        <input type="number" class="num-input" id="taxiTripKm" value="12" step="0.5">
-        <span class="suffix">公里</span>
-      </div>
-    </div>
-  </details>
+  <!-- 鍥捐〃 -->
 <div class="card chart-card">
-    <h3>📊 成本占比</h3>
+    <h3>馃搳 鎴愭湰鍗犳瘮</h3>
     <div class="chart-box">
       <canvas id="pieChart"></canvas>
       <div class="chart-center">
-        <div class="l">年总成本</div>
-        <div class="v" id="chartTotal">¥0</div>
+        <div class="l">骞存€绘垚鏈?/div>
+        <div class="v" id="chartTotal">楼0</div>
       </div>
     </div>
   </div>
 
-  <!-- 明细列表 -->
-    <!-- 打车对比 -->
+  <!-- 鏄庣粏鍒楄〃 -->
+    <!-- 鎵撹溅瀵规瘮 -->
   <div class="card taxi-card" id="taxiComparisonCard">
     <h3>&#25171;&#36710;&#21442;&#32771;</h3>
     <div class="taxi-hero">
       <div class="taxi-hero-head">
-        <div class="taxi-hero-chip" id="taxiComparisonChip">轻量参考</div>
-        <div class="taxi-hero-kicker" id="taxiComparisonTitle">同样里程下的打车参考</div>
+        <div class="taxi-hero-chip" id="taxiComparisonChip">杞婚噺鍙傝€?/div>
+        <div class="taxi-hero-kicker" id="taxiComparisonTitle">鍚屾牱閲岀▼涓嬬殑鎵撹溅鍙傝€?/div>
       </div>
-      <div class="taxi-hero-amount" id="taxiComparisonAmount">¥0</div>
-      <div class="taxi-hero-note" id="taxiComparisonNote">先填上参数，看看打车和养车谁更省。</div>
+      <div class="taxi-hero-amount" id="taxiComparisonAmount">楼0</div>
+      <div class="taxi-hero-note" id="taxiComparisonNote">鍏堝～涓婂弬鏁帮紝鐪嬬湅鎵撹溅鍜屽吇杞﹁皝鏇寸渷銆?/div>
     </div>
     <div class="taxi-mini-grid" id="taxiMiniGrid"></div>
   </div>
 <div class="card detail-card">
-    <h3>📋 每周明细</h3>
+    <h3>馃搵 姣忓懆鏄庣粏</h3>
     <div id="detailList"></div>
   </div>
 
 </div>
 
-<!-- 底部按钮 -->
+<!-- 搴曢儴鎸夐挳 -->
 <div class="footer-bar">
   <div class="inner">
-    <button class="btn btn-secondary" id="resetBtn">参数重置</button>
-    <button class="btn btn-secondary" id="imageCardBtn">图片分享</button>
-    <button class="btn btn-primary" id="shareBtn">文字分享</button>
+    <button class="btn btn-secondary" id="resetBtn">鍙傛暟閲嶇疆</button>
+    <button class="btn btn-secondary" id="imageCardBtn">鍥剧墖鍒嗕韩</button>
+    <button class="btn btn-primary" id="shareBtn">鏂囧瓧鍒嗕韩</button>
   </div>
 </div>
 
@@ -638,61 +608,68 @@
 
 <script>
 /* =========================================================
-   车辆成本计算器 - 逻辑层
+   杞﹁締鎴愭湰璁＄畻鍣?- 閫昏緫灞?
    ========================================================= */
 
-// 预设默认值
+// 棰勮榛樿鍊?
 const PRESETS = {
   gas: {
     insurance: 4500,
-    energy1: 8,    // 百公里油耗 L
-    energy2: 7.5,  // 油价 元/L
+    energy1: 8,    // 鐧惧叕閲屾补鑰?L
+    energy2: 7.5,  // 娌逛环 鍏?L
     maintenance: 800,
     residual: 40,
-    energyLabel1: '百公里油耗',
-    energyLabel2: '油价',
+    energyLabel1: '鐧惧叕閲屾补鑰?,
+    energyLabel2: '娌逛环',
     energyUnit1: 'L',
-    energyUnit2: '元/L',
+    energyUnit2: '鍏?L',
   },
   ev: {
     insurance: 5000,
-    energy1: 15,   // 百公里电耗 kWh
-    energy2: 0.8,  // 综合电价 元/kWh
+    energy1: 15,   // 鐧惧叕閲岀數鑰?kWh
+    energy2: 0.8,  // 缁煎悎鐢典环 鍏?kWh
     maintenance: 300,
     residual: 35,
-    energyLabel1: '百公里电耗',
-    energyLabel2: '综合电价',
+    energyLabel1: '鐧惧叕閲岀數鑰?,
+    energyLabel2: '缁煎悎鐢典环',
     energyUnit1: 'kWh',
-    energyUnit2: '元/kWh',
+    energyUnit2: '鍏?kWh',
   }
 };
 
-// 颜色配置
+const TAXI_DEFAULTS = {
+  taxiStartFare: 12,
+  taxiStartKm: 3,
+  taxiPerKm: 2.6,
+  taxiTripKm: 12,
+};
+
+// 棰滆壊閰嶇疆
 const COLORS = {
-  depreciation: '#007AFF', // 折旧 - 蓝
-  insurance:    '#FF9500', // 保险 - 橙
-  energy:       '#34C759', // 能源 - 绿
-  parking:      '#AF52DE', // 停车 - 紫
-  fine:         '#FF3B30', // 罚单 - 红
-  maintenance:  '#5856D6', // 保养 - 靛
-  opportunity:  '#FFCC00', // 机会成本 - 黄
+  depreciation: '#007AFF', // 鎶樻棫 - 钃?
+  insurance:    '#FF9500', // 淇濋櫓 - 姗?
+  energy:       '#34C759', // 鑳芥簮 - 缁?
+  parking:      '#AF52DE', // 鍋滆溅 - 绱?
+  fine:         '#FF3B30', // 缃氬崟 - 绾?
+  maintenance:  '#5856D6', // 淇濆吇 - 闈?
+  opportunity:  '#FFCC00', // 鏈轰細鎴愭湰 - 榛?
 };
 
 const LABELS = {
-  depreciation: '折旧',
-  insurance:    '保险',
-  energy:       '能源',
-  parking:      '停车',
-  fine:         '罚单',
-  maintenance:  '保养',
-  opportunity:  '机会成本',
+  depreciation: '鎶樻棫',
+  insurance:    '淇濋櫓',
+  energy:       '鑳芥簮',
+  parking:      '鍋滆溅',
+  fine:         '缃氬崟',
+  maintenance:  '淇濆吇',
+  opportunity:  '鏈轰細鎴愭湰',
 };
 
-// 当前车辆类型
+// 褰撳墠杞﹁締绫诲瀷
 let currentType = 'gas';
 let pieChart = null;
 
-/* ---------- 工具函数 ---------- */
+/* ---------- 宸ュ叿鍑芥暟 ---------- */
 const $ = id => document.getElementById(id);
 const fmt = n => Math.round(n).toLocaleString('zh-CN');
 const fmt2 = n => n.toFixed(2);
@@ -709,43 +686,39 @@ function showToast(msg) {
   t._timer = setTimeout(() => t.classList.remove('show'), 1800);
 }
 
-/* ---------- 读取输入 ---------- */
+/* ---------- 璇诲彇杈撳叆 ---------- */
 function readInputs() {
   return {
-    carPrice:   parseFloat($('carPrice').value) * 10000,  // 元
-    mileage:    parseFloat($('mileage').value),            // km/年
+    carPrice:   parseFloat($('carPrice').value) * 10000,  // 鍏?
+    mileage:    parseFloat($('mileage').value),            // km/骞?
     insurance:  parseFloat($('insurance').value) || 0,
     parking:    parseFloat($('parking').value) || 0,
     fine:       parseFloat($('fine').value) || 0,
     depYears:   parseFloat($('depYears').value),
     residual:   parseFloat($('residual').value) / 100,
     oppRate:    parseFloat($('oppRate').value) / 100,
-    energy1:    parseFloat($('energy1').value) || 0,  // 百公里能耗
-    energy2:    parseFloat($('energy2').value) || 0,  // 单位能源价格
-    maintenance:parseFloat($('maintenance').value) || 0, // 元/万公里
-    taxiStartFare: parseFloat($('taxiStartFare').value) || 0,
-    taxiStartKm: parseFloat($('taxiStartKm').value) || 0,
-    taxiPerKm: parseFloat($('taxiPerKm').value) || 0,
-    taxiTripKm: parseFloat($('taxiTripKm').value) || 0,
+    energy1:    parseFloat($('energy1').value) || 0,  // 鐧惧叕閲岃兘鑰?
+    energy2:    parseFloat($('energy2').value) || 0,  // 鍗曚綅鑳芥簮浠锋牸
+    maintenance:parseFloat($('maintenance').value) || 0, // 鍏?涓囧叕閲?
   };
 }
 
-/* ---------- 核心计算 ---------- */
+/* ---------- 鏍稿績璁＄畻 ---------- */
 function calculate(d) {
-  // 折旧（每年）
+  // 鎶樻棫锛堟瘡骞达級
   const depreciationYear = d.carPrice * (1 - d.residual) / d.depYears;
 
-  // 机会成本（购车资金的机会成本，按残值平均近似）
-  // 用 购车价格 * 利率 作为简化（资金占用成本）
+  // 鏈轰細鎴愭湰锛堣喘杞﹁祫閲戠殑鏈轰細鎴愭湰锛屾寜娈嬪€煎钩鍧囪繎浼硷級
+  // 鐢?璐溅浠锋牸 * 鍒╃巼 浣滀负绠€鍖栵紙璧勯噾鍗犵敤鎴愭湰锛?
   const opportunityYear = d.carPrice * d.oppRate;
 
-  // 能源费（每年）
+  // 鑳芥簮璐癸紙姣忓勾锛?
   const energyYear = d.mileage / 100 * d.energy1 * d.energy2;
 
-  // 保养费（每年）
+  // 淇濆吇璐癸紙姣忓勾锛?
   const maintenanceYear = d.mileage / 10000 * d.maintenance;
 
-  // 保险、停车、罚单已是年费
+  // 淇濋櫓銆佸仠杞︺€佺綒鍗曞凡鏄勾璐?
   const insuranceYear = d.insurance;
   const parkingYear = d.parking;
   const fineYear = d.fine;
@@ -770,7 +743,7 @@ function calculate(d) {
   };
 }
 
-/* ---------- 渲染 ---------- */
+/* ---------- 娓叉煋 ---------- */
 function getCostInsight(d, r) {
   const energySensitivity = d.mileage / 100 * d.energy1;
   const energyItem = r.items.find(it => it.key === 'energy');
@@ -788,9 +761,10 @@ function getCostInsight(d, r) {
 }
 
 function getTaxiComparison(d, r) {
-  const taxiSingleTrip = d.taxiStartFare + Math.max(0, d.taxiTripKm - d.taxiStartKm) * d.taxiPerKm;
-  const taxiPerKm = d.taxiTripKm > 0 ? taxiSingleTrip / d.taxiTripKm : 0;
-  const taxiYear = d.taxiTripKm > 0 ? d.mileage / d.taxiTripKm * taxiSingleTrip : 0;
+  const { taxiStartFare, taxiStartKm, taxiPerKm: taxiPerKmBase, taxiTripKm } = TAXI_DEFAULTS;
+  const taxiSingleTrip = taxiStartFare + Math.max(0, taxiTripKm - taxiStartKm) * taxiPerKmBase;
+  const taxiPerKm = taxiTripKm > 0 ? taxiSingleTrip / taxiTripKm : 0;
+  const taxiYear = taxiTripKm > 0 ? d.mileage / taxiTripKm * taxiSingleTrip : 0;
   const variableYear = d.mileage / 100 * d.energy1 * d.energy2 + d.mileage / 10000 * d.maintenance;
   const fixedYear = Math.max(r.yearTotal - variableYear, 0);
   const carVariablePerKm = d.mileage > 0 ? variableYear / d.mileage : 0;
@@ -802,13 +776,13 @@ function getTaxiComparison(d, r) {
 const SHARE_PARAM_KEYS = {
   type: 't', carPrice: 'p', mileage: 'm', insurance: 'i', parking: 'k', fine: 'f',
   depYears: 'd', residual: 'r', oppRate: 'o', energy1: 'a', energy2: 'b', maintenance: 'h',
-  taxiStartFare: 's', taxiStartKm: 'q', taxiPerKm: 'u', taxiTripKm: 'v',
 };
-const SHARE_INPUT_IDS = ['carPrice', 'mileage', 'insurance', 'parking', 'fine', 'depYears', 'residual', 'oppRate', 'energy1', 'energy2', 'maintenance', 'taxiStartFare', 'taxiStartKm', 'taxiPerKm', 'taxiTripKm'];
+const SHARE_INPUT_IDS = ['carPrice', 'mileage', 'insurance', 'parking', 'fine', 'depYears', 'residual', 'oppRate', 'energy1', 'energy2', 'maintenance'];
 const SHARE_DEFAULTS = {
   carPrice: '15', mileage: '12500', parking: '4560', fine: '400', depYears: '6', oppRate: '3',
-  taxiStartFare: '12', taxiStartKm: '3', taxiPerKm: '2.6', taxiTripKm: '12',
   gas: { insurance: '4500', residual: '40', energy1: '8', energy2: '7.5', maintenance: '800' },
+  ev: { insurance: '5000', residual: '35', energy1: '15', energy2: '0.8', maintenance: '300' },
+};
   ev: { insurance: '5000', residual: '35', energy1: '15', energy2: '0.8', maintenance: '300' },
 };
 
@@ -848,19 +822,19 @@ function render() {
   const d = readInputs();
   const r = calculate(d);
 
-  // 顶部概览
+  // 椤堕儴姒傝
   $('weekAmount').textContent = fmt(r.weekTotal);
-  $('yearAmount').textContent = '¥' + fmt(r.yearTotal);
-  $('perKm').textContent = '¥' + fmt2(r.perKm);
-  $('chartTotal').textContent = '¥' + fmt(r.yearTotal);
+  $('yearAmount').textContent = '楼' + fmt(r.yearTotal);
+  $('perKm').textContent = '楼' + fmt2(r.perKm);
+  $('chartTotal').textContent = '楼' + fmt(r.yearTotal);
 
-  // 过滤掉 0 值项目用于图表和明细
+  // 杩囨护鎺?0 鍊奸」鐩敤浜庡浘琛ㄥ拰鏄庣粏
   const items = r.items.filter(it => it.value > 0);
 
-  // 更新饼图
+  // 鏇存柊楗煎浘
   updateChart(items, r.yearTotal);
 
-  // 更新明细列表（每周）
+  // 鏇存柊鏄庣粏鍒楄〃锛堟瘡鍛級
   renderDetail(items, r.weekTotal);
   const insight = $('costInsight');
   if (insight) insight.textContent = getCostInsight(d, r);
@@ -877,26 +851,25 @@ function renderTaxiComparison(d, r) {
   if (!chip || !title || !amount || !note || !grid) return;
 
   const deltaAbs = Math.abs(taxi.deltaYear);
-  const mileageLead = d.mileage > 0 ? '按 ' + fmt(d.mileage) + ' km/年估算，' : '';
   const state = taxi.deltaYear > 0 ? 'costly' : taxi.deltaYear < 0 ? 'saving' : 'neutral';
   chip.className = 'taxi-hero-chip is-' + state;
-  chip.textContent = taxi.deltaYear > 0 ? '打车更贵' : taxi.deltaYear < 0 ? '打车更省' : '大致持平';
-  title.textContent = d.mileage > 0 ? '按 ' + fmt(d.mileage) + ' km/年估算' : '先填里程，再看打车参考';
-  amount.textContent = '¥' + fmt(taxi.taxiYear);
+  chip.textContent = taxi.deltaYear > 0 ? '\u6253\u8f66\u66f4\u8d35' : taxi.deltaYear < 0 ? '\u6253\u8f66\u66f4\u7701' : '\u5927\u81f4\u6301\u5e73';
+  title.textContent = d.mileage > 0 ? '\u6309 ' + fmt(d.mileage) + ' km/\u5e74\u4f30\u7b97' : '\u5148\u586b\u91cc\u7a0b\uff0c\u518d\u770b\u6253\u8f66\u53c2\u8003';
+  amount.textContent = '\u00a5' + fmt(taxi.taxiYear);
   note.textContent = taxi.deltaYear > 0
-    ? mileageLead + '打车比当前养车方案多花 ¥' + fmt(deltaAbs) + ' / 年。'
+    ? '\u6253\u8f66\u6bd4\u5f53\u524d\u517b\u8f66\u65b9\u6848\u591a\u82b1 \u00a5' + fmt(deltaAbs) + ' / \u5e74\u3002'
     : taxi.deltaYear < 0
-      ? mileageLead + '打车比当前养车方案少花 ¥' + fmt(deltaAbs) + ' / 年。'
-      : mileageLead + '打车和养车年度成本大致持平。';
+      ? '\u6253\u8f66\u6bd4\u5f53\u524d\u517b\u8f66\u65b9\u6848\u5c11\u82b1 \u00a5' + fmt(deltaAbs) + ' / \u5e74\u3002'
+      : '\u6253\u8f66\u548c\u517b\u8f66\u5e74\u5ea6\u6210\u672c\u5927\u81f4\u6301\u5e73\u3002';
 
   const breakEvenText = taxi.breakEvenMileage
-    ? '约 ' + fmt(taxi.breakEvenMileage) + ' km/年'
-    : '暂无明确持平点';
+    ? '\u7ea6 ' + fmt(taxi.breakEvenMileage) + ' km/\u5e74'
+    : '\u6682\u65e0\u660e\u786e\u6301\u5e73\u70b9';
 
   grid.innerHTML = [
-    { k: '单次打车', v: '¥' + fmt(taxi.taxiSingleTrip), s: fmt2(d.taxiStartKm) + ' km 起步 · ¥' + fmt2(d.taxiPerKm) + '/km' },
-    { k: '均摊单价', v: '¥' + fmt2(taxi.taxiPerKm), s: fmt2(d.taxiTripKm) + ' km / 单次' },
-    { k: '持平里程', v: breakEvenText, s: taxi.breakEvenMileage ? '超过后养车更划算' : '当前变量成本更低' },
+    { k: '\u5355\u6b21\u6253\u8f66', v: '\u00a5' + fmt(taxi.taxiSingleTrip), s: fmt2(TAXI_DEFAULTS.taxiStartKm) + ' km \u8d77\u6b65 \u00b7 \u00a5' + fmt2(TAXI_DEFAULTS.taxiPerKm) + '/km' },
+    { k: '\u5747\u644a\u5355\u4ef7', v: '\u00a5' + fmt2(taxi.taxiPerKm), s: fmt2(TAXI_DEFAULTS.taxiTripKm) + ' km / \u5355\u6b21' },
+    { k: '\u6301\u5e73\u91cc\u7a0b', v: breakEvenText, s: taxi.breakEvenMileage ? '\u8d85\u8fc7\u540e\u517b\u8f66\u66f4\u5212\u7b97' : '\u5f53\u524d\u53d8\u91cf\u6210\u672c\u66f4\u4f4e' },
   ].map(item => '<div class="taxi-mini"><div class="k">' + item.k + '</div><div class="v">' + item.v + '</div><div class="s">' + item.s + '</div></div>').join('');
 }
 
@@ -934,7 +907,7 @@ function updateChart(items, total) {
               label: ctx => {
                 const v = ctx.parsed;
                 const pct = (v / total * 100).toFixed(1);
-                return ` ${ctx.label}: ¥${fmt(v)}/年 (${pct}%)`;
+                return ` ${ctx.label}: 楼${fmt(v)}/骞?(${pct}%)`;
               }
             }
           }
@@ -956,23 +929,23 @@ function renderDetail(items, weekTotal) {
       <div class="swatch" style="background:${COLORS[it.key]}"></div>
       <div class="name">${LABELS[it.key]}</div>
       <div class="pct">${pct}%</div>
-      <div class="val">¥${fmt(weekVal)}</div>
+      <div class="val">楼${fmt(weekVal)}</div>
     `;
     list.appendChild(div);
   });
-  // 合计行
+  // 鍚堣琛?
   const totalDiv = document.createElement('div');
   totalDiv.className = 'detail-item total';
   totalDiv.innerHTML = `
     <div class="swatch" style="background:transparent"></div>
-    <div class="name">合计 / 周</div>
+    <div class="name">鍚堣 / 鍛?/div>
     <div class="pct"></div>
-    <div class="val">¥${fmt(weekTotal)}</div>
+    <div class="val">楼${fmt(weekTotal)}</div>
   `;
   list.appendChild(totalDiv);
 }
 
-/* ---------- 滑块值显示 ---------- */
+/* ---------- 婊戝潡鍊兼樉绀?---------- */
 function bindSlider(sliderId, valId, suffix, formatter) {
   const slider = $(sliderId), val = $(valId);
   const update = () => { val.textContent = formatter ? formatter(slider.value) : slider.value + suffix; };
@@ -980,12 +953,12 @@ function bindSlider(sliderId, valId, suffix, formatter) {
   update();
 }
 
-/* ---------- 车辆类型切换 ---------- */
+/* ---------- 杞﹁締绫诲瀷鍒囨崲 ---------- */
 function switchType(type) {
   if (type === currentType) return;
   currentType = type;
 
-  // 更新分段按钮状态
+  // 鏇存柊鍒嗘鎸夐挳鐘舵€?
   document.querySelectorAll('#typeSegment button').forEach(b => {
     b.classList.toggle('active', b.dataset.type === type);
   });
@@ -1005,7 +978,7 @@ function switchType(type) {
   render();
 }
 
-/* ---------- 分享 ---------- */
+/* ---------- 鍒嗕韩 ---------- */
 async function shareResult() {
   const shareUrl = buildShareUrl();
   const d = readInputs();
@@ -1021,9 +994,9 @@ async function shareResult() {
     '',
     '\u7b80\u8981\u7ed3\u8bba\uff1a' + getCostInsight(d, r),
     '',
-    '打车对比：' + (taxi.deltaYear >= 0 ? '打车比养车贵 ¥' + fmt(taxi.deltaYear) + ' / 年' : '打车比养车省 ¥' + fmt(Math.abs(taxi.deltaYear)) + ' / 年'),
-    '单次打车：¥' + fmt(taxi.taxiSingleTrip) + '（约 ' + fmt2(d.taxiTripKm) + ' km）',
-    taxi.breakEvenMileage ? '持平里程：' + fmt(taxi.breakEvenMileage) + ' km / 年' : '持平里程：暂无明确持平点',
+    '鎵撹溅瀵规瘮锛? + (taxi.deltaYear >= 0 ? '鎵撹溅姣斿吇杞﹁吹 楼' + fmt(taxi.deltaYear) + ' / 骞? : '鎵撹溅姣斿吇杞︾渷 楼' + fmt(Math.abs(taxi.deltaYear)) + ' / 骞?),
+    '\u5355\u6b21\u6253\u8f66\uff1a\u00a5' + fmt(taxi.taxiSingleTrip) + '\uff08\u7ea6 ' + fmt2(TAXI_DEFAULTS.taxiTripKm) + ' km\uff09',
+    taxi.breakEvenMileage ? '鎸佸钩閲岀▼锛? + fmt(taxi.breakEvenMileage) + ' km / 骞? : '鎸佸钩閲岀▼锛氭殏鏃犳槑纭寔骞崇偣',
     '',
     '\u6210\u672c\u6784\u6210\uff08\u6bcf\u5e74\uff09\uff1a',
   ];
@@ -1206,90 +1179,86 @@ function fallbackCopy(text) {
   ta.select();
   try {
     document.execCommand('copy');
-    showToast('✅ 结果已复制到剪贴板');
+    showToast('鉁?缁撴灉宸插鍒跺埌鍓创鏉?);
   } catch (e) {
-    showToast('❌ 复制失败，请手动截图');
+    showToast('鉂?澶嶅埗澶辫触锛岃鎵嬪姩鎴浘');
   }
   document.body.removeChild(ta);
 }
 
-/* ---------- 重置 ---------- */
+/* ---------- 閲嶇疆 ---------- */
 function reset() {
-  // 先强制清空类型，确保 switchType 能触发
+  // 鍏堝己鍒舵竻绌虹被鍨嬶紝纭繚 switchType 鑳借Е鍙?
   currentType = '';
-  // 重置所有滑块到默认值
+  // 閲嶇疆鎵€鏈夋粦鍧楀埌榛樿鍊?
   $('carPrice').value = 15;
   $('mileage').value = 12500;
   $('depYears').value = 6;
   $('oppRate').value = 3;
-  // 刷新滑块显示
-  $('carPriceVal').textContent = '15万';
+  // 鍒锋柊婊戝潡鏄剧ず
+  $('carPriceVal').textContent = '15涓?;
   $('mileageVal').textContent = '12500km';
-  $('depYearsVal').textContent = '6年';
+  $('depYearsVal').textContent = '6骞?;
   $('oppRateVal').textContent = '3.0%';
-  // 切回油车（会自动重置油车相关参数）
+  // 鍒囧洖娌硅溅锛堜細鑷姩閲嶇疆娌硅溅鐩稿叧鍙傛暟锛?
   switchType('gas');
-  // 重置停车与罚单（switchType 不覆盖这两项）
+  // 閲嶇疆鍋滆溅涓庣綒鍗曪紙switchType 涓嶈鐩栬繖涓ら」锛?
   $('parking').value = 4560;
   $('fine').value = 400;
-  $('taxiStartFare').value = 12;
-  $('taxiStartKm').value = 3;
-  $('taxiPerKm').value = 2.6;
-  $('taxiTripKm').value = 12;
   render();
-  showToast('已重置为默认值');
+  showToast('宸查噸缃负榛樿鍊?);
 }
 
-/* ---------- 初始化 ---------- */
+/* ---------- 鍒濆鍖?---------- */
 function init() {
-  // 滑块绑定
-  bindSlider('carPrice', 'carPriceVal', '万', v => parseFloat(v) + '万');
+  // 婊戝潡缁戝畾
+  bindSlider('carPrice', 'carPriceVal', '涓?, v => parseFloat(v) + '涓?);
   bindSlider('mileage', 'mileageVal', 'km', v => parseInt(v) + 'km');
-  bindSlider('depYears', 'depYearsVal', '年', v => v + '年');
+  bindSlider('depYears', 'depYearsVal', '骞?, v => v + '骞?);
   bindSlider('residual', 'residualVal', '%', v => v + '%');
   bindSlider('oppRate', 'oppRateVal', '%', v => parseFloat(v).toFixed(1) + '%');
 
-  // 数字输入框联动
-  ['insurance','parking','fine','energy1','energy2','maintenance','taxiStartFare','taxiStartKm','taxiPerKm','taxiTripKm'].forEach(id => {
+  // 鏁板瓧杈撳叆妗嗚仈鍔?
+  ['insurance','parking','fine','energy1','energy2','maintenance'].forEach(id => {
     $(id).addEventListener('input', render);
   });
 
-  // 分段选择器
+  // 鍒嗘閫夋嫨鍣?
   document.querySelectorAll('#typeSegment button').forEach(b => {
     b.addEventListener('click', () => switchType(b.dataset.type));
   });
 
-  // 分享与重置
+  // 鍒嗕韩涓庨噸缃?
   $('shareBtn').addEventListener('click', shareResult);
   const imageCardBtn = $('imageCardBtn');
   imageCardBtn.addEventListener('click', createResultCard);
   resetBtn.addEventListener('click', reset);
   applySharedScenario();
 
-  // 窗口尺寸变化时重绘图表（避免首次 canvas 尺寸异常）
+  // 绐楀彛灏哄鍙樺寲鏃堕噸缁樺浘琛紙閬垮厤棣栨 canvas 灏哄寮傚父锛?
   let resizeTimer;
   window.addEventListener('resize', () => {
     clearTimeout(resizeTimer);
     resizeTimer = setTimeout(() => { if (pieChart) pieChart.resize(); }, 150);
   });
 
-  // 首次渲染
+  // 棣栨娓叉煋
   render();
 }
 
-// 等待 Chart.js 加载并初始化
+// 绛夊緟 Chart.js 鍔犺浇骞跺垵濮嬪寲
 function bootstrap() {
   if (typeof Chart === 'undefined') {
-    // Chart.js 加载失败，提示用户
+    // Chart.js 鍔犺浇澶辫触锛屾彁绀虹敤鎴?
     const box = document.querySelector('.chart-box');
     if (box) {
-      box.innerHTML = '<div style="text-align:center;padding:60px 16px;color:#8E8E93;font-size:13px;">⚠️ 图表组件加载失败<br><span style="font-size:11px;">请查看下方「每周明细」</span></div>';
+      box.innerHTML = '<div style="text-align:center;padding:60px 16px;color:#8E8E93;font-size:13px;">鈿狅笍 鍥捐〃缁勪欢鍔犺浇澶辫触<br><span style="font-size:11px;">璇锋煡鐪嬩笅鏂广€屾瘡鍛ㄦ槑缁嗐€?/span></div>';
     }
-    // 仍然渲染文字明细
+    // 浠嶇劧娓叉煋鏂囧瓧鏄庣粏
     init();
     return;
   }
-  // 等一帧让 DOM 完成布局，避免 canvas 取错尺寸
+  // 绛変竴甯ц DOM 瀹屾垚甯冨眬锛岄伩鍏?canvas 鍙栭敊灏哄
   requestAnimationFrame(() => init());
 }
 
@@ -1299,13 +1268,13 @@ if (typeof Chart !== 'undefined') {
   window.addEventListener('load', bootstrap);
 }
 
-/* ---------- Service Worker 注册（PWA 离线支持） ---------- */
+/* ---------- Service Worker 娉ㄥ唽锛圥WA 绂荤嚎鏀寔锛?---------- */
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('./sw.js').then(reg => {
-      console.log('[PWA] Service Worker 已注册，可离线使用');
+      console.log('[PWA] Service Worker 宸叉敞鍐岋紝鍙绾夸娇鐢?);
     }).catch(err => {
-      console.warn('[PWA] Service Worker 注册失败:', err);
+      console.warn('[PWA] Service Worker 娉ㄥ唽澶辫触:', err);
     });
   });
 }
@@ -1344,7 +1313,7 @@ if ('serviceWorker' in navigator) {
     .desktop-breakdown .detail-card h3 { margin-bottom:6px; }
     .desktop-breakdown .detail-item { padding:11px 0; }
     .desktop-breakdown .detail-item .name,.desktop-breakdown .detail-item .val { font-size:14px; }
-    .desktop-taxi-band { display:grid; grid-template-columns:minmax(0,1.16fr) minmax(280px,.84fr); gap:18px; grid-column:2 / 4; align-items:start; }
+    .desktop-taxi-band { display:grid; grid-template-columns:minmax(0,1fr); gap:18px; grid-column:2 / 4; align-items:start; }
     .desktop-taxi-band .taxi-card { margin:0; min-height:auto; padding:12px 14px 14px; border-radius:8px; }
     .desktop-taxi-band .taxi-card h3 { margin:0 0 6px; }
     .desktop-taxi-band .taxi-hero { padding:12px 14px; border-radius:14px; }
@@ -1352,11 +1321,6 @@ if ('serviceWorker' in navigator) {
     .desktop-taxi-band .taxi-hero-amount { margin-top:6px; font-size:28px; }
     .desktop-taxi-band .taxi-hero-note { margin-top:6px; font-size:12px; line-height:1.55; }
     .desktop-taxi-band .taxi-mini-grid { display:none; }
-    .desktop-taxi-band details.group { margin:0; border-radius:8px; overflow:hidden; }
-    .desktop-taxi-band details.group > summary { padding:12px 14px; }
-    .desktop-taxi-band details.group > .group-body { display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); column-gap:18px; padding:0 14px 8px; }
-    .desktop-taxi-band .row { min-height:40px; padding:6px 0; }
-    .desktop-taxi-band .row .label { font-size:13px; }
   }
   @media (min-width: 960px) and (max-width: 1180px) {
     .desktop-toolbar { grid-template-columns:1fr auto; }
@@ -1364,7 +1328,7 @@ if ('serviceWorker' in navigator) {
     .desktop-workspace { grid-template-columns:minmax(300px,.9fr) minmax(430px,1.1fr); }
     .desktop-breakdown { grid-column:1/-1; }
     .desktop-breakdown .detail-card { min-height:auto; }
-    .desktop-taxi-band { grid-column:1/-1; grid-template-columns:1fr 1fr; }
+    .desktop-taxi-band { grid-column:1/-1; }
   }
 </style>
 <script>
@@ -1382,7 +1346,7 @@ if ('serviceWorker' in navigator) {
     const reset=document.getElementById('resetBtn');
     const share=document.getElementById('shareBtn');
     const imageCard=document.getElementById('imageCardBtn');
-    if(!wrap||!nav||!hero||!typeCard||groups.length!==4||!taxiCard||!chart||!detail||!reset||!share||!imageCard)return;
+    if(!wrap||!nav||!hero||!typeCard||groups.length!==3||!taxiCard||!chart||!detail||!reset||!share||!imageCard)return;
     const toolbar=document.createElement('header'); toolbar.className='desktop-toolbar';
     const actions=document.createElement('div'); actions.className='desktop-actions'; actions.append(reset,imageCard,share);
     const workspace=document.createElement('main'); workspace.className='desktop-workspace';
@@ -1391,10 +1355,10 @@ if ('serviceWorker' in navigator) {
     const breakdown=document.createElement('aside'); breakdown.className='desktop-breakdown';
     const taxiBand=document.createElement('section'); taxiBand.className='desktop-taxi-band';
     toolbar.append(nav,typeCard,actions);
-    reset.textContent='参数重置';
-    imageCard.textContent='图片分享';
-    share.textContent='文字分享';
-    parameters.append(...groups.slice(0,3)); analysis.append(hero,chart); breakdown.append(detail); taxiBand.append(taxiCard, groups[3]);
+    reset.textContent='鍙傛暟閲嶇疆';
+    imageCard.textContent='鍥剧墖鍒嗕韩';
+    share.textContent='鏂囧瓧鍒嗕韩';
+    parameters.append(...groups); analysis.append(hero,chart); breakdown.append(detail); taxiBand.append(taxiCard);
     workspace.append(parameters,analysis,breakdown,taxiBand); wrap.append(toolbar,workspace);
     groups.forEach(group=>{group.open=true;});
   }
