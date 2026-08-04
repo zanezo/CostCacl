@@ -564,36 +564,7 @@
 
   <!-- 图表 -->
     <!-- 分组四：打车对比 -->
-  <details class="group" open>
-    <summary>
-      <div class="dot" style="background:#FF9500">4</div>
-      <div class="title">打车对比<span style="font-weight:400;color:var(--text-2);font-size:13px;">（轻量预估）</span></div>
-      <div class="chev"></div>
-    </summary>
-    <div class="group-body" id="taxiBody">
-      <div class="row">
-        <div class="label">起步价</div>
-        <input type="number" class="num-input" id="taxiStartFare" value="12">
-        <span class="suffix">元</span>
-      </div>
-      <div class="row">
-        <div class="label">起步里程</div>
-        <input type="number" class="num-input" id="taxiStartKm" value="3">
-        <span class="suffix">公里</span>
-      </div>
-      <div class="row">
-        <div class="label">每公里价</div>
-        <input type="number" class="num-input" id="taxiPerKm" value="2.6" step="0.1">
-        <span class="suffix">元</span>
-      </div>
-      <div class="row">
-        <div class="label">平均单次里程</div>
-        <input type="number" class="num-input" id="taxiTripKm" value="12" step="0.5">
-        <span class="suffix">公里</span>
-      </div>
-    </div>
-  </details>
-<div class="card chart-card">
+  <div class="card chart-card">
     <h3>📊 成本占比</h3>
     <div class="chart-box">
       <canvas id="pieChart"></canvas>
@@ -668,6 +639,13 @@ const PRESETS = {
 };
 
 // 颜色配置
+const TAXI_DEFAULTS = {
+  taxiStartFare: 12,
+  taxiStartKm: 3,
+  taxiPerKm: 2.6,
+  taxiTripKm: 12,
+};
+
 const COLORS = {
   depreciation: '#007AFF', // 折旧 - 蓝
   insurance:    '#FF9500', // 保险 - 橙
@@ -723,10 +701,6 @@ function readInputs() {
     energy1:    parseFloat($('energy1').value) || 0,  // 百公里能耗
     energy2:    parseFloat($('energy2').value) || 0,  // 单位能源价格
     maintenance:parseFloat($('maintenance').value) || 0, // 元/万公里
-    taxiStartFare: parseFloat($('taxiStartFare').value) || 0,
-    taxiStartKm: parseFloat($('taxiStartKm').value) || 0,
-    taxiPerKm: parseFloat($('taxiPerKm').value) || 0,
-    taxiTripKm: parseFloat($('taxiTripKm').value) || 0,
   };
 }
 
@@ -788,9 +762,10 @@ function getCostInsight(d, r) {
 }
 
 function getTaxiComparison(d, r) {
-  const taxiSingleTrip = d.taxiStartFare + Math.max(0, d.taxiTripKm - d.taxiStartKm) * d.taxiPerKm;
-  const taxiPerKm = d.taxiTripKm > 0 ? taxiSingleTrip / d.taxiTripKm : 0;
-  const taxiYear = d.taxiTripKm > 0 ? d.mileage / d.taxiTripKm * taxiSingleTrip : 0;
+  const { taxiStartFare, taxiStartKm, taxiPerKm: taxiPerKmBase, taxiTripKm } = TAXI_DEFAULTS;
+  const taxiSingleTrip = taxiStartFare + Math.max(0, taxiTripKm - taxiStartKm) * taxiPerKmBase;
+  const taxiPerKm = taxiTripKm > 0 ? taxiSingleTrip / taxiTripKm : 0;
+  const taxiYear = taxiTripKm > 0 ? d.mileage / taxiTripKm * taxiSingleTrip : 0;
   const variableYear = d.mileage / 100 * d.energy1 * d.energy2 + d.mileage / 10000 * d.maintenance;
   const fixedYear = Math.max(r.yearTotal - variableYear, 0);
   const carVariablePerKm = d.mileage > 0 ? variableYear / d.mileage : 0;
@@ -802,12 +777,10 @@ function getTaxiComparison(d, r) {
 const SHARE_PARAM_KEYS = {
   type: 't', carPrice: 'p', mileage: 'm', insurance: 'i', parking: 'k', fine: 'f',
   depYears: 'd', residual: 'r', oppRate: 'o', energy1: 'a', energy2: 'b', maintenance: 'h',
-  taxiStartFare: 's', taxiStartKm: 'q', taxiPerKm: 'u', taxiTripKm: 'v',
 };
-const SHARE_INPUT_IDS = ['carPrice', 'mileage', 'insurance', 'parking', 'fine', 'depYears', 'residual', 'oppRate', 'energy1', 'energy2', 'maintenance', 'taxiStartFare', 'taxiStartKm', 'taxiPerKm', 'taxiTripKm'];
+const SHARE_INPUT_IDS = ['carPrice', 'mileage', 'insurance', 'parking', 'fine', 'depYears', 'residual', 'oppRate', 'energy1', 'energy2', 'maintenance'];
 const SHARE_DEFAULTS = {
   carPrice: '15', mileage: '12500', parking: '4560', fine: '400', depYears: '6', oppRate: '3',
-  taxiStartFare: '12', taxiStartKm: '3', taxiPerKm: '2.6', taxiTripKm: '12',
   gas: { insurance: '4500', residual: '40', energy1: '8', energy2: '7.5', maintenance: '800' },
   ev: { insurance: '5000', residual: '35', energy1: '15', energy2: '0.8', maintenance: '300' },
 };
@@ -878,24 +851,26 @@ function renderTaxiComparison(d, r) {
 
   const deltaAbs = Math.abs(taxi.deltaYear);
   const state = taxi.deltaYear > 0 ? 'costly' : taxi.deltaYear < 0 ? 'saving' : 'neutral';
-  chip.className = 'taxi-hero-chip is-' + state;
-  chip.textContent = taxi.deltaYear > 0 ? '打车更贵' : taxi.deltaYear < 0 ? '打车更省' : '大致持平';
-  title.textContent = d.mileage > 0 ? '按 ' + fmt(d.mileage) + ' km/年 估算' : '先填里程，再看打车参考';
+
+  chip.className = 'taxi-hero-chip ' + state;
+  chip.textContent = taxi.deltaYear > 0 ? '打车更贵' : taxi.deltaYear < 0 ? '打车更省' : '成本持平';
+  title.textContent = d.mileage > 0 ? '按 ' + fmt(d.mileage) + ' km/年估算' : '先填里程，再看打车参考';
   amount.textContent = '¥' + fmt(taxi.taxiYear);
-  note.textContent = taxi.deltaYear >= 0
-    ? '如果全年都按这组打车参数出行，预计会比当前养车方案多花 ¥' + fmt(deltaAbs) + '。'
-    : '如果全年都按这组打车参数出行，预计会比当前养车方案少花 ¥' + fmt(deltaAbs) + '。';
+  note.textContent = taxi.deltaYear > 0
+    ? '打车比当前养车方案多花 ¥' + fmt(deltaAbs) + ' / 年。'
+    : taxi.deltaYear < 0
+      ? '打车比当前养车方案少花 ¥' + fmt(deltaAbs) + ' / 年。'
+      : '打车和养车年度成本大致持平。';
 
   const breakEvenText = taxi.breakEvenMileage
     ? '约 ' + fmt(taxi.breakEvenMileage) + ' km/年'
     : '暂无明确持平点';
 
   grid.innerHTML = [
-    { k: '单次打车', v: '¥' + fmt(taxi.taxiSingleTrip), s: fmt2(d.taxiStartKm) + ' km 起步 · ¥' + fmt2(d.taxiPerKm) + '/km' },
-    { k: '均摊单价', v: '¥' + fmt2(taxi.taxiPerKm), s: fmt2(d.taxiTripKm) + ' km / 单次' },
+    { k: '单次打车', v: '¥' + fmt(taxi.taxiSingleTrip), s: fmt2(TAXI_DEFAULTS.taxiStartKm) + ' km 起步 · ¥' + fmt2(TAXI_DEFAULTS.taxiPerKm) + '/km' },
+    { k: '均摊单价', v: '¥' + fmt2(taxi.taxiPerKm), s: fmt2(TAXI_DEFAULTS.taxiTripKm) + ' km / 单次' },
     { k: '持平里程', v: breakEvenText, s: taxi.breakEvenMileage ? '超过后养车更划算' : '当前变量成本更低' },
   ].map(item => '<div class="taxi-mini"><div class="k">' + item.k + '</div><div class="v">' + item.v + '</div><div class="s">' + item.s + '</div></div>').join('');
-
 }
 
 function updateChart(items, total) {
@@ -1020,7 +995,7 @@ async function shareResult() {
     '\u7b80\u8981\u7ed3\u8bba\uff1a' + getCostInsight(d, r),
     '',
     '打车对比：' + (taxi.deltaYear >= 0 ? '打车比养车贵 ¥' + fmt(taxi.deltaYear) + ' / 年' : '打车比养车省 ¥' + fmt(Math.abs(taxi.deltaYear)) + ' / 年'),
-    '单次打车：¥' + fmt(taxi.taxiSingleTrip) + '（约 ' + fmt2(d.taxiTripKm) + ' km）',
+    '单次打车：¥' + fmt(taxi.taxiSingleTrip) + '（约 ' + fmt2(TAXI_DEFAULTS.taxiTripKm) + ' km）',
     taxi.breakEvenMileage ? '持平里程：' + fmt(taxi.breakEvenMileage) + ' km / 年' : '持平里程：暂无明确持平点',
     '',
     '\u6210\u672c\u6784\u6210\uff08\u6bcf\u5e74\uff09\uff1a',
@@ -1230,10 +1205,6 @@ function reset() {
   // 重置停车与罚单（switchType 不覆盖这两项）
   $('parking').value = 4560;
   $('fine').value = 400;
-  $('taxiStartFare').value = 12;
-  $('taxiStartKm').value = 3;
-  $('taxiPerKm').value = 2.6;
-  $('taxiTripKm').value = 12;
   render();
   showToast('已重置为默认值');
 }
@@ -1248,7 +1219,7 @@ function init() {
   bindSlider('oppRate', 'oppRateVal', '%', v => parseFloat(v).toFixed(1) + '%');
 
   // 数字输入框联动
-  ['insurance','parking','fine','energy1','energy2','maintenance','taxiStartFare','taxiStartKm','taxiPerKm','taxiTripKm'].forEach(id => {
+  ['insurance','parking','fine','energy1','energy2','maintenance'].forEach(id => {
     $(id).addEventListener('input', render);
   });
 
@@ -1321,7 +1292,7 @@ if ('serviceWorker' in navigator) {
     .desktop-actions { display:flex; justify-self:end; gap:8px; }
     .desktop-actions .btn { min-width:104px; flex:0 0 auto; padding:11px 14px; font-size:14px; border-radius:8px; }
     .footer-bar { display:none; }
-    .desktop-workspace { display:grid; grid-template-columns:minmax(320px,.92fr) minmax(450px,1.25fr) minmax(300px,.83fr); gap:18px; align-items:stretch; }
+    .desktop-workspace { display:grid; grid-template-columns:minmax(320px,.92fr) minmax(450px,1.25fr) minmax(300px,.83fr); gap:18px; align-items:start; }
     .desktop-parameters,.desktop-analysis,.desktop-breakdown { min-width:0; }
     .desktop-parameters { padding:10px 18px 14px; border-radius:8px; }
     .desktop-panel-title { margin:3px 0 8px; font-size:15px; font-weight:700; color:var(--text); }
@@ -1332,51 +1303,55 @@ if ('serviceWorker' in navigator) {
     .desktop-parameters .row { min-height:46px; padding:8px 0; }
     .desktop-parameters .row .label { font-size:14px; }
     .desktop-parameters .hint { margin-top:2px; }
-    .desktop-analysis { display:grid; gap:12px; }
+    .desktop-analysis { display:grid; gap:18px; }
     .desktop-analysis .hero { min-height:218px; margin:0; padding:28px 24px 24px; border-radius:8px; }
     .desktop-analysis .hero .amount-week { font-size:58px; }
     .desktop-analysis .hero .sub-row { margin-top:14px; }
-    .desktop-analysis .chart-card { margin:0; min-height:300px; padding:16px; border-radius:8px; }
-    .desktop-analysis .chart-box { height:240px; max-width:430px; }
-    .desktop-analysis .taxi-card { margin-bottom:0; }
-    .desktop-breakdown { display:flex; }
-    .desktop-breakdown .detail-card { flex:1; min-height:0; margin:0; padding:14px 18px; border-radius:8px; }
-    .desktop-breakdown .detail-card h3 { margin-bottom:6px; }
-    .desktop-breakdown .detail-item { padding:11px 0; }
-    .desktop-breakdown .detail-item .name,.desktop-breakdown .detail-item .val { font-size:14px; }
+    .desktop-analysis .chart-card { margin:0; min-height:388px; padding:18px; border-radius:8px; }
+    .desktop-analysis .chart-box { height:320px; max-width:430px; }
+    .desktop-breakdown { display:grid; gap:18px; align-content:start; }
+    .desktop-breakdown .detail-card { min-height:398px; margin:0; padding:12px 16px 12px; border-radius:8px; }
+    .desktop-breakdown .detail-card h3 { margin-bottom:4px; }
+    .desktop-breakdown .detail-item { padding:9px 0; }
+    .desktop-breakdown .detail-item .name,.desktop-breakdown .detail-item .val { font-size:13px; }
+    .desktop-breakdown .taxi-card { margin:0; padding:10px 12px 12px; }
+    .desktop-breakdown .taxi-card h3 { margin:0 0 6px; }
+    .desktop-breakdown .taxi-hero { padding:10px 12px; border-radius:14px; }
+    .desktop-breakdown .taxi-hero-head { gap:8px; }
+    .desktop-breakdown .taxi-hero-chip { min-height:24px; padding:0 8px; font-size:11px; }
+    .desktop-breakdown .taxi-hero-kicker { flex:1 1 160px; font-size:11px; }
+    .desktop-breakdown .taxi-hero-amount { margin-top:6px; font-size:28px; }
+    .desktop-breakdown .taxi-hero-note { margin-top:6px; font-size:12px; line-height:1.45; }
+    .desktop-breakdown .taxi-mini-grid { margin-top:10px; gap:8px; }
+    .desktop-breakdown .taxi-mini { padding:9px 9px 10px; border-radius:12px; }
+    .desktop-breakdown .taxi-mini .k { font-size:10px; }
+    .desktop-breakdown .taxi-mini .v { margin-top:4px; font-size:14px; }
+    .desktop-breakdown .taxi-mini .s { margin-top:4px; font-size:10px; line-height:1.35; }
   }
   @media (min-width: 960px) and (max-width: 1180px) {
     .desktop-toolbar { grid-template-columns:1fr auto; }
     .desktop-toolbar > .card { grid-column:1/-1; grid-row:2; }
     .desktop-workspace { grid-template-columns:minmax(300px,.9fr) minmax(430px,1.1fr); }
-    .desktop-breakdown { display:block; grid-column:1/-1; }
+    .desktop-breakdown { grid-column:1/-1; }
     .desktop-breakdown .detail-card { min-height:auto; }
   }
 </style>
 <script>
 (function(){
   function mountDesktopWorkspace(){
+    if(!window.matchMedia('(min-width: 960px)').matches)return;
     const wrap=document.querySelector('.wrap');
-    const taxiCard=wrap&&wrap.querySelector('.taxi-card');
-    const chart=wrap&&wrap.querySelector('.chart-card');
-    const taxiGroup=wrap&&wrap.querySelector('#taxiBody')?.closest('details.group');
-    if(taxiCard&&taxiGroup&&taxiGroup.parentNode!==taxiCard){
-      const hero=taxiCard.querySelector('.taxi-hero');
-      taxiCard.insertBefore(taxiGroup,hero||null);
-    }
-    if(!window.matchMedia('(min-width: 960px)').matches){
-      if(taxiCard&&chart&&taxiCard.parentNode===chart.parentNode)taxiCard.parentNode.insertBefore(chart,taxiCard);
-      return;
-    }
     const nav=wrap&&wrap.querySelector('.nav-title');
     const hero=wrap&&wrap.querySelector('.hero');
     const typeCard=document.querySelector('#typeSegment')?.closest('.card');
-    const groups=wrap?[...wrap.querySelectorAll(':scope > details.group')].filter(group=>group!==taxiGroup):[];
+    const groups=wrap?[...wrap.querySelectorAll(':scope > details.group')]:[];
+    const taxiCard=wrap&&wrap.querySelector('.taxi-card');
+    const chart=wrap&&wrap.querySelector('.chart-card');
     const detail=wrap&&wrap.querySelector('.detail-card');
     const reset=document.getElementById('resetBtn');
     const share=document.getElementById('shareBtn');
     const imageCard=document.getElementById('imageCardBtn');
-    if(!wrap||!nav||!hero||!typeCard||groups.length!==3||!taxiGroup||!taxiCard||!chart||!detail||!reset||!share||!imageCard)return;
+    if(!wrap||!nav||!hero||!typeCard||groups.length!==3||!taxiCard||!chart||!detail||!reset||!share||!imageCard)return;
     const toolbar=document.createElement('header'); toolbar.className='desktop-toolbar';
     const actions=document.createElement('div'); actions.className='desktop-actions'; actions.append(reset,imageCard,share);
     const workspace=document.createElement('main'); workspace.className='desktop-workspace';
@@ -1384,10 +1359,10 @@ if ('serviceWorker' in navigator) {
     const analysis=document.createElement('section'); analysis.className='desktop-analysis';
     const breakdown=document.createElement('aside'); breakdown.className='desktop-breakdown';
     toolbar.append(nav,typeCard,actions);
-    reset.textContent='\u53c2\u6570\u91cd\u7f6e';
-    imageCard.textContent='\u56fe\u7247\u5206\u4eab';
-    share.textContent='\u6587\u5b57\u5206\u4eab';
-    parameters.append(...groups); analysis.append(hero,chart,taxiCard); breakdown.append(detail);
+    reset.textContent='参数重置';
+    imageCard.textContent='图片分享';
+    share.textContent='文字分享';
+    parameters.append(...groups); analysis.append(hero,chart); breakdown.append(detail,taxiCard);
     workspace.append(parameters,analysis,breakdown); wrap.append(toolbar,workspace);
     groups.forEach(group=>{group.open=true;});
   }
@@ -1416,32 +1391,6 @@ if ('serviceWorker' in navigator) {
     font-weight: 600;
     letter-spacing: .02em;
   }
-  .taxi-card > details.group {
-    margin: 0 0 10px;
-    border: 1px solid #E7EEF8;
-    border-radius: 12px;
-    background: rgba(255,255,255,.82);
-    box-shadow: none;
-  }
-  .taxi-card > details.group > summary {
-    padding: 9px 11px;
-    font-size: 12px;
-  }
-  .taxi-card > details.group > .group-body {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 0 14px;
-    padding: 0 11px 5px;
-  }
-  .taxi-card > details.group .row {
-    min-height: 38px;
-    padding: 6px 0;
-    gap: 7px;
-  }
-  .taxi-card > details.group .row .label { flex-basis: auto; font-size: 12px; }
-  .taxi-card > details.group .num-input { font-size: 13px; }
-  .taxi-card > details.group .suffix { font-size: 12px; }
-  .taxi-card > details.group .dot { width: 18px; height: 18px; font-size: 11px; }
   .taxi-hero {
     padding: 14px 14px 13px;
     border-radius: 18px;
