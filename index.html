@@ -877,14 +877,17 @@ function renderTaxiComparison(d, r) {
   if (!chip || !title || !amount || !note || !grid) return;
 
   const deltaAbs = Math.abs(taxi.deltaYear);
+  const mileageLead = d.mileage > 0 ? '按 ' + fmt(d.mileage) + ' km/年估算，' : '';
   const state = taxi.deltaYear > 0 ? 'costly' : taxi.deltaYear < 0 ? 'saving' : 'neutral';
   chip.className = 'taxi-hero-chip is-' + state;
   chip.textContent = taxi.deltaYear > 0 ? '打车更贵' : taxi.deltaYear < 0 ? '打车更省' : '大致持平';
-  title.textContent = d.mileage > 0 ? '按 ' + fmt(d.mileage) + ' km/年 估算' : '先填里程，再看打车参考';
+  title.textContent = d.mileage > 0 ? '按 ' + fmt(d.mileage) + ' km/年估算' : '先填里程，再看打车参考';
   amount.textContent = '¥' + fmt(taxi.taxiYear);
-  note.textContent = taxi.deltaYear >= 0
-    ? '如果全年都按这组打车参数出行，预计会比当前养车方案多花 ¥' + fmt(deltaAbs) + '。'
-    : '如果全年都按这组打车参数出行，预计会比当前养车方案少花 ¥' + fmt(deltaAbs) + '。';
+  note.textContent = taxi.deltaYear > 0
+    ? mileageLead + '打车比当前养车方案多花 ¥' + fmt(deltaAbs) + ' / 年。'
+    : taxi.deltaYear < 0
+      ? mileageLead + '打车比当前养车方案少花 ¥' + fmt(deltaAbs) + ' / 年。'
+      : mileageLead + '打车和养车年度成本大致持平。';
 
   const breakEvenText = taxi.breakEvenMileage
     ? '约 ' + fmt(taxi.breakEvenMileage) + ' km/年'
@@ -1321,7 +1324,7 @@ if ('serviceWorker' in navigator) {
     .desktop-actions .btn { min-width:104px; flex:0 0 auto; padding:11px 14px; font-size:14px; border-radius:8px; }
     .footer-bar { display:none; }
     .desktop-workspace { display:grid; grid-template-columns:minmax(320px,.92fr) minmax(450px,1.25fr) minmax(300px,.83fr); gap:18px; align-items:start; }
-    .desktop-parameters,.desktop-analysis,.desktop-breakdown { min-width:0; }
+    .desktop-parameters,.desktop-analysis,.desktop-breakdown,.desktop-taxi-band { min-width:0; }
     .desktop-parameters { padding:10px 18px 14px; border-radius:8px; }
     .desktop-panel-title { margin:3px 0 8px; font-size:15px; font-weight:700; color:var(--text); }
     .desktop-parameters details.group { margin:0; border-radius:0; box-shadow:none; background:transparent; border-bottom:1px solid var(--separator); }
@@ -1341,6 +1344,19 @@ if ('serviceWorker' in navigator) {
     .desktop-breakdown .detail-card h3 { margin-bottom:6px; }
     .desktop-breakdown .detail-item { padding:11px 0; }
     .desktop-breakdown .detail-item .name,.desktop-breakdown .detail-item .val { font-size:14px; }
+    .desktop-taxi-band { display:grid; grid-template-columns:minmax(0,1.16fr) minmax(280px,.84fr); gap:18px; grid-column:2 / 4; align-items:start; }
+    .desktop-taxi-band .taxi-card { margin:0; min-height:auto; padding:12px 14px 14px; border-radius:8px; }
+    .desktop-taxi-band .taxi-card h3 { margin:0 0 6px; }
+    .desktop-taxi-band .taxi-hero { padding:12px 14px; border-radius:14px; }
+    .desktop-taxi-band .taxi-hero-kicker { text-align:left; flex:1 1 auto; }
+    .desktop-taxi-band .taxi-hero-amount { margin-top:6px; font-size:28px; }
+    .desktop-taxi-band .taxi-hero-note { margin-top:6px; font-size:12px; line-height:1.55; }
+    .desktop-taxi-band .taxi-mini-grid { display:none; }
+    .desktop-taxi-band details.group { margin:0; border-radius:8px; overflow:hidden; }
+    .desktop-taxi-band details.group > summary { padding:12px 14px; }
+    .desktop-taxi-band details.group > .group-body { display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); column-gap:18px; padding:0 14px 8px; }
+    .desktop-taxi-band .row { min-height:40px; padding:6px 0; }
+    .desktop-taxi-band .row .label { font-size:13px; }
   }
   @media (min-width: 960px) and (max-width: 1180px) {
     .desktop-toolbar { grid-template-columns:1fr auto; }
@@ -1348,6 +1364,7 @@ if ('serviceWorker' in navigator) {
     .desktop-workspace { grid-template-columns:minmax(300px,.9fr) minmax(430px,1.1fr); }
     .desktop-breakdown { grid-column:1/-1; }
     .desktop-breakdown .detail-card { min-height:auto; }
+    .desktop-taxi-band { grid-column:1/-1; grid-template-columns:1fr 1fr; }
   }
 </style>
 <script>
@@ -1372,12 +1389,13 @@ if ('serviceWorker' in navigator) {
     const parameters=document.createElement('section'); parameters.className='desktop-parameters card'; parameters.innerHTML='<h2 class="desktop-panel-title">&#21442;&#25968;&#37197;&#32622;</h2>';
     const analysis=document.createElement('section'); analysis.className='desktop-analysis';
     const breakdown=document.createElement('aside'); breakdown.className='desktop-breakdown';
+    const taxiBand=document.createElement('section'); taxiBand.className='desktop-taxi-band';
     toolbar.append(nav,typeCard,actions);
-    reset.textContent='\u53c2\u6570\u91cd\u7f6e';
-    imageCard.textContent='\u56fe\u7247\u5206\u4eab';
-    share.textContent='\u6587\u5b57\u5206\u4eab';
-    parameters.append(...groups); analysis.append(hero,taxiCard,chart); breakdown.append(detail);
-    workspace.append(parameters,analysis,breakdown); wrap.append(toolbar,workspace);
+    reset.textContent='参数重置';
+    imageCard.textContent='图片分享';
+    share.textContent='文字分享';
+    parameters.append(...groups.slice(0,3)); analysis.append(hero,chart); breakdown.append(detail); taxiBand.append(taxiCard, groups[3]);
+    workspace.append(parameters,analysis,breakdown,taxiBand); wrap.append(toolbar,workspace);
     groups.forEach(group=>{group.open=true;});
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',mountDesktopWorkspace);else mountDesktopWorkspace();
