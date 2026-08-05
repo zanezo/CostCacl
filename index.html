@@ -580,6 +580,16 @@
   <div class="card taxi-card" id="taxiComparisonCard">
     <h3>&#25171;&#36710;&#21442;&#32771;</h3>
     <div class="taxi-hero">
+      <div class="taxi-compare-row">
+        <div class="taxi-compare-side taxi-compare-taxi">
+          <span>&#20840;&#24180;&#25171;&#36710;</span>
+          <strong id="taxiComparisonTaxiAmount">&#165;0</strong>
+        </div>
+        <div class="taxi-compare-side taxi-compare-car">
+          <span>&#20840;&#24180;&#20859;&#36710;</span>
+          <strong id="taxiCarYearAmount">&#165;0</strong>
+        </div>
+      </div>
       <div class="taxi-hero-head">
         <div class="taxi-hero-chip" id="taxiComparisonChip">轻量参考</div>
         <div class="taxi-hero-kicker" id="taxiComparisonTitle">同样里程下的打车参考</div>
@@ -845,14 +855,17 @@ function renderTaxiComparison(d, r) {
   const chip = $('taxiComparisonChip');
   const title = $('taxiComparisonTitle');
   const amount = $('taxiComparisonAmount');
+  const taxiAmount = $('taxiComparisonTaxiAmount');
+  const carAmount = $('taxiCarYearAmount');
   const note = $('taxiComparisonNote');
   const grid = $('taxiMiniGrid');
-  if (!chip || !title || !amount || !note || !grid) return;
+  if (!chip || !title || !amount || !taxiAmount || !carAmount || !note || !grid) return;
 
   const deltaAbs = Math.abs(taxi.deltaYear);
   const state = taxi.deltaYear > 0 ? 'costly' : taxi.deltaYear < 0 ? 'saving' : 'neutral';
 
   chip.className = 'taxi-hero-chip ' + state;
+  note.className = 'taxi-hero-note is-' + state;
   chip.textContent = taxi.deltaYear > 0 ? '打车更贵' : taxi.deltaYear < 0 ? '打车更省' : '成本持平';
   title.textContent = d.mileage > 0 ? '按 ' + fmt(d.mileage) + ' km/年估算' : '先填里程，再看打车参考';
   amount.textContent = '¥' + fmt(taxi.taxiYear);
@@ -861,6 +874,15 @@ function renderTaxiComparison(d, r) {
     : taxi.deltaYear < 0
       ? '打车比当前养车方案少花 ¥' + fmt(deltaAbs) + ' / 年。'
       : '打车和养车年度成本大致持平。';
+
+  taxiAmount.textContent = '¥' + fmt(taxi.taxiYear);
+  carAmount.textContent = '¥' + fmt(r.yearTotal);
+  title.textContent = '按当前年里程估算';
+  note.textContent = taxi.deltaYear > 0
+    ? '打车比养车多花 ¥' + fmt(deltaAbs) + ' / 年'
+    : taxi.deltaYear < 0
+      ? '打车比养车少花 ¥' + fmt(deltaAbs) + ' / 年'
+      : '打车和养车成本大致持平';
 
   const breakEvenText = taxi.breakEvenMileage
     ? '约 ' + fmt(taxi.breakEvenMileage) + ' km/年'
@@ -1292,7 +1314,7 @@ if ('serviceWorker' in navigator) {
     .desktop-actions { display:flex; justify-self:end; gap:8px; }
     .desktop-actions .btn { min-width:104px; flex:0 0 auto; padding:11px 14px; font-size:14px; border-radius:8px; }
     .footer-bar { display:none; }
-    .desktop-workspace { display:grid; grid-template-columns:minmax(320px,.92fr) minmax(450px,1.25fr) minmax(300px,.83fr); gap:18px; align-items:start; }
+    .desktop-workspace { display:grid; grid-template-columns:minmax(320px,.92fr) minmax(450px,1.25fr) minmax(300px,.83fr); gap:18px; align-items:stretch; }
     .desktop-parameters,.desktop-analysis,.desktop-breakdown { min-width:0; }
     .desktop-parameters { padding:10px 18px 14px; border-radius:8px; }
     .desktop-panel-title { margin:3px 0 8px; font-size:15px; font-weight:700; color:var(--text); }
@@ -1303,14 +1325,14 @@ if ('serviceWorker' in navigator) {
     .desktop-parameters .row { min-height:46px; padding:8px 0; }
     .desktop-parameters .row .label { font-size:14px; }
     .desktop-parameters .hint { margin-top:2px; }
-    .desktop-analysis { display:grid; gap:18px; }
+    .desktop-analysis { display:grid; grid-template-rows:auto minmax(0,1fr); gap:18px; height:100%; }
     .desktop-analysis .hero { min-height:218px; margin:0; padding:28px 24px 24px; border-radius:8px; }
     .desktop-analysis .hero .amount-week { font-size:58px; }
     .desktop-analysis .hero .sub-row { margin-top:14px; }
-    .desktop-analysis .chart-card { margin:0; min-height:388px; padding:18px; border-radius:8px; }
+    .desktop-analysis .chart-card { margin:0; min-height:388px; height:100%; box-sizing:border-box; padding:18px; border-radius:8px; }
     .desktop-analysis .chart-box { height:320px; max-width:430px; }
-    .desktop-breakdown { display:grid; gap:18px; align-content:start; }
-    .desktop-breakdown .detail-card { min-height:398px; margin:0; padding:12px 16px 12px; border-radius:8px; }
+    .desktop-breakdown { display:grid; grid-template-rows:minmax(0,1fr) auto; gap:18px; align-content:stretch; height:100%; }
+    .desktop-breakdown .detail-card { min-height:0; height:100%; box-sizing:border-box; margin:0; padding:12px 16px 12px; border-radius:8px; }
     .desktop-breakdown .detail-card h3 { margin-bottom:4px; }
     .desktop-breakdown .detail-item { padding:9px 0; }
     .desktop-breakdown .detail-item .name,.desktop-breakdown .detail-item .val { font-size:13px; }
@@ -1333,7 +1355,10 @@ if ('serviceWorker' in navigator) {
     .desktop-toolbar > .card { grid-column:1/-1; grid-row:2; }
     .desktop-workspace { grid-template-columns:minmax(300px,.9fr) minmax(430px,1.1fr); }
     .desktop-breakdown { grid-column:1/-1; }
-    .desktop-breakdown .detail-card { min-height:auto; }
+    .desktop-analysis { height:auto; grid-template-rows:none; }
+    .desktop-analysis .chart-card { height:auto; }
+    .desktop-breakdown { height:auto; grid-template-rows:none; align-content:start; }
+    .desktop-breakdown .detail-card { min-height:auto; height:auto; }
   }
 </style>
 <script>
@@ -1386,9 +1411,9 @@ if ('serviceWorker' in navigator) {
   }
   .taxi-card h3 {
     margin: 0 0 8px;
-    color: #708097;
-    font-size: 13px;
-    font-weight: 600;
+    color: #45698f;
+    font-size: 14px;
+    font-weight: 700;
     letter-spacing: .02em;
   }
   .taxi-hero {
@@ -1406,6 +1431,36 @@ if ('serviceWorker' in navigator) {
     gap: 10px;
     flex-wrap: wrap;
   }
+  .taxi-hero > #taxiComparisonAmount { display: none; }
+  .taxi-compare-row {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+  .taxi-compare-side {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 9px 10px;
+    border-radius: 10px;
+    background: rgba(255,255,255,.82);
+    border: 1px solid #E2EAF5;
+  }
+  .taxi-compare-side span {
+    color: #718097;
+    font-size: 11px;
+  }
+  .taxi-compare-side strong {
+    color: #172033;
+    font-size: 22px;
+    line-height: 1.1;
+    font-variant-numeric: tabular-nums;
+  }
+  .taxi-compare-taxi { border-color: rgba(8,120,249,.3); }
+  .taxi-compare-taxi strong { color: #0878F9; }
+  .taxi-compare-car { border-color: rgba(52,199,89,.3); }
+  .taxi-compare-car strong { color: #198754; }
   .taxi-hero-chip {
     display: inline-flex;
     align-items: center;
@@ -1458,10 +1513,27 @@ if ('serviceWorker' in navigator) {
     color: #5A6C82;
     font-size: 13px;
     line-height: 1.6;
+    font-weight: 600;
+  }
+  .taxi-hero-note.is-saving { color: #167C4E; }
+  .taxi-hero-note.is-costly { color: #9A5B00; }
+  .taxi-hero-note.is-neutral { color: #5C789E; }
+
+  .desktop-analysis .chart-card {
+    display: flex;
+    flex-direction: column;
+  }
+  .desktop-analysis .chart-box {
+    flex: 1 1 auto;
+    height: auto;
+    min-height: 320px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
   .taxi-mini-grid {
     display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 10px;
     margin-top: 12px;
   }
@@ -1490,7 +1562,9 @@ if ('serviceWorker' in navigator) {
     color: #8B97A7;
     font-size: 11px;
     line-height: 1.4;
+    display: none;
   }
+  .taxi-mini:last-child { display: none; }
   @media (max-width: 640px) {
     .taxi-hero-kicker { text-align: left; }
     .taxi-mini-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
