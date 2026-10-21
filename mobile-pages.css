@@ -15,10 +15,11 @@
   .mobile-page-panel[data-position=after]:nth-child(n+3),.mobile-page-panel[data-position=before] { box-shadow:0 8px 25px #263e5910; }
   .mobile-card-content { height:100%; overflow:auto; overscroll-behavior-y:contain; padding:25px 16px 32px; scrollbar-width:thin; }
   .mobile-card-grip { position:absolute; bottom:10px; left:calc(50% - 20px); width:40px; height:4px; border-radius:4px; background:#d7e1ee; pointer-events:none; }
-  .mobile-card-content .row { touch-action:pan-y; }
-  .mobile-card-content input[type=range] { height:40px; border-radius:0; background:linear-gradient(#e5eaf2,#e5eaf2) center / 100% 4px no-repeat; touch-action:pan-x; }
-  .mobile-card-content input[type=range]::-webkit-slider-thumb { width:28px; height:28px; border:3px solid #fff; background:#0878f9; box-shadow:0 2px 7px #0878f938; }
-  .mobile-card-content input[type=range]::-moz-range-thumb { width:22px; height:22px; border:3px solid #fff; background:#0878f9; }
+  .mobile-deck { touch-action:pan-y; }
+  .mobile-card-content input[type=range] { height:40px; border-radius:0; background:linear-gradient(#e0e5eb,#e0e5eb) center / 100% 3px no-repeat; touch-action:none; }
+  .mobile-card-content input[type=range]::-webkit-slider-thumb { box-sizing:border-box; width:44px; height:26px; border:1px solid #cdd3da; border-radius:5px; background:repeating-linear-gradient(90deg,transparent 0 3px,#b8c0c9 3px 4px,transparent 4px 7px) center / 22px 12px no-repeat,#f5f6f7; box-shadow:none; cursor:ew-resize; }
+  .mobile-card-content input[type=range]::-moz-range-thumb { box-sizing:border-box; width:44px; height:26px; border:1px solid #cdd3da; border-radius:5px; background:repeating-linear-gradient(90deg,transparent 0 3px,#b8c0c9 3px 4px,transparent 4px 7px) center / 22px 12px no-repeat,#f5f6f7; box-shadow:none; cursor:ew-resize; }
+  .mobile-card-content input[type=range].is-dragging::-webkit-slider-thumb { background:repeating-linear-gradient(90deg,transparent 0 3px,#8995a3 3px 4px,transparent 4px 7px) center / 22px 12px no-repeat,#e7ebef; border-color:#9da8b4; }
   .mobile-card-content>.card,.mobile-card-content>details.group { box-shadow:none; border:0; margin-bottom:10px; border-radius:12px; }
   .mobile-card-content details.group>summary { padding:5px 0 12px; }
   .mobile-card-content details.group>.group-body { padding:0; }

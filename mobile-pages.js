@@ -58,22 +58,52 @@
         event.preventDefault(); select(event.key === 'Home' ? 0 : event.key === 'End' ? names.length - 1 : current + (event.key === 'ArrowRight' ? 1 : -1), true);
       }
     });
+    // Gesture ownership is chosen once at pointer-down, never while crossing a slider.
     shell.addEventListener('touchstart', event => {
+      if (event.target.closest('input[type=range]')) event.preventDefault();
+    }, { passive:false });
+    shell.addEventListener('pointerdown', event => {
       start = null;
-      if (event.touches.length !== 1 || event.target.closest('.row,.segmented,.chart-box,input,button,textarea,select,summary,a')) return;
-      start = { x:event.touches[0].clientX, y:event.touches[0].clientY };
-    }, { passive:true });
-    shell.addEventListener('touchmove', event => {
-      if (!start || event.touches.length !== 1) return;
-      const dy = event.touches[0].clientY - start.y;
-      if (Math.abs(dy) > 20) start = null;
-    }, { passive:true });
-    shell.addEventListener('touchend', event => {
-      if (!start || !event.changedTouches.length) return;
-      const dx = event.changedTouches[0].clientX - start.x, dy = event.changedTouches[0].clientY - start.y; start = null;
-      if (Math.abs(dx) > 45 && Math.abs(dx) > Math.abs(dy) * 1.5) select(current + (dx < 0 ? 1 : -1));
-    }, { passive:true });
-    shell.addEventListener('touchcancel', () => { start = null; }, { passive:true });
+      if (!event.isPrimary || event.button !== 0) return;
+      const range = event.target.closest('input[type=range]');
+      let slider = null;
+      if (range) {
+        const rect = range.getBoundingClientRect();
+        const ratio = (Number(range.value) - Number(range.min || 0)) / (Number(range.max || 100) - Number(range.min || 0));
+        const center = rect.left + 22 + ratio * Math.max(0, rect.width - 44);
+        if (Math.abs(event.clientX - center) <= 24 && Math.abs(event.clientY - (rect.top + rect.height / 2)) <= 22) slider = range;
+        // Never let the browser jump the range value on a track click.
+        event.preventDefault();
+      }
+      start = { x:event.clientX, y:event.clientY, pointer:event.pointerId, slider, initial:slider ? Number(slider.value) : null, width:slider ? slider.getBoundingClientRect().width : 0 };
+      if (slider) {
+        slider.focus({preventScroll:true});
+        shell.setPointerCapture(event.pointerId);
+        slider.classList.add('is-dragging');
+      }
+    });
+    shell.addEventListener('pointermove', event => {
+      if (!start || event.pointerId !== start.pointer) return;
+      const dx = event.clientX - start.x, dy = event.clientY - start.y;
+      if (start.slider) {
+        const range = start.slider, min = Number(range.min || 0), max = Number(range.max || 100);
+        range.value = Math.max(min, Math.min(max, start.initial + dx / Math.max(1, start.width - 44) * (max - min)));
+        range.dispatchEvent(new Event('input', {bubbles:true}));
+      } else if (Math.abs(dy) > 20 && Math.abs(dy) > Math.abs(dx)) start = null;
+    });
+    const finish = event => {
+      if (!start || event.pointerId !== start.pointer) return;
+      const gesture = start; start = null;
+      if (gesture.slider) {
+        gesture.slider.classList.remove('is-dragging');
+        gesture.slider.dispatchEvent(new Event('change', {bubbles:true}));
+      } else if (event.type === 'pointerup') {
+        const dx = event.clientX - gesture.x, dy = event.clientY - gesture.y;
+        if (Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(dy) * 1.4) select(current + (dx < 0 ? 1 : -1));
+      }
+    };
+    shell.addEventListener('pointerup', finish);
+    shell.addEventListener('pointercancel', finish);
     document.body.classList.add('mobile-deck-mode');
     select(current);
   }
