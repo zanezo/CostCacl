@@ -2,7 +2,7 @@
 (() => {
   const media = matchMedia('(max-width: 959px)');
   let shell, panels, dots, current = 0, originals = [], start;
-  const names = ['车辆信息', '固定开销', '长期成本', '使用成本', '费用总览', '费用明细', '打车参考'];
+  const names = ['车辆信息', '日常开销', '长期成本', '费用总览', '费用明细', '打车参考'];
   function select(index, focus = false) {
     current = Math.max(0, Math.min(names.length - 1, index));
     panels.forEach((panel, i) => {
@@ -29,7 +29,8 @@
     panels = names.map((name, i) => {
       const panel = document.createElement('section'); panel.className = 'mobile-page-panel'; panel.id = 'mobilePanel' + i;
       panel.setAttribute('aria-label', name); panel.setAttribute('role', 'group'); panel.setAttribute('aria-roledescription', '卡片');
-      const inner = document.createElement('div'); inner.className = 'mobile-card-content'; panel.appendChild(inner);
+      const grip = document.createElement('div'); grip.className = 'mobile-card-grip'; grip.setAttribute('aria-hidden', 'true');
+      const inner = document.createElement('div'); inner.className = 'mobile-card-content'; panel.appendChild(inner); panel.appendChild(grip);
       shell.querySelector('.mobile-deck').appendChild(panel); return panel;
     });
     dots = names.map((name, i) => {
@@ -48,9 +49,9 @@
     fixedRows.slice(3).forEach(row => {
       const marker = document.createComment('mobile-original'); row.before(marker); originals.push([row, marker]); long.appendChild(row);
     });
-    move(groups[2], 3);
-    move(document.querySelector('.hero'), 4); move(document.querySelector('.chart-card'), 4);
-    move(document.querySelector('.detail-card'), 5); move(document.querySelector('.taxi-card'), 6);
+    move(groups[2], 1);
+    move(document.querySelector('.hero'), 3); move(document.querySelector('.chart-card'), 3);
+    move(document.querySelector('.detail-card'), 4); move(document.querySelector('.taxi-card'), 5);
     shell.addEventListener('keydown', event => {
       if (event.target.closest('input,textarea,select,summary')) return;
       if (['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) {
@@ -59,8 +60,13 @@
     });
     shell.addEventListener('touchstart', event => {
       start = null;
-      if (event.touches.length !== 1 || event.target.closest('input,button,textarea,select,summary,a')) return;
+      if (event.touches.length !== 1 || event.target.closest('.row,.segmented,.chart-box,input,button,textarea,select,summary,a')) return;
       start = { x:event.touches[0].clientX, y:event.touches[0].clientY };
+    }, { passive:true });
+    shell.addEventListener('touchmove', event => {
+      if (!start || event.touches.length !== 1) return;
+      const dy = event.touches[0].clientY - start.y;
+      if (Math.abs(dy) > 20) start = null;
     }, { passive:true });
     shell.addEventListener('touchend', event => {
       if (!start || !event.changedTouches.length) return;

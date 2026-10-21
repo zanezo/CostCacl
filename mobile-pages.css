@@ -1,40 +1,109 @@
 .mobile-pages { display:none; }
 @media(max-width:959px) {
   body.mobile-deck-mode { padding-bottom:88px; }
-  .mobile-deck-mode .wrap { padding:14px 0 0; }
-  .mobile-deck-mode .nav-title { margin-bottom:15px; }
+  .mobile-deck-mode .wrap { padding:10px 0 0; }
+  .mobile-deck-mode .nav-title { margin-bottom:10px; }
   .mobile-pages { display:block; overflow:hidden; padding-bottom:6px; }
-  .mobile-deck-heading { display:flex; justify-content:space-between; align-items:center; padding:0 29px; margin:8px 0 15px; }
+  .mobile-deck-heading { display:flex; justify-content:space-between; align-items:center; padding:0 34px; margin:6px 0 10px; }
   .mobile-deck-title { font-size:18px; font-weight:700; color:#263c54; letter-spacing:.5px; }
   .mobile-deck-count { color:#8b9bb0; font-size:12px; letter-spacing:2px; font-variant-numeric:tabular-nums; }
-  .mobile-deck { position:relative; height:clamp(360px,calc(100dvh - 240px),760px); margin:0 24px; perspective:1400px; }
+  .mobile-deck { position:relative; height:calc(100svh - 205px - env(safe-area-inset-bottom, 0px)); min-height:350px; max-height:850px; width:calc(100% - 64px); max-width:390px; margin:0 auto; perspective:1400px; }
   .mobile-page-panel { position:absolute; inset:0; background:#fff; border:1px solid #e2e8f0; border-radius:24px; box-shadow:0 12px 35px #263e5912; transform-origin:center; transition:transform .3s ease,opacity .3s ease; overflow:hidden; }
   .mobile-page-panel[data-position=active] { transform:translateX(0) scale(1); z-index:10; opacity:1; }
   .mobile-page-panel[data-position=before] { transform:translateX(-96%) scale(.94) rotate(-2deg); z-index:1; opacity:.65; }
   .mobile-page-panel[data-position=after] { transform:translateX(96%) scale(.94) rotate(2deg); z-index:1; opacity:.65; }
   .mobile-page-panel[data-position=after]:nth-child(n+3),.mobile-page-panel[data-position=before] { box-shadow:0 8px 25px #263e5910; }
-  .mobile-card-content { height:100%; overflow:auto; overscroll-behavior-y:contain; padding:16px 14px; scrollbar-width:thin; }
+  .mobile-card-content { height:100%; overflow:auto; overscroll-behavior-y:contain; padding:25px 16px 32px; scrollbar-width:thin; }
+  .mobile-card-grip { position:absolute; bottom:10px; left:calc(50% - 20px); width:40px; height:4px; border-radius:4px; background:#d7e1ee; pointer-events:none; }
+  .mobile-card-content .row { touch-action:pan-y; }
+  .mobile-card-content input[type=range] { height:40px; border-radius:0; background:linear-gradient(#e5eaf2,#e5eaf2) center / 100% 4px no-repeat; touch-action:pan-x; }
+  .mobile-card-content input[type=range]::-webkit-slider-thumb { width:28px; height:28px; border:3px solid #fff; background:#0878f9; box-shadow:0 2px 7px #0878f938; }
+  .mobile-card-content input[type=range]::-moz-range-thumb { width:22px; height:22px; border:3px solid #fff; background:#0878f9; }
   .mobile-card-content>.card,.mobile-card-content>details.group { box-shadow:none; border:0; margin-bottom:10px; border-radius:12px; }
-  .mobile-card-content details.group>summary { padding:8px 0 15px; }
+  .mobile-card-content details.group>summary { padding:5px 0 12px; }
   .mobile-card-content details.group>.group-body { padding:0; }
-  .mobile-card-content .row { gap:8px; padding:12px 0; }
+  .mobile-card-content .row { gap:8px; padding:13px 0; }
   .mobile-card-content .row .label { flex-basis:39%; font-size:13px; }
   .mobile-card-content .price-help { font-size:10px; }
   .mobile-card-content .precise-input { gap:5px; }
   .mobile-card-content .precise-input span { font-size:10px; }
   .mobile-card-content .range-ticks { font-size:10px; }
   .mobile-long-cost h3 { margin:8px 0 16px; color:#263c54; font-size:16px; }
+  .mobile-long-cost .row { flex-direction:column; align-items:stretch; gap:12px; padding:23px 0; }
+  .mobile-long-cost .row .label { display:flex; align-items:baseline; gap:8px; font-size:14px; }
+  .mobile-long-cost .slider-wrap { width:100%; }
+  .mobile-long-cost .slider-val { min-width:55px; }
+  #mobilePanel0 .precise-row { flex-direction:column; align-items:stretch; padding:15px 0; gap:10px; }
+  #mobilePanel0 .precise-row>.label { display:flex; align-items:baseline; gap:8px; font-size:14px; }
+  #mobilePanel0 .price-help { flex:1; line-height:1.5; max-width:none; margin:0; }
+  #mobilePanel0 .precise-input input { font-size:21px; }
+  #mobilePanel0 .precise-input { margin-bottom:2px; }
+  .mobile-card-content .segmented { margin-bottom:0; }
+  #mobilePanel1 .row { padding:11px 0; }
+  #mobilePanel1 .num-input { font-size:18px; }
+  #mobilePanel1 details.group + details.group { margin-top:22px; }
+  #mobilePanel5 .taxi-card { padding:8px 0; }
+  #mobilePanel5 .taxi-mini { padding:12px; }
   .mobile-card-content .hero { padding:12px 8px; }
   .mobile-card-content .hero .amount-week { font-size:48px; }
   .mobile-card-content .cost-insight { margin:10px auto 0; }
   .mobile-card-content .chart-card { padding:8px; }
   .mobile-card-content .chart-card h3 { margin:0 0 8px; font-size:14px; }
-  .mobile-card-content .chart-box { height:170px; max-width:220px; margin:0 auto; }
+  .mobile-card-content .chart-box { height:190px; max-width:220px; margin:0 auto; }
   .mobile-deck-dots { display:flex; align-items:center; justify-content:center; gap:2px; padding:13px 0 4px; }
   .mobile-deck-dots button { display:grid; place-items:center; border:0; background:transparent; width:28px; height:28px; padding:0; cursor:pointer; }
   .mobile-deck-dots button::after { content:''; width:6px; height:6px; background:#c4cfdd; border-radius:9px; transition:width .2s,background .2s; }
   .mobile-deck-dots button[aria-current=true]::after { width:20px; background:#0878f9; }
   .mobile-pages :focus-visible { outline:3px solid #8dbaff; outline-offset:2px; }
   .mobile-deck-mode .site-footer { display:none; }
+}
+@media(max-width:959px) and (max-height:730px) {
+  .mobile-card-content { padding:15px 12px 25px; }
+  .mobile-card-content .row { padding:8px 0; min-height:44px; }
+  #mobilePanel0 .precise-row { padding:9px 0; gap:7px; }
+  #mobilePanel0 .card:has(#typeSegment) { padding:0!important; margin-bottom:10px; }
+  #mobilePanel0 .precise-input input { padding:7px 10px; font-size:18px; }
+  #mobilePanel0 .precise-row>.label { font-size:13px; }
+  #mobilePanel0 .price-help { font-size:9px; }
+  #mobilePanel0 .precise-slider input[type=range] { height:30px; }
+  #mobilePanel0 .range-ticks { margin-top:0; }
+  .mobile-long-cost .row { padding:18px 0; }
+  #mobilePanel1 details.group + details.group { margin-top:10px; }
+  #mobilePanel1 .row { padding:7px 0; }
+  .mobile-card-content .hero { padding:8px 5px; }
+  .mobile-card-content .hero .amount-week { font-size:40px; }
+  .mobile-card-content .hero .sub-row { margin-top:8px; }
+  .mobile-card-content .cost-insight { font-size:11px; margin:6px auto 0; padding:6px; }
+  .mobile-card-content .chart-box { height:130px; }
+  .mobile-card-content .detail-item { padding:10px 0; }
+  .mobile-card-content .taxi-mini-grid { gap:6px; margin-top:8px; }
+  #mobilePanel5 .taxi-mini { padding:9px; }
+}
+@media(max-width:959px) and (max-height:620px) {
+  .mobile-deck { height:calc(100svh - 185px - env(safe-area-inset-bottom,0px)); }
+  .mobile-deck-mode .nav-title { margin-bottom:5px; }
+  .mobile-deck-heading { margin:2px 0 7px; }
+  .mobile-card-content { padding:10px 11px 22px; }
+  .mobile-card-content details.group>summary { padding:0 0 7px; }
+  .mobile-card-content details.group>summary .title { font-size:13px; }
+  .mobile-card-content details.group>summary .dot { width:23px; height:23px; font-size:12px; }
+  .mobile-card-content .row { min-height:36px; }
+  #mobilePanel0 .precise-row { padding:6px 0; gap:4px; }
+  #mobilePanel0 .precise-row>.label { display:block; }
+  #mobilePanel0 .price-help { font-size:9px; line-height:1.3; }
+  #mobilePanel0 .precise-input input { padding:5px 8px; font-size:16px; }
+  #mobilePanel0 .precise-slider input[type=range] { height:28px; }
+  #mobilePanel1 .row { padding:4px 0; }
+  #mobilePanel1 details.group + details.group { margin-top:5px; }
+  #mobilePanel1 .num-input { font-size:16px; }
+  .mobile-long-cost .row { padding:10px 0; gap:3px; }
+  .mobile-card-content .hero .amount-week { font-size:35px; }
+  .mobile-card-content .hero .label { font-size:12px; }
+  .mobile-card-content .hero .sub-row { margin-top:4px; }
+  .mobile-card-content .chart-box { height:110px; }
+  .mobile-card-content .detail-card { padding:3px 0; }
+  .mobile-card-content .detail-card h3 { margin:3px 0 7px; }
+  .mobile-card-content .detail-item { padding:7px 0; }
+  .mobile-card-content .detail-item .name,.mobile-card-content .detail-item .val { font-size:12px; }
 }
 @media(prefers-reduced-motion:reduce) { .mobile-page-panel,.mobile-deck-dots button::after { transition:none; } }
