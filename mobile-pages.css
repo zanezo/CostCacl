@@ -35,6 +35,17 @@
   .mobile-card-content input[type=range].is-dragging::-webkit-slider-thumb { background:repeating-linear-gradient(90deg,transparent 0 3px,#8995a3 3px 4px,transparent 4px 7px) center / 22px 12px no-repeat,#e7ebef; border-color:#9da8b4; }
   .mobile-card-content>.card,.mobile-card-content>details.group { box-shadow:none; border:0; margin-bottom:10px; border-radius:12px; }
   .mobile-card-content details.group>summary { padding:5px 0 12px; }
+  /* Card heading owns navigation; group headings only describe sections. */
+  .mobile-card-content details.group>summary .dot { display:none; }
+  #mobilePanel0 details.group>summary { display:none; }
+  #mobilePanel1 details.group>summary .title { font-size:0; }
+  #mobilePanel1 details.group>summary .title>span { display:none; }
+  #mobilePanel1 details.group:first-of-type>summary .title::after { content:'每年固定支出'; font-size:14px; font-weight:600; }
+  #mobilePanel1 details.group:last-of-type>summary .title::after { content:'行驶相关费用'; font-size:14px; font-weight:600; }
+  .mobile-long-cost>h3 { display:none; }
+  #mobilePanel4 .detail-card>h3,#mobilePanel5 .taxi-card>h3 { display:none; }
+  .mobile-card-content .chart-center { display:none; }
+  .mobile-card-content .chart-card>h3 { font-size:13px; color:#6c7e94; }
   .mobile-card-content details.group>.group-body { padding:0; }
   .mobile-card-content .row { gap:8px; padding:13px 0; }
   .mobile-card-content .row .label { flex-basis:39%; font-size:13px; }
