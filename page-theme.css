@@ -1,0 +1,42 @@
+.page-theme-picker { position:fixed; right:18px; bottom:18px; z-index:60; font-size:12px; color:var(--theme-ink); }
+.page-theme-picker summary { display:flex; align-items:center; gap:6px; list-style:none; cursor:pointer; background:#fffef8; border:1px solid color-mix(in srgb,var(--theme-ink) 18%,white); border-radius:24px; padding:8px 11px; }
+.page-theme-picker summary::-webkit-details-marker { display:none; }
+.theme-preview { width:14px; height:14px; border-radius:50%; background:linear-gradient(135deg,var(--theme-ink) 50%,var(--theme-pop) 50%); }
+.page-theme-options { position:absolute; right:0; bottom:42px; background:#fffef8; padding:9px; border:1px solid #e3e7df; border-radius:16px; box-shadow:0 12px 35px #1d35252b; width:165px; }
+.page-theme-options button { width:100%; display:flex; align-items:center; gap:9px; padding:10px; background:transparent; border:0; border-radius:9px; color:#3c4e44; font:inherit; cursor:pointer; }
+.page-theme-options button::before { content:''; width:18px; height:18px; border-radius:50%; background:var(--swatch); }
+.page-theme-options button[aria-pressed=true] { background:var(--theme-paper); font-weight:700; }
+html[data-theme] .hero,html[data-theme] .taxi-card,html[data-theme] .taxi-hero { background:linear-gradient(145deg,#fffef9,var(--theme-paper)); }
+html[data-theme] .cost-insight { background:var(--theme-paper); color:var(--theme-ink); }
+html[data-theme] .taxi-compare-taxi strong,html[data-theme] .taxi-compare-car strong,html[data-theme] .taxi-hero-amount,html[data-theme] .taxi-hero-note,html[data-theme] .mobile-deck-title,html[data-theme] .mobile-phase { color:var(--theme-ink); }
+html[data-theme] .mobile-deck-dots button[aria-current=true]::after { background:var(--theme-ink); }
+html[data-theme] .mobile-page-panel { background:#fffef9; border-color:color-mix(in srgb,var(--theme-ink) 12%,white); }
+html[data-theme] .mobile-card-guide svg { color:var(--theme-ink); stroke:var(--theme-ink); background:var(--theme-paper); }
+html[data-theme] .mobile-card-guide strong { color:var(--theme-ink); }
+html[data-theme] .mobile-card-grip { background:var(--theme-pop); }
+html[data-theme] .personal-save { background:var(--theme-ink); }
+.page-theme-picker :focus-visible { outline:3px solid var(--theme-ink); outline-offset:3px; }
+@media(max-width:959px) {
+  .page-theme-picker { position:relative; right:auto; bottom:auto; margin:0 28px 4px auto; width:max-content; }
+  .page-theme-picker summary { padding:5px 10px; font-size:10px; }
+  .page-theme-options { top:33px; bottom:auto; }
+  .mobile-deck-mode { padding-bottom:0!important; }
+  .mobile-card-content { display:flex; flex-direction:column; }
+  .mobile-card-content>* { flex-shrink:0; }
+  .mobile-card-actions { margin-top:auto; padding:18px 0 7px; }
+  .mobile-action-caption { display:block; font-size:11px; color:#879384; margin-bottom:10px; }
+  .mobile-card-actions button { border:0; border-radius:17px; padding:16px 17px; font-family:inherit; font-weight:700; font-size:15px; cursor:pointer; }
+  .mobile-calculate,.mobile-reveal { width:100%; color:var(--theme-pop); background:var(--theme-ink); box-shadow:0 7px 18px color-mix(in srgb,var(--theme-ink) 18%,transparent); }
+  .mobile-calculate span,.mobile-reveal span { float:right; font-size:20px; }
+  .mobile-calculate:disabled { opacity:.4; }
+  .mobile-result-actions>div { display:flex; gap:8px; }
+  .mobile-result-actions .mobile-refill { flex:0 0 31%; background:var(--theme-paper); color:var(--theme-ink); padding-inline:8px; font-size:12px; }
+  .mobile-result-actions .mobile-reveal { flex:1; font-size:13px; padding-inline:12px; }
+  .mobile-deck { height:calc(100svh - 172px - env(safe-area-inset-bottom,0px)); }
+}
+@media(max-width:959px) and (max-height:650px) {
+  .mobile-card-actions { padding-top:9px; }
+  .mobile-card-actions button { padding-block:12px; }
+  .mobile-action-caption { margin-bottom:6px; font-size:10px; }
+  .mobile-deck { height:calc(100svh - 157px - env(safe-area-inset-bottom,0px)); }
+}

@@ -191,7 +191,7 @@
   function generateCard() {
     const token = ++generation;
     const { d, r, analysis } = snapshot;
-    const themeId = selectedTheme || identityThemes[analysis.identity.id];
+    const themeId = selectedTheme || document.documentElement.dataset.theme || identityThemes[analysis.identity.id];
     dialog.querySelectorAll('[data-theme]').forEach(button => button.setAttribute('aria-pressed', String(button.dataset.theme === themeId)));
     cardFile = null;
     const image = dialog.querySelector('.personal-export');

@@ -17,9 +17,7 @@
     shell.querySelector('.mobile-deck-count').textContent = String(current % 3 + 1).padStart(2, '0') + ' / 3';
     shell.dataset.stage = stage;
     shell.querySelector('.mobile-phase').textContent = stage === 'config' ? '01 / 配置我的车' : '02 / 看懂我的账';
-    shell.querySelector('.mobile-stage-action').textContent = stage === 'config' ? (current === 2 ? '开始测算' : '继续配置') : (current === 5 ? '揭晓我的车格' : '继续看账单');
-    shell.querySelector('.mobile-stage-back').textContent = stage === 'config' ? '参数重置' : '修改参数';
-    shell.querySelector('.mobile-stage-action').disabled = stage === 'config' && PersonalCarShare.hasInvalid();
+    shell.querySelector('.mobile-calculate').disabled = PersonalCarShare.hasInvalid();
     if (focus) dots[current].focus();
     requestAnimationFrame(() => window.dispatchEvent(new Event('resize')));
   }
@@ -31,22 +29,9 @@
     shell.setAttribute('aria-label', '用车成本卡片');
     shell.innerHTML = '<header class="mobile-deck-heading"><span class="mobile-deck-title"></span><span class="mobile-deck-count" aria-live="polite"></span></header><div class="mobile-deck"></div><nav class="mobile-deck-dots" aria-label="选择成本卡片"></nav>';
     shell.insertAdjacentHTML('afterbegin', '<div class="mobile-phase"></div>');
-    shell.insertAdjacentHTML('beforeend', '<div class="mobile-stage-footer"><button type="button" class="mobile-stage-back"></button><button type="button" class="mobile-stage-action"></button></div>');
     wrap.appendChild(shell);
-    shell.querySelector('.mobile-stage-action').addEventListener('click', () => {
-      if (stage === 'config') {
-        if (PersonalCarShare.hasInvalid()) { showToast('请先修正车价和里程'); return; }
-        if (current < 2) select(current + 1);
-        else { render(); stage = 'results'; select(3); }
-      } else if (current < 5) select(current + 1);
-      else document.getElementById('imageCardBtn').click();
-    });
-    shell.querySelector('.mobile-stage-back').addEventListener('click', () => {
-      if (stage === 'results') { stage = 'config'; select(0); }
-      else { document.getElementById('resetBtn').click(); select(0); }
-    });
     shell.addEventListener('input', () => {
-      shell.querySelector('.mobile-stage-action').disabled = stage === 'config' && PersonalCarShare.hasInvalid();
+      shell.querySelector('.mobile-calculate').disabled = PersonalCarShare.hasInvalid();
     });
     panels = names.map((name, i) => {
       const panel = document.createElement('section'); panel.className = 'mobile-page-panel'; panel.id = 'mobilePanel' + i;
@@ -74,6 +59,18 @@
     move(groups[2], 1);
     move(document.querySelector('.hero'), 3); move(document.querySelector('.chart-card'), 3);
     move(document.querySelector('.detail-card'), 4); move(document.querySelector('.taxi-card'), 5);
+    const calculateAction = document.createElement('div'); calculateAction.className = 'mobile-card-actions';
+    calculateAction.innerHTML = '<span class="mobile-action-caption">准备好了，就出发</span><button type="button" class="mobile-calculate">开始测算 <span aria-hidden="true">↗</span></button>';
+    panels[2].firstChild.appendChild(calculateAction);
+    calculateAction.querySelector('button').addEventListener('click', () => {
+      if (PersonalCarShare.hasInvalid()) return;
+      render(); stage = 'results'; select(3);
+    });
+    const resultActions = document.createElement('div'); resultActions.className = 'mobile-card-actions mobile-result-actions';
+    resultActions.innerHTML = '<span class="mobile-action-caption">账算清了，看看我的另一面</span><div><button type="button" class="mobile-refill">重新填写</button><button type="button" class="mobile-reveal">揭晓用车人格 <span aria-hidden="true">↗</span></button></div>';
+    panels[5].firstChild.appendChild(resultActions);
+    resultActions.querySelector('.mobile-refill').addEventListener('click', () => { stage = 'config'; select(0); });
+    resultActions.querySelector('.mobile-reveal').addEventListener('click', () => document.getElementById('imageCardBtn').click());
     shell.addEventListener('keydown', event => {
       if (event.target.closest('input,textarea,select,summary')) return;
       if (['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) {
