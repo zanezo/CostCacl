@@ -34,6 +34,16 @@
     return i * 100 + (v - stops[i]) / (stops[i + 1] - stops[i]) * 100;
   }
   const SHARE_DESTINATION = 'https://cost.ahopig.com/';
+  const themes = {
+    forest: { name: '旷野绿', colors: ['#214D42', '#DDF17B', '#ECF0DE'] },
+    violet: { name: '暮光紫', colors: ['#514271', '#E5D3FF', '#F4EEFA'] },
+    sunset: { name: '落日橘', colors: ['#713F33', '#FFCD92', '#FAEEE0'] },
+    ocean: { name: '海盐青', colors: ['#205860', '#ADF0DD', '#E8F4EC'] },
+    blue: { name: '晴空蓝', colors: ['#274977', '#BFD9FF', '#EAF0F8'] },
+    rose: { name: '莓果粉', colors: ['#733C56', '#FFD5E4', '#F8ECF1'] },
+    mono: { name: '极简黑白', colors: ['#292D30', '#F0EEE6', '#E7E7E3'] }
+  };
+  const identityThemes = { explorer: 'forest', freedom: 'violet', companion: 'sunset', saver: 'ocean', everyday: 'blue' };
   function analyzePersonality(d, r, type) {
     const identity = eligibleIdentities(d, r)[0];
     const comments = {
@@ -52,13 +62,14 @@
     else tags.push('生活自己掌舵');
     return { identity, tags, comment: r.yearTotal > 0 ? comments[identity.id] : '当前未计入费用。先把账补齐，再看看我的出发方式。' };
   }
-  const api = { analyzePersonality, SHARE_DESTINATION, eligibleIdentities, rangeToValue, valueToRange, validateValue };
+  const api = { themes, analyzePersonality, SHARE_DESTINATION, eligibleIdentities, rangeToValue, valueToRange, validateValue };
   if (typeof module === 'object' && module.exports) { module.exports = api; return; }
 
   const $id = id => document.getElementById(id);
   const values = { carPrice: 15, mileage: 12500 };
   const invalid = new Set();
   let dialog, canvas, snapshot, opener, oldOverflow, imageUrl, cardFile, generation = 0;
+  let selectedTheme = null;
 
   function syncControls(id) {
     const c = configs[id], range = $id(id + 'Range');
@@ -119,10 +130,20 @@
     dialog.className = 'personal-share';
     dialog.setAttribute('aria-labelledby', 'personalShareTitle');
     dialog.innerHTML = `<header class="personal-header"><div><span class="personal-eyebrow">MY CAR PERSONALITY</span><h2 id="personalShareTitle">我的车格，已揭晓</h2></div><button type="button" class="personal-close" aria-label="关闭车格分析" autofocus>×</button></header>
+      <div class="personal-themes" role="group" aria-label="卡片主题色"><span>换个心情色</span><div id="personalThemeDots"></div></div>
       <div class="personal-preview"><canvas id="personalCardCanvas" width="1080" height="1920" hidden></canvas><img class="personal-export" alt="正在生成我的车格卡片" hidden><p id="personalSaveStatus" role="status">正在生成我的专属车格卡片…</p></div>
       <footer class="personal-footer"><span>把我的车格晒出去<br><small>也让朋友测测 TA 的</small></span><div class="personal-actions"><button type="button" id="personalSave" class="personal-save" disabled>保存图片</button><button type="button" id="personalNativeShare" class="personal-native" hidden>分享卡片</button></div></footer>`;
     document.body.appendChild(dialog);
     canvas = $id('personalCardCanvas');
+    Object.entries(themes).forEach(([id, theme]) => {
+      const button = document.createElement('button');
+      button.type = 'button'; button.dataset.theme = id;
+      button.title = theme.name; button.setAttribute('aria-label', theme.name);
+      button.style.setProperty('--swatch', theme.colors[0]);
+      button.style.setProperty('--swatch-pop', theme.colors[1]);
+      button.addEventListener('click', () => { selectedTheme = id; generateCard(); });
+      $id('personalThemeDots').appendChild(button);
+    });
     dialog.querySelector('.personal-close').addEventListener('click', () => dialog.close());
     dialog.addEventListener('click', event => {
       if (event.target !== dialog) return;
@@ -157,22 +178,29 @@
   function open() {
     if (invalid.size) { showToast('请先修正车价和里程输入'); return; }
     if (!dialog) createDialog();
-    const token = ++generation;
     const d = readInputs(), r = calculate(d);
     snapshot = { d, r, analysis: analyzePersonality(d, r, currentType) };
+    opener = document.activeElement;
+    oldOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    dialog.showModal();
+    dialog.scrollTop = 0;
+    generateCard();
+  }
+
+  function generateCard() {
+    const token = ++generation;
+    const { d, r, analysis } = snapshot;
+    const themeId = selectedTheme || identityThemes[analysis.identity.id];
+    dialog.querySelectorAll('[data-theme]').forEach(button => button.setAttribute('aria-pressed', String(button.dataset.theme === themeId)));
     cardFile = null;
     const image = dialog.querySelector('.personal-export');
     image.hidden = true;
     $id('personalSave').disabled = true;
     $id('personalNativeShare').hidden = true;
     $id('personalSaveStatus').textContent = '正在生成我的专属车格卡片…';
-    opener = document.activeElement;
-    oldOverflow = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
-    dialog.showModal();
-    dialog.scrollTop = 0;
     try {
-      drawCard(canvas, d, r, snapshot.analysis);
+      drawCard(canvas, d, r, analysis, themeId);
       canvas.toBlob(blob => {
         if (token !== generation) return;
         if (!blob) { $id('personalSaveStatus').textContent = '图片生成失败，请关闭后重试。'; return; }
@@ -186,20 +214,16 @@
         let canShare = false;
         try { canShare = !!(navigator.share && navigator.canShare && navigator.canShare({ files: [cardFile] })); } catch (_) { /* Save remains available. */ }
         $id('personalNativeShare').hidden = !canShare;
-        $id('personalSaveStatus').textContent = '专属卡片已生成 · 可长按图片保存';
+        $id('personalSaveStatus').textContent = themes[themeId].name + ' · 可长按图片保存';
         document.dispatchEvent(new Event('personal-card-generated'));
       }, 'image/png');
     } catch (_) { $id('personalSaveStatus').textContent = '图片生成失败，请刷新页面重试。'; }
   }
 
-  function drawCard(target, d, r, analysis) {
+  function drawCard(target, d, r, analysis, themeId) {
     const { identity, tags, comment } = analysis;
     const ctx = target.getContext('2d');
-    const palettes = {
-      explorer: ['#214D42', '#DDF17B', '#ECF0DE'], freedom: ['#514271', '#E5D3FF', '#F4EEFA'],
-      companion: ['#713F33', '#FFCD92', '#FAEEE0'], saver: ['#205860', '#ADF0DD', '#E8F4EC'], everyday: ['#274977', '#BFD9FF', '#EAF0F8']
-    };
-    const [ink, pop, paper] = palettes[identity.id];
+    const [ink, pop, paper] = themes[themeId].colors;
     const font = '"Microsoft YaHei", "PingFang SC", sans-serif';
     const text = (str, x, y, size, color = ink, weight = 500, width = 920) => {
       ctx.fillStyle = color; ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
@@ -278,6 +302,7 @@
     text('基于填写参数的趣味归类，不代表真实驾驶记录或人群排名', 94, 1812, 19, '#798276', 400, 890);
     text('费用为估算，含折旧与资金机会成本', 94, 1844, 19, '#798276');
     target.dataset.identity = identity.id;
+    target.dataset.theme = themeId;
     target.setAttribute('aria-label', '我是' + identity.name + '。' + identity.declaration + ' 我的车每周预计花 ' + fmt(r.weekTotal) + ' 元。' + comment + ' 你是什么车格？扫码测测。');
   }
   root.PersonalCarShare = Object.assign(api, { open, bindInput, setValue, value: id => values[id], hasInvalid: () => invalid.size > 0 });

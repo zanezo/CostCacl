@@ -806,7 +806,7 @@ const SHARE_DEFAULTS = {
 function buildShareUrl() {
   const defaults = { ...SHARE_DEFAULTS, ...SHARE_DEFAULTS[currentType] };
   const params = new URLSearchParams();
-  if (currentType === 'ev') params.set(SHARE_PARAM_KEYS.type, 'e');
+  params.set(SHARE_PARAM_KEYS.type, currentType === 'ev' ? 'e' : 'g');
   SHARE_INPUT_IDS.forEach(id => {
     const value = $(id).value;
     if (String(value) !== String(defaults[id])) params.set(SHARE_PARAM_KEYS[id], value);
@@ -823,7 +823,8 @@ function applySharedScenario() {
   if (!hasCompactScenario && !params.has('carPrice')) return;
   const typeCode = params.get(SHARE_PARAM_KEYS.type) || params.get('type');
   const type = typeCode === 'e' ? 'ev' : typeCode === 'g' ? 'gas' : typeCode;
-  if (type === 'gas' || type === 'ev') switchType(type);
+  // Historical links without a type represented gas vehicles.
+  switchType(type === 'ev' ? 'ev' : 'gas');
   SHARE_INPUT_IDS.forEach(id => {
     const raw = params.get(SHARE_PARAM_KEYS[id]) ?? params.get(id);
     if (raw === null) return;
@@ -1105,8 +1106,8 @@ function reset() {
   $('mileageVal').textContent = '12500km';
   $('depYearsVal').textContent = '6年';
   $('oppRateVal').textContent = '3.0%';
-  // 切回油车（会自动重置油车相关参数）
-  switchType('gas');
+  // 默认电车，自动应用电车参数
+  switchType('ev');
   // 重置停车与罚单（switchType 不覆盖这两项）
   $('parking').value = 4560;
   $('fine').value = 400;
@@ -1138,6 +1139,7 @@ function init() {
   const imageCardBtn = $('imageCardBtn');
   imageCardBtn.addEventListener('click', createResultCard);
   resetBtn.addEventListener('click', reset);
+  switchType('ev');
   applySharedScenario();
 
   // 窗口尺寸变化时重绘图表（避免首次 canvas 尺寸异常）
