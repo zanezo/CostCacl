@@ -81,7 +81,7 @@
     $id(id).setAttribute('aria-invalid', 'false');
   }
   function updateShareValidity() {
-    ['imageCardBtn', 'shareBtn', 'personalSave'].forEach(id => {
+    ['imageCardBtn', 'personalSave'].forEach(id => {
       const button = $id(id);
       if (button) button.disabled = invalid.size > 0;
     });

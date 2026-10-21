@@ -614,8 +614,7 @@
 <div class="footer-bar">
   <div class="inner">
     <button class="btn btn-secondary" id="resetBtn">参数重置</button>
-    <button class="btn btn-secondary" id="imageCardBtn">车格分析</button>
-    <button class="btn btn-primary" id="shareBtn">文字分享</button>
+    <button class="btn btn-primary" id="imageCardBtn">车格分析</button>
   </div>
 </div>
 
@@ -1135,7 +1134,6 @@ function init() {
   });
 
   // 分享与重置
-  $('shareBtn').addEventListener('click', shareResult);
   const imageCardBtn = $('imageCardBtn');
   imageCardBtn.addEventListener('click', createResultCard);
   resetBtn.addEventListener('click', reset);
@@ -1260,11 +1258,10 @@ if ('serviceWorker' in navigator) {
     const chart=wrap&&wrap.querySelector('.chart-card');
     const detail=wrap&&wrap.querySelector('.detail-card');
     const reset=document.getElementById('resetBtn');
-    const share=document.getElementById('shareBtn');
     const imageCard=document.getElementById('imageCardBtn');
-    if(!wrap||!nav||!hero||!typeCard||groups.length!==3||!taxiCard||!chart||!detail||!reset||!share||!imageCard)return;
+    if(!wrap||!nav||!hero||!typeCard||groups.length!==3||!taxiCard||!chart||!detail||!reset||!imageCard)return;
     const toolbar=document.createElement('header'); toolbar.className='desktop-toolbar';
-    const actions=document.createElement('div'); actions.className='desktop-actions'; actions.append(reset,imageCard,share);
+    const actions=document.createElement('div'); actions.className='desktop-actions'; actions.append(reset,imageCard);
     const workspace=document.createElement('main'); workspace.className='desktop-workspace';
     const parameters=document.createElement('section'); parameters.className='desktop-parameters card'; parameters.innerHTML='<h2 class="desktop-panel-title">&#21442;&#25968;&#37197;&#32622;</h2>';
     const analysis=document.createElement('section'); analysis.className='desktop-analysis';
@@ -1272,7 +1269,6 @@ if ('serviceWorker' in navigator) {
     toolbar.append(nav,typeCard,actions);
     reset.textContent='参数重置';
     imageCard.textContent='车格分析';
-    share.textContent='文字分享';
     parameters.append(...groups); analysis.append(hero,chart); breakdown.append(detail,taxiCard);
     workspace.append(parameters,analysis,breakdown); wrap.append(toolbar,workspace);
     groups.forEach(group=>{group.open=true;});

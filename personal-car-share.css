@@ -11,6 +11,12 @@
 .input-note:empty { display:none; }
 .price-help { color:#77808d; font-size:11px; line-height:1.6; margin-top:6px; max-width:190px; }
 .btn:disabled { opacity:.45; cursor:not-allowed; }
+.footer-bar .inner { gap:12px; }
+.footer-bar #resetBtn { flex:0 0 30%; }
+.footer-bar #imageCardBtn { flex:1; }
+.desktop-actions { align-items:center; }
+.desktop-actions #resetBtn { min-width:92px; }
+.desktop-actions #imageCardBtn { min-width:138px; padding-inline:25px; }
 .personal-share { --car-ink:#214d42; color:var(--car-ink); background:#f7f8f0; border:1px solid #e0e5d6; border-radius:22px; margin:auto; padding:0; width:min(480px, calc(100vw - 28px)); max-width:none; max-height:calc(100dvh - 28px); box-shadow:0 28px 100px #0a211b60; overflow:auto; }
 .personal-share::backdrop { background:#102d27b8; backdrop-filter:blur(7px); }
 .personal-share * { box-sizing:border-box; }
