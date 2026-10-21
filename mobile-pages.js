@@ -144,6 +144,19 @@
       const guide = document.createElement('div'); guide.className = 'mobile-card-guide';
       guide.innerHTML = '<svg viewBox="0 0 90 60" aria-hidden="true"><path d="' + guides[i][0] + '"/></svg><div><strong>' + guides[i][1] + '</strong><p>' + guides[i][2] + '</p></div>';
       panel.firstChild.prepend(guide);
+      const art = document.createElement('div'); art.className = 'mobile-card-art'; art.setAttribute('aria-hidden', 'true');
+      const scenes = [
+        'M30 80h175l-18-35H68z M63 45l26-24h65l33 24 M56 80v13m120-13v13 M40 105h180 M210 22v24m-12-12h24',
+        'M60 18h110v85H60z M79 38h68 M79 57h48 M79 76h58 M180 44h35v59h-35 M190 59h15 M190 75h15',
+        'M35 92l47-34 42 17 70-53 M160 22h34v33 M35 106h190 M65 100v6m45-6v6m45-6v6',
+        'M48 101V64h28v37 M103 101V40h28v61 M158 101V18h28v83 M33 107h173',
+        'M72 12h102v100l-13-8-13 8-13-8-13 8-13-8-13 8-12-8-12 8z M90 37h65 M90 56h65 M90 75h42',
+        'M25 90h67q20 0 20-23V46q0-23 23-23h83 M24 73h51 M174 68h58l-10-18h-36z M186 69v10m34-10v10 M43 22v24m-12-12h24'
+      ];
+      const captions = ['每一程，都从这里开始', '把日常，算得明明白白', '目光放远，账也算长一点', '心里有数，出发有底', '每一笔，都在自己的掌握里', '选择自己的出发方式'];
+      art.innerHTML = '<svg viewBox="0 0 260 125"><ellipse cx="130" cy="106" rx="100" ry="9" class="art-ground"/><circle cx="194" cy="34" r="28" class="art-orbit"/><path d="' + scenes[i] + '"/></svg><span>' + captions[i] + '</span>';
+      const actions = panel.querySelector('.mobile-card-actions');
+      if (actions) actions.before(art); else panel.firstChild.appendChild(art);
     });
     // Moving controls uses the content container, which remains the first child.
     document.body.classList.add('mobile-deck-mode');

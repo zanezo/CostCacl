@@ -1,0 +1,49 @@
+/* One hierarchy across themes; decorative scenes occupy spare card space. */
+body { font-family:"Microsoft YaHei","PingFang SC",sans-serif; }
+.row .label { font-size:14px; line-height:1.5; }
+.row .hint,.price-help,.suffix { line-height:1.5; }
+.num-input { font-size:18px; font-weight:600; font-variant-numeric:tabular-nums; }
+.card h3 { font-size:16px; font-weight:700; }
+.mobile-card-art { display:none; }
+@media(max-width:959px) {
+  .mobile-deck-title { font-size:19px; line-height:1.4; font-weight:700; }
+  .mobile-phase,.mobile-deck-count { font-size:10px; line-height:1.5; }
+  .mobile-card-guide { min-height:58px; }
+  .mobile-card-guide strong { font-size:13px; line-height:1.5; font-weight:600; }
+  .mobile-card-guide p { font-size:10px; line-height:1.6; }
+  .mobile-card-content .row .label,#mobilePanel0 .precise-row>.label,.mobile-long-cost .row .label { font-size:13px; font-weight:500; line-height:1.5; }
+  .mobile-card-content .row .hint,.mobile-card-content .price-help { font-size:10px; line-height:1.5; font-weight:400; }
+  .mobile-card-content .suffix,.mobile-card-content .precise-input span { font-size:11px; line-height:1.5; }
+  .mobile-card-content .num-input,#mobilePanel1 .num-input,#mobilePanel0 .precise-input input { font-size:19px; font-weight:600; }
+  .mobile-card-content .slider-val { font-size:16px; font-weight:600; }
+  .mobile-card-content .detail-item .name,.mobile-card-content .detail-item .val { font-size:13px; }
+  .mobile-card-content .detail-item .pct { font-size:11px; }
+  .mobile-card-content .cost-insight { font-size:11px; line-height:1.6; }
+  .mobile-card-content .hero .amount-week { font-size:48px; font-weight:750; }
+  .mobile-card-content .hero .sub-item .v { font-size:19px; font-weight:650; }
+  .mobile-card-actions button,.mobile-result-actions .mobile-reveal { font-size:14px; }
+  .mobile-card-art { display:flex; flex:1 1 145px; min-height:45px; max-height:210px; flex-direction:column; align-items:center; justify-content:center; gap:8px; padding:12px 0 5px; color:var(--theme-ink); opacity:.7; pointer-events:none; }
+  .mobile-card-art svg { width:min(100%,240px); flex:1 1 auto; min-height:0; max-height:150px; fill:none; stroke:currentColor; stroke-width:1.5; stroke-linecap:round; stroke-linejoin:round; }
+  .mobile-card-art .art-ground { fill:var(--theme-paper); stroke:none; }
+  .mobile-card-art .art-orbit { fill:var(--theme-pop); opacity:.5; stroke:none; }
+  .mobile-card-art span { font-size:10px; letter-spacing:1px; color:var(--theme-ink); opacity:.65; }
+  .mobile-card-actions { margin-top:0; }
+  #mobilePanel0 .mobile-card-art { flex-basis:95px; }
+  #mobilePanel1 .mobile-card-art { flex-basis:85px; }
+  #mobilePanel3 .mobile-card-art { flex-basis:70px; max-height:115px; }
+}
+@media(max-width:959px) and (max-height:730px) {
+  .mobile-card-art { min-height:0; flex-basis:55px; padding:3px 0; gap:2px; }
+  .mobile-card-art span { display:none; }
+  .mobile-card-guide { min-height:39px; }
+  .mobile-card-content .hero .amount-week { font-size:40px; }
+  .mobile-card-content .num-input,#mobilePanel1 .num-input,#mobilePanel0 .precise-input input { font-size:17px; }
+  .mobile-long-cost .row { padding:12px 0; }
+}
+@media(max-width:959px) and (max-height:620px) {
+  .mobile-card-art { flex-basis:0!important; padding:0; }
+  .mobile-card-content .hero .amount-week { font-size:35px; }
+  .mobile-card-guide { min-height:30px; }
+  #mobilePanel5 .taxi-mini { padding:6px; }
+  #mobilePanel5 .mobile-card-actions { padding-top:4px; }
+}
