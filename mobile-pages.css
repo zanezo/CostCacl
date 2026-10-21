@@ -16,6 +16,13 @@
   .mobile-card-content { height:100%; overflow:auto; overscroll-behavior-y:contain; padding:25px 16px 32px; scrollbar-width:thin; }
   .mobile-card-grip { position:absolute; bottom:10px; left:calc(50% - 20px); width:40px; height:4px; border-radius:4px; background:#d7e1ee; pointer-events:none; }
   .mobile-deck { touch-action:pan-y; }
+  .mobile-pages,.mobile-card-content { overscroll-behavior-x:contain; }
+  .mobile-deck-arrow { position:absolute; top:calc(50% - 27px); z-index:20; display:grid; place-items:center; width:38px; height:54px; border:1px solid #dce5f0; border-radius:16px; background:rgba(255,255,255,.93); color:#52708f; box-shadow:0 4px 15px #263e5915; backdrop-filter:blur(8px); cursor:pointer; touch-action:manipulation; transition:opacity .18s,background .18s; }
+  .mobile-deck-previous { left:-25px; }
+  .mobile-deck-next { right:-25px; }
+  .mobile-deck-arrow svg { width:19px; height:24px; fill:none; stroke:currentColor; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; }
+  .mobile-deck-arrow:active { background:#e9f2ff; color:#0878f9; }
+  .mobile-deck-arrow:disabled { opacity:0; pointer-events:none; }
   .mobile-card-content input[type=range] { height:40px; border-radius:0; background:linear-gradient(#e0e5eb,#e0e5eb) center / 100% 3px no-repeat; touch-action:none; }
   .mobile-card-content input[type=range]::-webkit-slider-thumb { box-sizing:border-box; width:44px; height:26px; border:1px solid #cdd3da; border-radius:5px; background:repeating-linear-gradient(90deg,transparent 0 3px,#b8c0c9 3px 4px,transparent 4px 7px) center / 22px 12px no-repeat,#f5f6f7; box-shadow:none; cursor:ew-resize; }
   .mobile-card-content input[type=range]::-moz-range-thumb { box-sizing:border-box; width:44px; height:26px; border:1px solid #cdd3da; border-radius:5px; background:repeating-linear-gradient(90deg,transparent 0 3px,#b8c0c9 3px 4px,transparent 4px 7px) center / 22px 12px no-repeat,#f5f6f7; box-shadow:none; cursor:ew-resize; }

@@ -15,6 +15,8 @@
     dots.forEach((dot, i) => { dot.setAttribute('aria-current', String(i === current)); });
     shell.querySelector('.mobile-deck-title').textContent = names[current];
     shell.querySelector('.mobile-deck-count').textContent = String(current + 1).padStart(2, '0') + ' / ' + names.length;
+    shell.querySelector('.mobile-deck-previous').disabled = current === 0;
+    shell.querySelector('.mobile-deck-next').disabled = current === names.length - 1;
     if (focus) dots[current].focus();
     requestAnimationFrame(() => window.dispatchEvent(new Event('resize')));
   }
@@ -26,6 +28,15 @@
     shell.setAttribute('aria-label', '用车成本卡片');
     shell.innerHTML = '<header class="mobile-deck-heading"><span class="mobile-deck-title"></span><span class="mobile-deck-count" aria-live="polite"></span></header><div class="mobile-deck"></div><nav class="mobile-deck-dots" aria-label="选择成本卡片"></nav>';
     wrap.appendChild(shell);
+    const deck = shell.querySelector('.mobile-deck');
+    [['previous', '上一张卡片', -1], ['next', '下一张卡片', 1]].forEach(([direction, label, delta]) => {
+      const button = document.createElement('button');
+      button.type = 'button'; button.className = 'mobile-deck-arrow mobile-deck-' + direction;
+      button.setAttribute('aria-label', label);
+      button.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="' + (delta < 0 ? 'M14 5l-7 7 7 7' : 'M10 5l7 7-7 7') + '"/></svg>';
+      button.addEventListener('click', () => select(current + delta));
+      deck.appendChild(button);
+    });
     panels = names.map((name, i) => {
       const panel = document.createElement('section'); panel.className = 'mobile-page-panel'; panel.id = 'mobilePanel' + i;
       panel.setAttribute('aria-label', name); panel.setAttribute('role', 'group'); panel.setAttribute('aria-roledescription', '卡片');
@@ -62,9 +73,18 @@
     shell.addEventListener('touchstart', event => {
       if (event.target.closest('input[type=range]')) event.preventDefault();
     }, { passive:false });
+    shell.addEventListener('touchmove', event => {
+      if (!start || event.touches.length !== 1) return;
+      const dx = event.touches[0].clientX - start.x;
+      const dy = event.touches[0].clientY - start.y;
+      if (start.slider || (Math.abs(dx) > 8 && Math.abs(dx) > Math.abs(dy) * 1.15)) {
+        if (event.cancelable) event.preventDefault();
+      }
+    }, { passive:false });
     shell.addEventListener('pointerdown', event => {
       start = null;
       if (!event.isPrimary || event.button !== 0) return;
+      if (event.target.closest('.mobile-deck-arrow,.mobile-deck-dots')) return;
       const range = event.target.closest('input[type=range]');
       let slider = null;
       if (range) {
@@ -99,7 +119,7 @@
         gesture.slider.dispatchEvent(new Event('change', {bubbles:true}));
       } else if (event.type === 'pointerup') {
         const dx = event.clientX - gesture.x, dy = event.clientY - gesture.y;
-        if (Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(dy) * 1.4) select(current + (dx < 0 ? 1 : -1));
+        if (Math.abs(dx) > 30 && Math.abs(dx) > Math.abs(dy) * 1.25) select(current + (dx < 0 ? 1 : -1));
       }
     };
     shell.addEventListener('pointerup', finish);
