@@ -1,76 +1,81 @@
-// Move existing controls, never clone them: inputs and calculation state stay intact.
+// Reuse actual controls so paging never duplicates calculation state.
 (() => {
   const media = matchMedia('(max-width: 959px)');
-  let shell, panels, tabs, current = 0, originals = [], touch;
+  let shell, panels, dots, current = 0, originals = [], start;
+  const names = ['车辆信息', '固定开销', '长期成本', '使用成本', '费用总览', '费用明细', '打车参考'];
   function select(index, focus = false) {
-    current = Math.max(0, Math.min(2, index));
-    panels.forEach((panel, i) => { panel.hidden = i !== current; });
-    tabs.forEach((tab, i) => {
-      tab.setAttribute('aria-selected', String(i === current));
-      tab.tabIndex = i === current ? 0 : -1;
+    current = Math.max(0, Math.min(names.length - 1, index));
+    panels.forEach((panel, i) => {
+      panel.dataset.position = i < current ? 'before' : i > current ? 'after' : 'active';
+      panel.inert = i !== current;
+      panel.setAttribute('aria-hidden', String(i !== current));
+      panel.style.setProperty('--distance', Math.min(3, Math.abs(i - current)));
+      panel.style.visibility = Math.abs(i - current) <= 1 ? 'visible' : 'hidden';
     });
-    shell.querySelector('.mobile-page-count').textContent = (current + 1) + ' / 3';
-    shell.querySelector('#mobilePrevious').disabled = current === 0;
-    const next = shell.querySelector('#mobileNext');
-    next.textContent = current === 2 ? '返回车辆信息' : current === 1 ? '查看费用账单 →' : '下一步：用车开销 →';
-    if (focus) tabs[current].focus();
-    if (shell.getBoundingClientRect().top < 0) shell.scrollIntoView({ block: 'start' });
+    dots.forEach((dot, i) => { dot.setAttribute('aria-current', String(i === current)); });
+    shell.querySelector('.mobile-deck-title').textContent = names[current];
+    shell.querySelector('.mobile-deck-count').textContent = String(current + 1).padStart(2, '0') + ' / ' + names.length;
+    if (focus) dots[current].focus();
     requestAnimationFrame(() => window.dispatchEvent(new Event('resize')));
   }
   function mount() {
     if (shell || !media.matches) return;
-    const wrap = document.querySelector('.wrap');
-    const groups = [...document.querySelectorAll('details.group')];
+    const wrap = document.querySelector('.wrap'), groups = [...document.querySelectorAll('details.group')];
     if (groups.length !== 3) return;
     shell = document.createElement('section'); shell.className = 'mobile-pages';
-    shell.innerHTML = `<nav class="mobile-page-tabs" role="tablist" aria-label="计算器页面"></nav><div class="mobile-page-panels"></div><div class="mobile-page-navigation"><button id="mobilePrevious" type="button">← 上一步</button><span class="mobile-page-count" aria-live="polite"></span><button id="mobileNext" type="button"></button></div><p class="mobile-page-hint">左右滑动切换页面 · 参数会自动保留</p>`;
+    shell.setAttribute('aria-label', '用车成本卡片');
+    shell.innerHTML = '<header class="mobile-deck-heading"><span class="mobile-deck-title"></span><span class="mobile-deck-count" aria-live="polite"></span></header><div class="mobile-deck"></div><nav class="mobile-deck-dots" aria-label="选择成本卡片"></nav>';
     wrap.appendChild(shell);
-    const names = ['车辆信息', '用车开销', '费用账单'];
     panels = names.map((name, i) => {
       const panel = document.createElement('section'); panel.className = 'mobile-page-panel'; panel.id = 'mobilePanel' + i;
-      panel.setAttribute('role', 'tabpanel'); panel.setAttribute('aria-labelledby', 'mobileTab' + i);
-      shell.querySelector('.mobile-page-panels').appendChild(panel); return panel;
+      panel.setAttribute('aria-label', name); panel.setAttribute('role', 'group'); panel.setAttribute('aria-roledescription', '卡片');
+      const inner = document.createElement('div'); inner.className = 'mobile-card-content'; panel.appendChild(inner);
+      shell.querySelector('.mobile-deck').appendChild(panel); return panel;
     });
-    tabs = names.map((name, i) => {
-      const tab = document.createElement('button'); tab.type = 'button'; tab.id = 'mobileTab' + i;
-      tab.setAttribute('role', 'tab'); tab.setAttribute('aria-controls', panels[i].id);
-      tab.innerHTML = '<span>' + (i + 1) + '</span>' + name;
-      tab.addEventListener('click', () => select(i));
-      tab.addEventListener('keydown', event => {
-        if (['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) {
-          event.preventDefault(); select(event.key === 'Home' ? 0 : event.key === 'End' ? 2 : current + (event.key === 'ArrowRight' ? 1 : -1), true);
-        }
-      });
-      shell.querySelector('nav').appendChild(tab); return tab;
+    dots = names.map((name, i) => {
+      const dot = document.createElement('button'); dot.type = 'button'; dot.setAttribute('aria-label', name + '，第' + (i + 1) + '张');
+      dot.addEventListener('click', () => select(i)); shell.querySelector('nav').appendChild(dot); return dot;
     });
     const move = (node, page) => {
-      const marker = document.createComment('mobile-page-original'); node.before(marker);
-      originals.push([node, marker]); panels[page].appendChild(node);
+      const marker = document.createComment('mobile-original'); node.before(marker); originals.push([node, marker]);
+      panels[page].firstChild.appendChild(node);
     };
     move(document.querySelector('#typeSegment').closest('.card'), 0); move(groups[0], 0);
-    move(groups[1], 1); move(groups[2], 1);
-    ['.hero', '.chart-card', '.taxi-card', '.detail-card'].forEach(selector => move(document.querySelector(selector), 2));
-    shell.querySelector('#mobilePrevious').addEventListener('click', () => select(current - 1));
-    shell.querySelector('#mobileNext').addEventListener('click', () => select(current === 2 ? 0 : current + 1));
+    const fixedRows = [...groups[1].querySelectorAll('.group-body > .row')];
+    move(groups[1], 1);
+    const long = document.createElement('div'); long.className = 'mobile-long-cost';
+    long.innerHTML = '<h3>长期成本</h3>'; panels[2].firstChild.appendChild(long);
+    fixedRows.slice(3).forEach(row => {
+      const marker = document.createComment('mobile-original'); row.before(marker); originals.push([row, marker]); long.appendChild(row);
+    });
+    move(groups[2], 3);
+    move(document.querySelector('.hero'), 4); move(document.querySelector('.chart-card'), 4);
+    move(document.querySelector('.detail-card'), 5); move(document.querySelector('.taxi-card'), 6);
+    shell.addEventListener('keydown', event => {
+      if (event.target.closest('input,textarea,select,summary')) return;
+      if (['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) {
+        event.preventDefault(); select(event.key === 'Home' ? 0 : event.key === 'End' ? names.length - 1 : current + (event.key === 'ArrowRight' ? 1 : -1), true);
+      }
+    });
     shell.addEventListener('touchstart', event => {
-      touch = null;
-      if (event.touches.length !== 1 || event.target.closest('input, button, textarea, select, summary, a, dialog')) return;
-      touch = { x: event.touches[0].clientX, y: event.touches[0].clientY };
-    }, { passive: true });
+      start = null;
+      if (event.touches.length !== 1 || event.target.closest('input,button,textarea,select,summary,a')) return;
+      start = { x:event.touches[0].clientX, y:event.touches[0].clientY };
+    }, { passive:true });
     shell.addEventListener('touchend', event => {
-      if (!touch || !event.changedTouches.length) return;
-      const dx = event.changedTouches[0].clientX - touch.x, dy = event.changedTouches[0].clientY - touch.y;
-      touch = null;
-      if (Math.abs(dx) > 65 && Math.abs(dx) > Math.abs(dy) * 1.6) select(current + (dx < 0 ? 1 : -1));
-    }, { passive: true });
-    shell.addEventListener('touchcancel', () => { touch = null; }, { passive: true });
+      if (!start || !event.changedTouches.length) return;
+      const dx = event.changedTouches[0].clientX - start.x, dy = event.changedTouches[0].clientY - start.y; start = null;
+      if (Math.abs(dx) > 45 && Math.abs(dx) > Math.abs(dy) * 1.5) select(current + (dx < 0 ? 1 : -1));
+    }, { passive:true });
+    shell.addEventListener('touchcancel', () => { start = null; }, { passive:true });
+    document.body.classList.add('mobile-deck-mode');
     select(current);
   }
   function update() {
     if (media.matches) mount();
     else if (shell) {
-      originals.forEach(([node, marker]) => { marker.replaceWith(node); });
-      originals = []; shell.remove(); shell = null;
+      originals.reverse().forEach(([node, marker]) => marker.replaceWith(node));
+      originals = []; shell.remove(); shell = null; document.body.classList.remove('mobile-deck-mode');
       window.dispatchEvent(new Event('resize'));
     }
   }
