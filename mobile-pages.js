@@ -1,22 +1,25 @@
 // Reuse actual controls so paging never duplicates calculation state.
 (() => {
   const media = matchMedia('(max-width: 959px)');
-  let shell, panels, dots, current = 0, originals = [], start;
+  let shell, panels, dots, current = 0, stage = 'config', originals = [], start;
   const names = ['车辆信息', '日常开销', '长期成本', '费用总览', '费用明细', '打车参考'];
   function select(index, focus = false) {
-    current = Math.max(0, Math.min(names.length - 1, index));
+    current = Math.max(stage === 'config' ? 0 : 3, Math.min(stage === 'config' ? 2 : 5, index));
     panels.forEach((panel, i) => {
       panel.dataset.position = i < current ? 'before' : i > current ? 'after' : 'active';
       panel.inert = i !== current;
       panel.setAttribute('aria-hidden', String(i !== current));
       panel.style.setProperty('--distance', Math.min(3, Math.abs(i - current)));
-      panel.style.visibility = Math.abs(i - current) <= 1 ? 'visible' : 'hidden';
+      panel.style.visibility = (stage === 'config' ? i < 3 : i >= 3) && Math.abs(i - current) <= 1 ? 'visible' : 'hidden';
     });
-    dots.forEach((dot, i) => { dot.setAttribute('aria-current', String(i === current)); });
+    dots.forEach((dot, i) => { dot.setAttribute('aria-current', String(i === current)); dot.hidden = stage === 'config' ? i >= 3 : i < 3; });
     shell.querySelector('.mobile-deck-title').textContent = names[current];
-    shell.querySelector('.mobile-deck-count').textContent = String(current + 1).padStart(2, '0') + ' / ' + names.length;
-    shell.querySelector('.mobile-deck-previous').disabled = current === 0;
-    shell.querySelector('.mobile-deck-next').disabled = current === names.length - 1;
+    shell.querySelector('.mobile-deck-count').textContent = String(current % 3 + 1).padStart(2, '0') + ' / 3';
+    shell.dataset.stage = stage;
+    shell.querySelector('.mobile-phase').textContent = stage === 'config' ? '01 / 配置我的车' : '02 / 看懂我的账';
+    shell.querySelector('.mobile-stage-action').textContent = stage === 'config' ? (current === 2 ? '开始测算' : '继续配置') : (current === 5 ? '揭晓我的车格' : '继续看账单');
+    shell.querySelector('.mobile-stage-back').textContent = stage === 'config' ? '参数重置' : '修改参数';
+    shell.querySelector('.mobile-stage-action').disabled = stage === 'config' && PersonalCarShare.hasInvalid();
     if (focus) dots[current].focus();
     requestAnimationFrame(() => window.dispatchEvent(new Event('resize')));
   }
@@ -27,15 +30,23 @@
     shell = document.createElement('section'); shell.className = 'mobile-pages';
     shell.setAttribute('aria-label', '用车成本卡片');
     shell.innerHTML = '<header class="mobile-deck-heading"><span class="mobile-deck-title"></span><span class="mobile-deck-count" aria-live="polite"></span></header><div class="mobile-deck"></div><nav class="mobile-deck-dots" aria-label="选择成本卡片"></nav>';
+    shell.insertAdjacentHTML('afterbegin', '<div class="mobile-phase"></div>');
+    shell.insertAdjacentHTML('beforeend', '<div class="mobile-stage-footer"><button type="button" class="mobile-stage-back"></button><button type="button" class="mobile-stage-action"></button></div>');
     wrap.appendChild(shell);
-    const deck = shell.querySelector('.mobile-deck');
-    [['previous', '上一张卡片', -1], ['next', '下一张卡片', 1]].forEach(([direction, label, delta]) => {
-      const button = document.createElement('button');
-      button.type = 'button'; button.className = 'mobile-deck-arrow mobile-deck-' + direction;
-      button.setAttribute('aria-label', label);
-      button.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="' + (delta < 0 ? 'M14 5l-7 7 7 7' : 'M10 5l7 7-7 7') + '"/></svg>';
-      button.addEventListener('click', () => select(current + delta));
-      deck.appendChild(button);
+    shell.querySelector('.mobile-stage-action').addEventListener('click', () => {
+      if (stage === 'config') {
+        if (PersonalCarShare.hasInvalid()) { showToast('请先修正车价和里程'); return; }
+        if (current < 2) select(current + 1);
+        else { render(); stage = 'results'; select(3); }
+      } else if (current < 5) select(current + 1);
+      else document.getElementById('imageCardBtn').click();
+    });
+    shell.querySelector('.mobile-stage-back').addEventListener('click', () => {
+      if (stage === 'results') { stage = 'config'; select(0); }
+      else { document.getElementById('resetBtn').click(); select(0); }
+    });
+    shell.addEventListener('input', () => {
+      shell.querySelector('.mobile-stage-action').disabled = stage === 'config' && PersonalCarShare.hasInvalid();
     });
     panels = names.map((name, i) => {
       const panel = document.createElement('section'); panel.className = 'mobile-page-panel'; panel.id = 'mobilePanel' + i;
@@ -84,7 +95,7 @@
     shell.addEventListener('pointerdown', event => {
       start = null;
       if (!event.isPrimary || event.button !== 0) return;
-      if (event.target.closest('.mobile-deck-arrow,.mobile-deck-dots')) return;
+      if (event.target.closest('button,.mobile-deck-dots')) return;
       const range = event.target.closest('input[type=range]');
       let slider = null;
       if (range) {
@@ -124,6 +135,20 @@
     };
     shell.addEventListener('pointerup', finish);
     shell.addEventListener('pointercancel', finish);
+    const guides = [
+      ['M12 37h65l-8-17H28z M22 37v9m43-9v9 M29 20l9-10h20l11 10', '先认识你的座驾', '车型、车价和年里程，组成测算的起点。'],
+      ['M21 11h48v42H21z M30 22h30 M30 32h20 M30 42h25', '把日常开销算进去', '保险、停车和能耗，都可以按实际情况调整。'],
+      ['M15 42l19-13 15 8 25-26 M60 11h14v14', '最后一步，看看长期成本', '折旧和资金占用也算在内，账单才更完整。'],
+      ['M18 41V26 M36 41V15 M54 41V7 M12 47h57', '账单已经为你算好', '先看总花费，再看看钱花在哪。'],
+      ['M20 9h45v43H20z M29 21h27 M29 31h27 M29 41h18', '每一笔，都有去处', '这里是各项成本的每周分摊。'],
+      ['M15 34h57l-8-15H27z M24 35v9 M61 35v9 M75 13l6 6-6 6', '有账单，也有我的态度', '看完打车参考，再揭晓你的专属车格。']
+    ];
+    panels.forEach((panel, i) => {
+      const guide = document.createElement('div'); guide.className = 'mobile-card-guide';
+      guide.innerHTML = '<svg viewBox="0 0 90 60" aria-hidden="true"><path d="' + guides[i][0] + '"/></svg><div><strong>' + guides[i][1] + '</strong><p>' + guides[i][2] + '</p></div>';
+      panel.firstChild.prepend(guide);
+    });
+    // Moving controls uses the content container, which remains the first child.
     document.body.classList.add('mobile-deck-mode');
     select(current);
   }
