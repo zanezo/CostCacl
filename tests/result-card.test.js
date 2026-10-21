@@ -9,9 +9,11 @@ assert.ok(share.includes('width="1080" height="1920"'), 'preview and export shou
 assert.ok(share.includes('canvas.toBlob('), 'save should export a real PNG');
 assert.ok(share.includes('dialog.showModal()'), 'preview must be a modal before saving');
 assert.ok(share.includes('我的车，每周预计花'), 'card should center the personal cost');
-assert.ok(share.includes('我的钱花在哪'), 'card should explain personal spending');
-assert.ok(share.includes('sorted.slice(3).reduce'), 'remaining costs must be retained as other');
+assert.ok(!share.includes('<textarea'), 'analysis must not ask users to write copy');
+assert.ok(!share.includes('personalIdentities'), 'analysis must not ask users to select an identity');
+assert.ok(share.includes('我的最大开销'), 'card should explain the biggest spending item');
+assert.ok(share.includes('qr.addData(SHARE_DESTINATION'), 'card must carry a local QR invitation');
 assert.ok(share.includes('暂无 · 尚未行驶'), 'zero mileage must not imply free driving');
-assert.ok(share.includes('按填写参数估算，含折旧与资金机会成本'), 'card must explain the estimate basis');
+assert.ok(share.includes('费用为估算，含折旧与资金机会成本'), 'card must explain the estimate basis');
 assert.ok(share.includes('personal-card-generated'), 'successful exports should report generated cards');
 console.log('personal result card integration contract passed');

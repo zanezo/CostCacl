@@ -1,5 +1,12 @@
 const assert = require('node:assert/strict');
-const { eligibleIdentities, rangeToValue, valueToRange, validateValue } = require('../personal-car-share.js');
+const { analyzePersonality, eligibleIdentities, rangeToValue, valueToRange, validateValue, SHARE_DESTINATION } = require('../personal-car-share.js');
+assert.equal(SHARE_DESTINATION, 'https://cost.ahopig.com/');
+const summary = analyzePersonality({ mileage: 30000, depYears: 6 }, { perKm: 2, yearTotal: 60000, items: [{key:'energy', value:30000}] }, 'gas');
+assert.equal(summary.identity.id, 'explorer');
+assert.ok(summary.comment.length > 10);
+assert.ok(summary.tags.includes('燃油搭子'));
+assert.deepEqual(summary, analyzePersonality({ mileage: 30000, depYears: 6 }, { perKm: 2, yearTotal: 60000, items: [{key:'energy', value:30000}] }, 'gas'));
+assert.match(analyzePersonality({mileage:0,depYears:6},{perKm:0,yearTotal:0,items:[]},'ev').comment, /未计入/);
 const ids = (mileage, depYears = 6, perKm = 2) => eligibleIdentities({ mileage, depYears }, { perKm }).map(x => x.id);
 assert.equal(ids(7999)[0], 'freedom');
 assert.equal(ids(8000)[0], 'everyday');
