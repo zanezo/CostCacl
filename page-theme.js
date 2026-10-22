@@ -4,8 +4,8 @@
   picker.innerHTML = '<summary aria-label="更换页面配色"><span class="theme-preview"></span><span>配色</span></summary><div class="page-theme-options" role="group" aria-label="页面主题"></div>';
   document.querySelector('.nav-title').after(picker);
   const apply = id => {
-    const theme = themes[id] || themes.forest;
-    if (!themes[id]) id = 'forest';
+    const theme = themes[id] || themes.blue;
+    if (!themes[id]) id = 'blue';
     const [ink, pop, paper] = theme.colors, root = document.documentElement;
     root.dataset.theme = id;
     Object.entries({ '--theme-ink':ink, '--theme-pop':pop, '--theme-paper':paper, '--blue':ink, '--bg':paper, '--green':ink }).forEach(([key, value]) => root.style.setProperty(key, value));
@@ -18,7 +18,7 @@
     button.addEventListener('click', () => { apply(id); picker.open = false; });
     picker.querySelector('.page-theme-options').appendChild(button);
   });
-  let initial = 'forest'; try { initial = localStorage.getItem('costcalc:theme') || initial; } catch (_) {}
+  let initial = 'blue'; try { initial = localStorage.getItem('costcalc:theme') || initial; } catch (_) {}
   apply(initial);
   document.addEventListener('click', event => { if (!picker.contains(event.target)) picker.open = false; });
 })();
