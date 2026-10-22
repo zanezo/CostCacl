@@ -32,6 +32,8 @@
     .primary-button, .secondary-button { min-height: 42px; padding: 0 15px; border-radius: 7px; font-weight: 700; }
     .primary-button { color: #fff; background: #0879f9; border: 1px solid #0879f9; }
     .primary-button:hover { background: #066bdc; }
+    .primary-button:disabled { cursor: wait; opacity: .55; }
+    .verification { min-height: 70px; display: grid; justify-content: center; }
     .secondary-button { color: #40516b; background: #fff; border: 1px solid #ced9e7; }
     .secondary-button:hover { background: #f6f9fd; }
     .form-error { min-height: 19px; margin: 0; color: #d92d20; font-size: 13px; }
@@ -77,11 +79,13 @@
 
     <section class="access-panel" id="accessPanel" aria-labelledby="accessTitle">
       <h2 id="accessTitle">验证访问口令</h2>
-      <p>输入管理口令即可查看统计。口令仅在当前页面内存中保留，刷新或退出后需要重新输入。</p>
+      <p>输入管理口令并完成人机验证。登录有效期为一小时，期间刷新无需重复验证。</p>
       <form class="access-form" id="accessForm">
         <label for="accessToken">管理口令</label>
         <input id="accessToken" type="password" autocomplete="current-password" required>
-        <button class="primary-button" type="submit">查看数据</button>
+        <div id="verification" class="verification" aria-label="人机验证"></div>
+        <button class="primary-button" type="submit" disabled>等待人机验证</button>
+        <button class="secondary-button" id="verificationRetry" type="button" hidden>重新加载验证</button>
         <p class="form-error" id="formError" role="alert"></p>
       </form>
     </section>
@@ -115,6 +119,7 @@
         <h3 class="section-title">近七天趋势</h3>
         <div style="overflow-x:auto"><table style="width:100%;min-width:560px;text-align:right;border-spacing:0 12px"><thead><tr><th scope="col">日期</th><th scope="col">访问</th><th scope="col">测算</th><th scope="col">生成卡片</th><th scope="col">点击保存</th><th scope="col">系统分享</th></tr></thead><tbody id="dailyRows"></tbody></table></div>
         <p class="updated-at" id="updatedAt"></p>
+        <p class="form-error" id="dashboardError" role="alert"></p>
       </div>
     </section>
   </main>
@@ -126,7 +131,65 @@
       const form = document.querySelector('#accessForm');
       const tokenInput = document.querySelector('#accessToken');
       const error = document.querySelector('#formError');
-      let activeToken = '';
+      const submit = form.querySelector('[type="submit"]');
+      const retry = document.querySelector('#verificationRetry');
+      const dashboardError = document.querySelector('#dashboardError');
+      let challengeToken = '';
+      let widgetId;
+      let busy = false;
+
+      function updateSubmit() {
+        submit.disabled = busy || !challengeToken;
+        submit.textContent = busy ? '正在验证…' : challengeToken ? '查看数据' : '等待人机验证';
+      }
+
+      function resetVerification() {
+        challengeToken = '';
+        if (widgetId !== undefined && window.turnstile) window.turnstile.reset(widgetId);
+        updateSubmit();
+      }
+
+      async function api(options = {}) {
+        const result = await fetch('/api/stats', {cache: 'no-store', credentials: 'same-origin', ...options});
+        const payload = await result.json();
+        if (!result.ok) {
+          const messages = {
+            verification_unconfigured: '人机验证尚未配置，请在 Vercel 设置 Turnstile 密钥后重新部署。',
+            verification_required: '请先完成人机验证。',
+            verification_failed: '人机验证已失效，请重新验证。',
+            rate_limited: `登录尝试过多，请约 ${Math.ceil((payload.retryAfter || 900) / 60)} 分钟后重试。`
+          };
+          const failure = new Error(messages[payload.code] || (result.status === 401 ? '管理口令不正确或登录已过期。' : '暂时无法读取统计数据，请稍后重试。'));
+          failure.status = result.status;
+          throw failure;
+        }
+        return payload;
+      }
+
+      async function initializeVerification() {
+        try {
+          const configResponse = await fetch('/api/stats?config=1', {cache: 'no-store', credentials: 'same-origin'});
+          const config = await configResponse.json();
+          if (!configResponse.ok || !config.siteKey) throw new Error('人机验证尚未配置，请在 Vercel 设置 Turnstile 密钥后重新部署。');
+          await new Promise((resolve, reject) => {
+            const script = document.createElement('script');
+            const timer = setTimeout(() => reject(new Error('验证服务加载超时，请检查网络后重试。')), 15000);
+            window.onAnalyticsTurnstileLoad = () => { clearTimeout(timer); resolve(); };
+            script.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit&onload=onAnalyticsTurnstileLoad';
+            script.async = true;
+            script.onerror = () => { clearTimeout(timer); reject(new Error('验证服务加载失败，请检查网络后重试。')); };
+            document.head.append(script);
+          });
+          widgetId = window.turnstile.render('#verification', {
+            sitekey: config.siteKey, action: 'analytics_login', theme: 'light',
+            size: window.innerWidth < 420 ? 'compact' : 'normal',
+            callback: token => { challengeToken = token; error.textContent = ''; updateSubmit(); },
+            'expired-callback': () => { challengeToken = ''; error.textContent = '验证已过期，请重新验证。'; updateSubmit(); },
+            'error-callback': () => { challengeToken = ''; error.textContent = '人机验证暂不可用，请重试。'; retry.hidden = false; updateSubmit(); }
+          });
+        } catch (failure) { error.textContent = failure.message; retry.hidden = false; }
+      }
+      retry.addEventListener('click', () => location.reload());
 
       const formatNumber = (value) => new Intl.NumberFormat('zh-CN').format(Number(value || 0));
       const formatPercent = (value) => `${(Number(value || 0) * 100).toFixed(1)}%`;
@@ -152,43 +215,49 @@
       }
 
       async function loadStats() {
-        const response = await fetch('/api/stats', {
-          headers: {
-            Authorization: `Bearer ${activeToken}`,
-          },
-          cache: 'no-store'
-        });
-        if (!response.ok) {
-          throw new Error(response.status === 401 ? '管理口令不正确或已失效。' : '暂时无法读取统计数据。');
-        }
-        return response.json();
+        return api();
       }
 
       form.addEventListener('submit', async (event) => {
         event.preventDefault();
+        if (busy || !challengeToken) return;
+        busy = true; updateSubmit();
         error.textContent = '';
-        activeToken = tokenInput.value;
         try {
-          render(await loadStats());
+          const pending = api({method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({password: tokenInput.value, token: challengeToken})});
           tokenInput.value = '';
+          await pending;
+          render(await loadStats());
           accessPanel.hidden = true;
           dashboard.hidden = false;
+          dashboardError.textContent = '';
         } catch (requestError) {
-          activeToken = '';
           error.textContent = requestError.message;
-        }
+        } finally { busy = false; resetVerification(); }
       });
 
       document.querySelector('#refreshButton').addEventListener('click', async () => {
-        try { render(await loadStats()); } catch (requestError) { error.textContent = requestError.message; }
+        dashboardError.textContent = '';
+        try { render(await loadStats()); } catch (requestError) {
+          if (requestError.status === 401) { dashboard.hidden = true; accessPanel.hidden = false; resetVerification(); error.textContent = requestError.message; }
+          else dashboardError.textContent = requestError.message;
+        }
       });
 
-      document.querySelector('#logoutButton').addEventListener('click', () => {
-        activeToken = '';
-        dashboard.hidden = true;
-        accessPanel.hidden = false;
-        tokenInput.focus();
+      document.querySelector('#logoutButton').addEventListener('click', async () => {
+        try {
+          await api({method: 'DELETE'});
+          dashboard.hidden = true;
+          accessPanel.hidden = false;
+          tokenInput.value = ''; error.textContent = '';
+          resetVerification(); tokenInput.focus();
+        } catch { dashboardError.textContent = '退出失败，请稍后重试。'; }
       });
+      (async () => {
+        try { render(await loadStats()); accessPanel.hidden = true; dashboard.hidden = false; }
+        catch (failure) { if (failure.status !== 401) error.textContent = failure.message; }
+        await initializeVerification();
+      })();
     })();
   </script>
 </body>

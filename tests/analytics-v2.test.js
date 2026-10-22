@@ -23,6 +23,7 @@ async function main() {
     if (op === 'INCR') { store.set(key, (store.get(key) || 0) + 1); return Response.json({result: store.get(key)}); }
     if (op === 'EXPIRE') return Response.json({result: 1});
     if (op === 'MGET') return Response.json({result: command.slice(1).map(k => store.get(k) || null)});
+    if (op === 'GET') return Response.json({result: store.get(key) || null});
     assert.equal(op, 'EVAL');
     const [lock, total, daily] = command.slice(3);
     if (store.has(lock)) return Response.json({result: 0});
@@ -32,7 +33,7 @@ async function main() {
     return Response.json({result: 1});
   };
   const context = {
-    Request, Response, TextEncoder, Date: Clock, crypto: require('node:crypto').webcrypto,
+    Request, Response, TextEncoder, URL, AbortSignal, Date: Clock, crypto: require('node:crypto').webcrypto,
     process: {env: {UPSTASH_REDIS_REST_URL: 'https://redis.test', UPSTASH_REDIS_REST_TOKEN: 'test', ANALYTICS_ADMIN_TOKEN: 'admin'}},
     fetch: mockFetch, console: {error() {}}
   };
@@ -61,7 +62,11 @@ async function main() {
   const request = headers => new Request('https://test/api/stats', {headers});
   assert.equal((await dashboard(request({}))).status, 401);
   assert.equal((await dashboard(request({Authorization:'Bearer wrong'}))).status, 401);
-  const headers = {Authorization:'Bearer admin'};
+  assert.equal((await dashboard(request({Authorization:'Bearer admin'}))).status, 401, 'password cannot bypass captcha');
+  const sessionToken = 'a'.repeat(64);
+  const hash = value => require('node:crypto').createHash('sha256').update(value).digest('hex');
+  store.set('stats:admin:session:' + hash(sessionToken), hash('admin'));
+  const headers = {Cookie: '__Secure-costcalc_admin=' + sessionToken};
   const payload = await (await dashboard(request(headers))).json();
   assert.equal(payload.version, 2);
   assert.equal(payload.daily.length, 7);

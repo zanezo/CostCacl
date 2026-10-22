@@ -11,7 +11,9 @@ assert.doesNotMatch(dashboard, /accessGate|X-Analytics-Gate/, 'dashboard should 
 assert.match(dashboard, /\/api\/stats/, 'dashboard should request the protected stats API');
 assert.doesNotMatch(dashboard, /localStorage|sessionStorage/, 'dashboard must not persist the admin token');
 
-assert.match(api, /req\.method\s*!==\s*['"]GET['"]/, 'stats API should only accept GET');
+assert.match(api, /siteverify/, 'login must verify the challenge server-side');
+assert.match(api, /HttpOnly; Secure; SameSite=Strict/, 'sessions must use protected cookies');
+assert.doesNotMatch(api, /headers.get\('Authorization'\)/, 'bearer password must not bypass the challenge');
 assert.match(api, /ANALYTICS_ADMIN_TOKEN/, 'stats API must require a server-side admin token');
 assert.doesNotMatch(api, /ANALYTICS_GATE_TOKEN/, 'stats API should not depend on a second secret');
 assert.match(api, /timingSafeEqual/, 'stats API should compare tokens safely');
