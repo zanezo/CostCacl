@@ -77,10 +77,8 @@
 
     <section class="access-panel" id="accessPanel" aria-labelledby="accessTitle">
       <h2 id="accessTitle">验证访问口令</h2>
-      <p>本页采用双层访问保护：先输入访问门禁，再输入管理口令。两者只在本次会话中保留，刷新后需要重新输入。</p>
+      <p>输入管理口令即可查看统计。口令仅在当前页面内存中保留，刷新或退出后需要重新输入。</p>
       <form class="access-form" id="accessForm">
-        <label for="accessGate">访问门禁</label>
-        <input id="accessGate" type="password" autocomplete="off" required>
         <label for="accessToken">管理口令</label>
         <input id="accessToken" type="password" autocomplete="current-password" required>
         <button class="primary-button" type="submit">查看数据</button>
@@ -126,10 +124,8 @@
       const accessPanel = document.querySelector('#accessPanel');
       const dashboard = document.querySelector('#dashboard');
       const form = document.querySelector('#accessForm');
-      const gateInput = document.querySelector('#accessGate');
       const tokenInput = document.querySelector('#accessToken');
       const error = document.querySelector('#formError');
-      let activeGate = '';
       let activeToken = '';
 
       const formatNumber = (value) => new Intl.NumberFormat('zh-CN').format(Number(value || 0));
@@ -159,12 +155,11 @@
         const response = await fetch('/api/stats', {
           headers: {
             Authorization: `Bearer ${activeToken}`,
-            'X-Analytics-Gate': activeGate,
           },
           cache: 'no-store'
         });
         if (!response.ok) {
-          throw new Error(response.status === 403 ? '访问门禁不正确。' : response.status === 401 ? '管理口令不正确或已失效。' : '暂时无法读取统计数据。');
+          throw new Error(response.status === 401 ? '管理口令不正确或已失效。' : '暂时无法读取统计数据。');
         }
         return response.json();
       }
@@ -172,16 +167,13 @@
       form.addEventListener('submit', async (event) => {
         event.preventDefault();
         error.textContent = '';
-        activeGate = gateInput.value;
         activeToken = tokenInput.value;
         try {
           render(await loadStats());
-          gateInput.value = '';
           tokenInput.value = '';
           accessPanel.hidden = true;
           dashboard.hidden = false;
         } catch (requestError) {
-          activeGate = '';
           activeToken = '';
           error.textContent = requestError.message;
         }
@@ -192,11 +184,10 @@
       });
 
       document.querySelector('#logoutButton').addEventListener('click', () => {
-        activeGate = '';
         activeToken = '';
         dashboard.hidden = true;
         accessPanel.hidden = false;
-        gateInput.focus();
+        tokenInput.focus();
       });
     })();
   </script>

@@ -66,7 +66,7 @@ const { chromium } = require('playwright');
       updatedAt: '2026-10-22T08:00:00Z'
     }}));
     await admin.goto(`http://127.0.0.1:${server.address().port}/admin.html`);
-    await admin.locator('#accessGate').fill('test');
+    assert.equal(await admin.locator('input[type="password"]').count(), 1);
     await admin.locator('#accessToken').fill('test');
     await admin.locator('#accessForm button').click();
     await admin.locator('#dashboard').waitFor({state: 'visible'});

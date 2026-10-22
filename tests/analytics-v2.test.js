@@ -33,7 +33,7 @@ async function main() {
   };
   const context = {
     Request, Response, TextEncoder, Date: Clock, crypto: require('node:crypto').webcrypto,
-    process: {env: {UPSTASH_REDIS_REST_URL: 'https://redis.test', UPSTASH_REDIS_REST_TOKEN: 'test', ANALYTICS_GATE_TOKEN: 'gate', ANALYTICS_ADMIN_TOKEN: 'admin'}},
+    process: {env: {UPSTASH_REDIS_REST_URL: 'https://redis.test', UPSTASH_REDIS_REST_TOKEN: 'test', ANALYTICS_ADMIN_TOKEN: 'admin'}},
     fetch: mockFetch, console: {error() {}}
   };
   const load = text => vm.runInNewContext(text.replace('export default', 'globalThis.handler ='), {...context}).fetch;
@@ -59,9 +59,9 @@ async function main() {
   assert.equal(store.get('stats:v2:page_view'), 2, 'Beijing midnight starts a new daily count');
   assert.equal(store.get('stats:v2:daily:2026-10-23:page_view'), 1);
   const request = headers => new Request('https://test/api/stats', {headers});
-  assert.equal((await dashboard(request({}))).status, 403);
-  assert.equal((await dashboard(request({'X-Analytics-Gate':'gate'}))).status, 401);
-  const headers = {'X-Analytics-Gate':'gate', Authorization:'Bearer admin'};
+  assert.equal((await dashboard(request({}))).status, 401);
+  assert.equal((await dashboard(request({Authorization:'Bearer wrong'}))).status, 401);
+  const headers = {Authorization:'Bearer admin'};
   const payload = await (await dashboard(request(headers))).json();
   assert.equal(payload.version, 2);
   assert.equal(payload.daily.length, 7);

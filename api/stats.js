@@ -53,13 +53,8 @@ export default {
     const req = request;
     if (req.method !== 'GET') return response({ error: 'Method not allowed' }, 405, { Allow: 'GET' });
 
-    if (!process.env.ANALYTICS_GATE_TOKEN || !process.env.ANALYTICS_ADMIN_TOKEN) {
+    if (!process.env.ANALYTICS_ADMIN_TOKEN) {
       return response({ error: 'Analytics protection is not configured' }, 503);
-    }
-
-    const gateToken = request.headers.get('X-Analytics-Gate') || '';
-    if (!(await timingSafeEqual(gateToken, process.env.ANALYTICS_GATE_TOKEN))) {
-      return response({ error: 'Forbidden' }, 403);
     }
 
     const authorization = request.headers.get('Authorization') || '';
