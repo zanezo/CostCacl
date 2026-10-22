@@ -133,12 +133,16 @@ export default {
         return response({error: 'Unauthorized'}, 401, {'Set-Cookie': cookie('', 0)});
       }
       const {metrics, daily} = await loadMetrics();
+      const recent = await redisCommand(['ZREVRANGE', 'stats:v2:profiles', 0, 49]);
+      const ids = Array.isArray(recent.result) ? recent.result.filter(id => typeof id === 'string' && /^[a-zA-Z0-9_-]{16,80}$/.test(id)) : [];
+      const profiles = ids.length ? await redisCommand(['MGET', ...ids.map(id => 'stats:v2:profile:' + id)]) : {result: []};
+      const visitors = (profiles.result || []).flatMap(raw => { try { const p = JSON.parse(raw); return p && p.id && p.nickname ? [p] : []; } catch { return []; } });
       const conversion = {
         calculationRate: metrics.page_view ? metrics.calculation_completed / metrics.page_view : 0,
         cardRate: metrics.calculation_completed ? metrics.result_card_generated / metrics.calculation_completed : 0,
         shareRate: metrics.calculation_completed ? metrics.result_shared / metrics.calculation_completed : 0
       };
-      return response({ version: 2, timezone: 'Asia/Shanghai', metrics, daily, conversion, updatedAt: new Date().toISOString() });
+      return response({ version: 2, timezone: 'Asia/Shanghai', metrics, daily, visitors, conversion, updatedAt: new Date().toISOString() });
     } catch (error) {
       console.error('Stats dashboard request failed');
       return response({ error: 'Stats unavailable' }, 503);

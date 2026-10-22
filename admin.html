@@ -73,7 +73,7 @@
       <div>
         <p class="eyebrow"><span class="status-dot"></span>PRIVATE ANALYTICS</p>
         <h1>车辆成本计算器 · 数据概览</h1>
-        <p class="subtitle">仅展示聚合行为数据，不包含访客身份或参数明细。建议同时配合平台侧路由保护使用。</p>
+        <p class="subtitle">展示使用统计与分享卡片昵称，不包含真实身份或车辆参数。建议同时配合平台侧路由保护使用。</p>
       </div>
     </header>
 
@@ -119,6 +119,9 @@
         <h3 class="section-title">近七天趋势</h3>
         <div style="overflow-x:auto"><table style="width:100%;min-width:560px;text-align:right;border-spacing:0 12px"><thead><tr><th scope="col">日期</th><th scope="col">访问</th><th scope="col">测算</th><th scope="col">生成卡片</th><th scope="col">点击保存</th><th scope="col">系统分享</th></tr></thead><tbody id="dailyRows"></tbody></table></div>
         <p class="updated-at" id="updatedAt"></p>
+        <h3 class="section-title">最近生成卡片的使用者</h3>
+        <p class="metric-hint">最近 50 位，按匿名浏览器编号区分，同名或改名不合并。次数按每天去重，从生成卡片起记录，保留 180 天；不是实名账号。</p>
+        <div style="overflow-x:auto"><table style="width:100%;min-width:680px;text-align:left;border-spacing:8px 12px"><thead><tr><th>昵称</th><th>浏览器编号</th><th>最近使用</th><th>生成卡片</th><th>点击保存</th><th>系统分享</th></tr></thead><tbody id="visitorRows"></tbody></table></div>
         <p class="form-error" id="dashboardError" role="alert"></p>
       </div>
     </section>
@@ -211,6 +214,12 @@
           return row;
         });
         document.querySelector('#dailyRows').replaceChildren(...rows);
+        document.querySelector('#visitorRows').replaceChildren(...(payload.visitors || []).map(visitor => {
+          const row = document.createElement('tr');
+          const time = new Date(Number(visitor.lastSeen)).toLocaleString('zh-CN', {timeZone:'Asia/Shanghai'});
+          [visitor.nickname, visitor.id, time, visitor.counts?.result_card_generated || 0, visitor.counts?.result_saved || 0, visitor.counts?.result_shared || 0].forEach(value => { const cell = document.createElement('td'); cell.textContent = String(value); row.append(cell); });
+          return row;
+        }));
         document.querySelector('#updatedAt').textContent = `更新时间：${new Date(payload.updatedAt).toLocaleString('zh-CN', {timeZone: 'Asia/Shanghai'})}（北京时间）`;
       }
 

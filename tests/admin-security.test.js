@@ -39,6 +39,7 @@ async function main() {
     if (op === 'GET') return Response.json({result: store.get(key) || null});
     if (op === 'DEL') { store.delete(key); return Response.json({result: 1}); }
     if (op === 'MGET') return Response.json({result: Array(56).fill(0)});
+    if (op === 'ZREVRANGE') return Response.json({result: []});
     throw new Error('Unexpected Redis command ' + op);
   };
   const handler = vm.runInNewContext(fs.readFileSync('api/stats.js', 'utf8').replace('export default', 'globalThis.handler ='), {

@@ -24,6 +24,7 @@ async function main() {
     if (op === 'EXPIRE') return Response.json({result: 1});
     if (op === 'MGET') return Response.json({result: command.slice(1).map(k => store.get(k) || null)});
     if (op === 'GET') return Response.json({result: store.get(key) || null});
+    if (op === 'ZREVRANGE') return Response.json({result: [...store.keys()].filter(k => k.startsWith('stats:v2:profile:')).map(k => k.slice('stats:v2:profile:'.length))});
     assert.equal(op, 'EVAL');
     const [lock, total, daily] = command.slice(3);
     if (store.has(lock)) return Response.json({result: 0});
@@ -51,9 +52,16 @@ async function main() {
   await send('result_card_generated');
   assert.equal(store.get('stats:v2:result_card_generated'), 1);
   const before = calls.length;
+  assert.equal((await send('page_view', {nickname:'啊'.repeat(17)})).status, 400);
+  assert.equal((await send('page_view', {nickname:'昵称\u202e'})).status, 400);
   assert.equal((await send('page_view', {version: 1})).status, 400);
   assert.equal((await send('__proto__')).status, 400);
   assert.equal(calls.length, before, 'invalid events must not touch Redis');
+  await send('result_card_generated', {nickname:'钱包漏风的车主'});
+  const profileCommand = calls.at(-1);
+  assert.equal(profileCommand[2], 5);
+  assert.equal(profileCommand[6], 'stats:v2:profile:browser-1234567890');
+  assert.equal(profileCommand[8], '钱包漏风的车主');
   now += 2000;
   await send();
   await send('calculation_completed');
@@ -66,9 +74,12 @@ async function main() {
   const sessionToken = 'a'.repeat(64);
   const hash = value => require('node:crypto').createHash('sha256').update(value).digest('hex');
   store.set('stats:admin:session:' + hash(sessionToken), hash('admin'));
+  store.set('stats:v2:profile:browser-1234567890', JSON.stringify({id:'browser-1234567890',nickname:'快乐小车主',lastSeen:String(now),counts:{result_card_generated:1}}));
   const headers = {Cookie: '__Secure-costcalc_admin=' + sessionToken};
   const payload = await (await dashboard(request(headers))).json();
   assert.equal(payload.version, 2);
+  assert.equal(payload.visitors[0].nickname, '快乐小车主');
+  assert.equal(payload.visitors[0].counts.result_card_generated, 1);
   assert.equal(payload.daily.length, 7);
   assert.equal(payload.daily[6].day, '2026-10-23');
   assert.equal(payload.daily[6].page_view, 1);

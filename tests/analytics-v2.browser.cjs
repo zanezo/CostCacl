@@ -44,11 +44,30 @@ const { chromium } = require('playwright');
       }
       await page.evaluate(() => PersonalCarShare.open());
       await page.waitForFunction(() => !document.querySelector('#personalSave').disabled);
+      assert.equal(await page.locator('.visitor-name').count(), 0, 'nickname entry should only appear in card preview');
+      const visitorBefore = await page.evaluate(() => VisitorProfile.id);
+      assert.ok((await page.locator('#cardNickname').inputValue()).length > 0);
+      await page.locator('#cardNickname').fill('长'.repeat(17));
+      await page.locator('.personal-nickname button').click();
+      assert.ok((await page.locator('#cardNicknameHint').textContent()).includes('1～16'));
+      await page.locator('#cardNickname').fill('今天也是快乐车主');
+      await page.locator('.personal-nickname button').click();
+      await page.waitForFunction(() => !document.querySelector('#personalSave').disabled);
+      assert.equal(await page.evaluate(() => VisitorProfile.id), visitorBefore);
+      assert.equal(await page.evaluate(() => localStorage.getItem('costcalc:nickname')), '今天也是快乐车主');
+      assert.equal(await page.locator('.personal-nickname').evaluate(el => el.scrollWidth <= el.clientWidth), true, 'nickname editor must fit the preview');
+      if (width === 390) {
+        await page.locator('#personalShareDialog').evaluate(el => { el.scrollTop = 0; });
+        await page.screenshot({path: path.join(require('node:os').tmpdir(), 'costcalc-nickname-mobile.png')});
+        await page.locator('#personalCardCanvas').evaluate(canvas => { window.cardData = canvas.toDataURL(); });
+        fs.writeFileSync(path.join(require('node:os').tmpdir(), 'costcalc-nickname-card.png'), Buffer.from(await page.evaluate(() => window.cardData.split(',')[1]), 'base64'));
+      }
       await page.locator('#personalSave').click();
       await page.waitForTimeout(100);
       for (const name of ['calculation_completed', 'result_card_generated', 'result_saved']) {
         assert.ok(events.some(e => e.event === name), `${width}: missing ${name}`);
       }
+      assert.ok(events.some(e => e.event === 'result_card_generated' && e.nickname === '今天也是快乐车主'));
       assert.ok(!events.some(e => e.event === 'result_shared'), 'download must not count as sharing');
       await page.locator('#personalNativeShare').click();
       await page.waitForTimeout(100);
@@ -81,6 +100,7 @@ const { chromium } = require('playwright');
       return route.fulfill({json: {
       metrics: {page_view: 20, result_saved: 3}, conversion: {calculationRate: 0.5},
       daily: [{day: '2026-10-22', page_view: 20, calculation_completed: 10, result_card_generated: 4, result_saved: 3, result_shared: 1}],
+      visitors: [{id:'browser-1234567890', nickname:'<img src=x onerror=alert(1)>', lastSeen:Date.now(), counts:{result_card_generated:2,result_saved:1}}],
       updatedAt: '2026-10-22T08:00:00Z'
       }});
     });
@@ -92,6 +112,8 @@ const { chromium } = require('playwright');
     assert.equal(await admin.locator('[data-metric="page_view"]').textContent(), '20');
     assert.equal(await admin.locator('[data-metric="result_saved"]').textContent(), '3');
     assert.equal(await admin.locator('#dailyRows tr').count(), 1);
+    assert.equal(await admin.locator('#visitorRows tr').count(), 1);
+    assert.equal(await admin.locator('#visitorRows img').count(), 0, 'nicknames must be rendered as text');
     assert.equal(await admin.locator('[data-conversion="calculationRate"]').textContent(), '50.0%');
     await admin.locator('#refreshButton').click();
     await admin.locator('#logoutButton').click();

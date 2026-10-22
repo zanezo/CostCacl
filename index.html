@@ -651,7 +651,7 @@
 
 
 <script src="vendor/qrcode-generator.js"></script>
-<script src="personal-car-share.js"></script>
+<script src="visitor-profile.js"></script><script src="personal-car-share.js"></script>
 <script>
 /* =========================================================
    车辆成本计算器 - 逻辑层
@@ -1597,26 +1597,14 @@ if ('serviceWorker' in navigator) {
         </div>
     </footer><script>
   (() => {
-    const visitorKey = 'costcalc:visitor-id';
     const visitDayKey = 'costcalc:last-visit-day';
-    const visitorId = (() => {
-      const fallback = crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random().toString(36).slice(2)}-visitor`;
-      try {
-        let id = localStorage.getItem(visitorKey);
-        if (!id) {
-          id = fallback;
-          localStorage.setItem(visitorKey, id);
-        }
-        return id;
-      } catch { return fallback; }
-    })();
 
     function postAnalyticsEvent(event) {
       fetch('/api/event', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         keepalive: true,
-        body: JSON.stringify({ event, visitorId, version: 2 })
+        body: JSON.stringify({ event, visitorId: VisitorProfile.id, nickname: VisitorProfile.revealed ? VisitorProfile.nickname : undefined, version: 2 })
       }).catch(() => {});
     }
 
@@ -1636,6 +1624,7 @@ if ('serviceWorker' in navigator) {
     }
 
     sendAnalyticsEvent('page_view');
+    document.addEventListener('visitor-profile-updated', () => postAnalyticsEvent('page_view'));
     let completionTimer;
     document.addEventListener('input', event => {
       if (!event.isTrusted || !isDesktopWorkspace() || !event.target.matches('.wrap input')) return;

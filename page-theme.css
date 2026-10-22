@@ -1,4 +1,10 @@
 .page-theme-picker { position:fixed; right:18px; bottom:18px; z-index:60; font-size:12px; color:var(--theme-ink); }
+.personal-nickname { margin:0 24px 16px; padding:14px 16px; background:var(--theme-paper,#eef3fa); border-radius:16px; }
+.personal-nickname label { display:block; font-size:12px; font-weight:700; margin-bottom:8px; }
+.personal-nickname>div { display:flex; gap:8px; }
+.personal-nickname input { min-width:0; flex:1; padding:10px; border:1px solid #cdd6e1; border-radius:10px; font:inherit; font-size:14px; background:white; }
+.personal-nickname button { flex-shrink:0; border:0; border-radius:10px; padding:8px 12px; background:var(--theme-ink,#274977); color:white; font-size:12px; cursor:pointer; }
+.personal-nickname small { display:block; margin-top:8px; font-size:11px; line-height:1.5; color:#65748a; }
 .page-theme-picker summary { display:flex; align-items:center; gap:6px; list-style:none; cursor:pointer; background:#fffef8; border:1px solid color-mix(in srgb,var(--theme-ink) 18%,white); border-radius:24px; padding:8px 11px; }
 .page-theme-picker summary::-webkit-details-marker { display:none; }
 .theme-preview { width:14px; height:14px; border-radius:50%; background:linear-gradient(135deg,var(--theme-ink) 50%,var(--theme-pop) 50%); }

@@ -1,7 +1,18 @@
 const EVENT_CONFIG = Object.fromEntries(['page_view', 'calculation_completed', 'result_card_generated', 'result_saved', 'result_shared', 'feedback_clicked', 'return_visit'].map(name => [name, { key: 'stats:v2:' + name, limit: 40, window: 60 }]));
 // Same China-calendar-day browser counting for every funnel stage.
 const COUNT_SCRIPT = `
-if redis.call('EXISTS', KEYS[1]) == 1 then return 0 end
+local duplicate = redis.call('EXISTS', KEYS[1])
+if ARGV[1] ~= '' then
+  local raw = redis.call('GET', KEYS[4])
+  local profile = raw and cjson.decode(raw) or {id=ARGV[3], firstSeen=ARGV[2], counts={}}
+  profile.nickname = ARGV[1]
+  profile.lastSeen = ARGV[2]
+  if duplicate == 0 then profile.counts[ARGV[4]] = (profile.counts[ARGV[4]] or 0) + 1 end
+  redis.call('SET', KEYS[4], cjson.encode(profile), 'EX', 15552000)
+  redis.call('ZADD', KEYS[5], ARGV[2], ARGV[3])
+  redis.call('ZREMRANGEBYRANK', KEYS[5], 0, -1001)
+end
+if duplicate == 1 then return 0 end
 redis.call('INCR', KEYS[2])
 redis.call('INCR', KEYS[3])
 redis.call('SET', KEYS[1], '1', 'EX', 172800)
@@ -65,6 +76,8 @@ export default {
     if (!config) return response({ error: 'Unsupported event' }, 400);
     const visitorId = safeVisitorId(body.visitorId);
     if (body.version !== 2 || !visitorId) return response({ error: 'Analytics v2 visitor required' }, 400);
+    const nickname = typeof body.nickname === 'string' ? body.nickname.normalize('NFKC').trim() : '';
+    if (body.nickname !== undefined && (!nickname || Array.from(nickname).length > 16 || /[\u0000-\u001f\u007f-\u009f\u202a-\u202e\u2066-\u2069]/.test(nickname))) return response({error: 'Invalid nickname'}, 400);
 
     try {
       if (await checkThrottle(eventName, request, config)) {
@@ -72,9 +85,10 @@ export default {
       }
 
       const day = new Date(Date.now() + 8 * 3600000).toISOString().slice(0, 10);
-      const result = await redisCommand(['EVAL', COUNT_SCRIPT, 3,
+      const result = await redisCommand(['EVAL', COUNT_SCRIPT, 5,
         'stats:v2:dedupe:' + day + ':' + eventName + ':' + visitorId,
-        config.key, 'stats:v2:daily:' + day + ':' + eventName]);
+        config.key, 'stats:v2:daily:' + day + ':' + eventName,
+        'stats:v2:profile:' + visitorId, 'stats:v2:profiles', nickname, String(Date.now()), visitorId, eventName]);
       return response({ ok: true, duplicate: Number(result.result) === 0 });
     } catch (error) {
       console.error('Event analytics error:', error);

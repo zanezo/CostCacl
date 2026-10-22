@@ -131,10 +131,19 @@
     dialog.setAttribute('aria-labelledby', 'personalShareTitle');
     dialog.innerHTML = `<header class="personal-header"><div><span class="personal-eyebrow">MY CAR PERSONALITY</span><h2 id="personalShareTitle">我的车格，已揭晓</h2></div><button type="button" class="personal-close" aria-label="关闭车格分析" autofocus>×</button></header>
       <div class="personal-themes" role="group" aria-label="卡片主题色"><span>换个心情色</span><div id="personalThemeDots"></div></div>
+      <form class="personal-nickname"><label for="cardNickname">这张卡片的主人</label><div><input id="cardNickname" autocomplete="nickname" aria-describedby="cardNicknameHint" required><button type="submit">换个昵称 ↗</button></div><small id="cardNicknameHint" role="status">昵称会出现在卡片与使用统计中，1～16 个字，不用真名也很酷。</small></form>
       <div class="personal-preview"><canvas id="personalCardCanvas" width="1080" height="1920" hidden></canvas><img class="personal-export" alt="正在生成我的车格卡片" hidden><p id="personalSaveStatus" role="status">正在生成我的专属车格卡片…</p></div>
       <footer class="personal-footer"><span>把我的车格晒出去<br><small>也让朋友测测 TA 的</small></span><div class="personal-actions"><button type="button" id="personalSave" class="personal-save" disabled>保存图片</button><button type="button" id="personalNativeShare" class="personal-native" hidden>分享卡片</button></div></footer>`;
     document.body.appendChild(dialog);
     canvas = $id('personalCardCanvas');
+    $id('cardNickname').value = root.VisitorProfile.nickname;
+    dialog.querySelector('.personal-nickname').addEventListener('submit', event => {
+      event.preventDefault();
+      if (!root.VisitorProfile.setNickname($id('cardNickname').value)) { $id('cardNicknameHint').textContent = '昵称要在 1～16 个字之间哦。'; return; }
+      $id('cardNickname').value = root.VisitorProfile.nickname;
+      $id('cardNicknameHint').textContent = '已更新，这张卡片现在属于你。昵称会用于使用统计。';
+      generateCard();
+    });
     Object.entries(themes).forEach(([id, theme]) => {
       const button = document.createElement('button');
       button.type = 'button'; button.dataset.theme = id;
@@ -217,6 +226,7 @@
         try { canShare = !!(navigator.share && navigator.canShare && navigator.canShare({ files: [cardFile] })); } catch (_) { /* Save remains available. */ }
         $id('personalNativeShare').hidden = !canShare;
         $id('personalSaveStatus').textContent = themes[themeId].name + ' · 可长按图片保存';
+        root.VisitorProfile.revealed = true;
         document.dispatchEvent(new Event('personal-card-generated'));
       }, 'image/png');
     } catch (_) { $id('personalSaveStatus').textContent = '图片生成失败，请刷新页面重试。'; }
@@ -251,7 +261,7 @@
     text('车 格 鉴 定 所', 94, 119, 29, pop, 700);
     text('MY CAR PERSONALITY', 650, 117, 19, pop, 600, 330);
     stroke(94, 154, 986, 154, pop);
-    text('原来，我是这样的车主', 94, 219, 27, '#FFFEF7');
+    text((root.VisitorProfile ? root.VisitorProfile.nickname : '我') + ' 的用车人格', 94, 219, 27, '#FFFEF7', 500, 860);
     text(identity.name, 86, 351, 112, pop, 800);
     wrap(identity.declaration, 94, 418, 32, 860, 48, '#FFFEF7');
 
