@@ -25,6 +25,31 @@
 <link rel="icon" type="image/svg+xml" href="/icons/favicon.svg">
 
 <title>车辆成本计算器</title>
+
+
+
+
+<style>html.app-booting body{visibility:hidden}html.app-booting{background:var(--theme-paper,#ECF0DE)}</style>
+<script>
+(() => {
+  const root = document.documentElement;
+  root.classList.add('app-booting');
+  // Fail open if an optional asset fails; never strand the page behind a loading gate.
+  const fallback = setTimeout(() => root.classList.remove('app-booting'), 4000);
+  document.addEventListener('DOMContentLoaded', () => {
+    const reveal = () => {
+      if (root.dataset.calculatorReady !== 'true') return;
+      clearTimeout(fallback);
+      root.classList.remove('app-booting');
+      observer.disconnect();
+    };
+    const observer = new MutationObserver(reveal);
+    observer.observe(root, {attributes:true,attributeFilter:['data-calculator-ready']});
+    requestAnimationFrame(reveal);
+  });
+})();
+</script>
+
 <script>
 /* === Chart.js v4.4.0 (inlined) === */
 /**
@@ -433,6 +458,10 @@
     input[type="range"]::-webkit-slider-thumb { background: #fff; }
   }
 </style>
+<link rel="stylesheet" href="personal-car-share.css">
+<link rel="stylesheet" href="mobile-pages.css">
+<link rel="stylesheet" href="page-theme.css">
+<link rel="stylesheet" href="visual-polish.css">
 </head>
 <body>
 <div class="wrap">
@@ -620,7 +649,7 @@
 
 <div class="toast" id="toast"></div>
 
-<link rel="stylesheet" href="personal-car-share.css">
+
 <script src="vendor/qrcode-generator.js"></script>
 <script src="personal-car-share.js"></script>
 <script>
@@ -1625,5 +1654,5 @@ if ('serviceWorker' in navigator) {
       }
     });
   })();
-</script><link rel="stylesheet" href="mobile-pages.css"><script src="mobile-pages.js"></script><link rel="stylesheet" href="page-theme.css"><script src="page-theme.js"></script><link rel="stylesheet" href="visual-polish.css"></body>
+</script><script src="mobile-pages.js"></script><script src="page-theme.js"></script></body>
 </html>
