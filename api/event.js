@@ -1,10 +1,12 @@
-﻿const EVENT_CONFIG = {
-  calculation_completed: { key: 'stats:calculation_completed', once: true, limit: 6, window: 60 },
-  result_card_generated: { key: 'stats:result_card_generated', once: false, limit: 8, window: 60 },
-  result_shared: { key: 'stats:result_shared', once: false, limit: 8, window: 60 },
-  feedback_clicked: { key: 'stats:feedback_clicked', once: true, limit: 4, window: 300 },
-  return_visit: { key: 'stats:return_visit', once: true, limit: 4, window: 3600 }
-};
+const EVENT_CONFIG = Object.fromEntries(['page_view', 'calculation_completed', 'result_card_generated', 'result_saved', 'result_shared', 'feedback_clicked', 'return_visit'].map(name => [name, { key: 'stats:v2:' + name, limit: 40, window: 60 }]));
+// Same China-calendar-day browser counting for every funnel stage.
+const COUNT_SCRIPT = `
+if redis.call('EXISTS', KEYS[1]) == 1 then return 0 end
+redis.call('INCR', KEYS[2])
+redis.call('INCR', KEYS[3])
+redis.call('SET', KEYS[1], '1', 'EX', 172800)
+return 1
+`;
 
 function response(payload, status = 200, headers = {}) {
   return Response.json(payload, { status, headers: { 'Cache-Control': 'no-store', ...headers } });
@@ -31,7 +33,9 @@ async function redisCommand(command) {
     body: JSON.stringify(command)
   });
   if (!redisResponse.ok) throw new Error(`Redis request failed: ${redisResponse.status}`);
-  return redisResponse.json();
+  const payload = await redisResponse.json();
+  if (payload.error) throw new Error('Redis command failed');
+  return payload;
 }
 
 function safeVisitorId(value) {
@@ -57,23 +61,21 @@ export default {
     let body;
     try { body = await request.json(); } catch { body = null; }
     const eventName = body && body.event;
-    const config = EVENT_CONFIG[eventName];
+    const config = Object.hasOwn(EVENT_CONFIG, eventName) ? EVENT_CONFIG[eventName] : null;
     if (!config) return response({ error: 'Unsupported event' }, 400);
+    const visitorId = safeVisitorId(body.visitorId);
+    if (body.version !== 2 || !visitorId) return response({ error: 'Analytics v2 visitor required' }, 400);
 
     try {
       if (await checkThrottle(eventName, request, config)) {
         return response({ ok: false, throttled: true, cooldown: config.window }, 429);
       }
 
-      const visitorId = safeVisitorId(body.visitorId);
-      if (config.once && visitorId) {
-        const lockKey = `stats:dedupe:${eventName}:${visitorId}`;
-        const lock = await redisCommand(['SET', lockKey, '1', 'EX', 86400, 'NX']);
-        if (lock.result === null) return response({ ok: true, duplicate: true });
-      }
-
-      const result = await redisCommand(['INCR', config.key]);
-      return response({ ok: true, count: Number(result.result || 0) });
+      const day = new Date(Date.now() + 8 * 3600000).toISOString().slice(0, 10);
+      const result = await redisCommand(['EVAL', COUNT_SCRIPT, 3,
+        'stats:v2:dedupe:' + day + ':' + eventName + ':' + visitorId,
+        config.key, 'stats:v2:daily:' + day + ':' + eventName]);
+      return response({ ok: true, duplicate: Number(result.result) === 0 });
     } catch (error) {
       console.error('Event analytics error:', error);
       return response({ error: 'Analytics unavailable' }, 503);

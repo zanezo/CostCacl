@@ -1,12 +1,5 @@
-﻿const METRICS = [
-  ['visit', 'cost-calc:visits'],
-  ['calculation_completed', 'stats:calculation_completed'],
-  ['result_card_generated', 'stats:result_card_generated'],
-  ['result_shared', 'stats:result_shared'],
-  ['feedback_clicked', 'stats:feedback_clicked'],
-  ['return_visit', 'stats:return_visit']
-];
-
+const METRICS = ['page_view', 'calculation_completed', 'result_card_generated', 'result_saved', 'result_shared', 'feedback_clicked', 'return_visit'];
+// Legacy counters (cost-calc:visits, stats:calculation_completed) remain untouched.
 function response(payload, status = 200, headers = {}) {
   return Response.json(payload, {
     status,
@@ -39,12 +32,20 @@ async function redisCommand(command) {
     body: JSON.stringify(command)
   });
   if (!redisResponse.ok) throw new Error(`Redis request failed: ${redisResponse.status}`);
-  return redisResponse.json();
+  const payload = await redisResponse.json();
+  if (payload.error) throw new Error('Redis command failed');
+  return payload;
 }
 
 async function loadMetrics() {
-  const payload = await redisCommand(['MGET', ...METRICS.map(([, key]) => key)]);
-  return Object.fromEntries(METRICS.map(([name], index) => [name, Number(payload.result?.[index] || 0)]));
+  const now = Date.now();
+  const days = Array.from({length: 7}, (_, i) => new Date(now + 8 * 3600000 - (6 - i) * 86400000).toISOString().slice(0,10));
+  const keys = [...METRICS.map(name => 'stats:v2:' + name), ...days.flatMap(day => METRICS.map(name => 'stats:v2:daily:' + day + ':' + name))];
+  const payload = await redisCommand(['MGET', ...keys]);
+  const values = payload.result || [];
+  const metrics = Object.fromEntries(METRICS.map((name, i) => [name, Number(values[i] || 0)]));
+  const daily = days.map((day, d) => ({day, ...Object.fromEntries(METRICS.map((name, i) => [name, Number(values[METRICS.length * (d + 1) + i] || 0)]))}));
+  return {metrics, daily};
 }
 
 export default {
@@ -68,13 +69,13 @@ export default {
     }
 
     try {
-      const metrics = await loadMetrics();
+      const {metrics, daily} = await loadMetrics();
       const conversion = {
-        calculationRate: metrics.visit ? metrics.calculation_completed / metrics.visit : 0,
+        calculationRate: metrics.page_view ? metrics.calculation_completed / metrics.page_view : 0,
         cardRate: metrics.calculation_completed ? metrics.result_card_generated / metrics.calculation_completed : 0,
         shareRate: metrics.calculation_completed ? metrics.result_shared / metrics.calculation_completed : 0
       };
-      return response({ metrics, conversion, updatedAt: new Date().toISOString() });
+      return response({ version: 2, timezone: 'Asia/Shanghai', metrics, daily, conversion, updatedAt: new Date().toISOString() });
     } catch (error) {
       console.error('Stats dashboard error:', error);
       return response({ error: 'Stats unavailable' }, 503);

@@ -1599,58 +1599,59 @@ if ('serviceWorker' in navigator) {
   (() => {
     const visitorKey = 'costcalc:visitor-id';
     const visitDayKey = 'costcalc:last-visit-day';
-    const completedKey = 'costcalc:completed-session';
     const visitorId = (() => {
+      const fallback = crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random().toString(36).slice(2)}-visitor`;
       try {
         let id = localStorage.getItem(visitorKey);
         if (!id) {
-          id = (crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random().toString(36).slice(2)}`);
+          id = fallback;
           localStorage.setItem(visitorKey, id);
         }
         return id;
-      } catch { return ''; }
+      } catch { return fallback; }
     })();
 
-    function sendAnalyticsEvent(event) {
+    function postAnalyticsEvent(event) {
       fetch('/api/event', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ event, visitorId })
+        keepalive: true,
+        body: JSON.stringify({ event, visitorId, version: 2 })
       }).catch(() => {});
     }
 
-    try {
-      const today = new Date().toISOString().slice(0, 10);
-      const lastVisit = localStorage.getItem(visitDayKey);
-      if (lastVisit && lastVisit !== today) sendAnalyticsEvent('return_visit');
-      localStorage.setItem(visitDayKey, today);
-    } catch {}
+    let trackedDay = '';
+    function sendAnalyticsEvent(event) {
+      const today = new Date(Date.now() + 8 * 3600000).toISOString().slice(0, 10);
+      if (trackedDay !== today) {
+        trackedDay = today;
+        postAnalyticsEvent('page_view');
+        try {
+          const lastVisit = localStorage.getItem(visitDayKey);
+          if (lastVisit && lastVisit < today) postAnalyticsEvent('return_visit');
+          localStorage.setItem(visitDayKey, today);
+        } catch {}
+      }
+      if (event !== 'page_view') postAnalyticsEvent(event);
+    }
 
+    sendAnalyticsEvent('page_view');
     let completionTimer;
-    document.addEventListener('input', (event) => {
-      if (!(event.target instanceof HTMLInputElement)) return;
+    document.addEventListener('input', event => {
+      if (!event.isTrusted || !isDesktopWorkspace() || !event.target.matches('.wrap input')) return;
       clearTimeout(completionTimer);
       completionTimer = setTimeout(() => {
-        try {
-          if (sessionStorage.getItem(completedKey)) return;
-          sessionStorage.setItem(completedKey, '1');
-        } catch {}
-        sendAnalyticsEvent('calculation_completed');
-      }, 1500);
+        if (!PersonalCarShare.hasInvalid()) sendAnalyticsEvent('calculation_completed');
+      }, 800);
     }, { passive: true });
-
+    document.addEventListener('calculation-viewed', () => sendAnalyticsEvent('calculation_completed'));
+    document.addEventListener('personal-card-saved', () => sendAnalyticsEvent('result_saved'));
     document.addEventListener('personal-card-generated', () => sendAnalyticsEvent('result_card_generated'));
     document.addEventListener('personal-card-shared', () => sendAnalyticsEvent('result_shared'));
     document.addEventListener('click', (event) => {
-      const button = event.target.closest('button');
       const link = event.target.closest('a');
       if (link && link.matches('.footer-link[href*="/issues"]')) {
         sendAnalyticsEvent('feedback_clicked');
-      }
-      if (!button) return;
-
-      if (/share|copy/i.test(button.id)) {
-        setTimeout(() => sendAnalyticsEvent('result_shared'), 200);
       }
     });
   })();

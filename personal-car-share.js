@@ -159,6 +159,7 @@
       const link = document.createElement('a');
       link.href = imageUrl; link.download = cardFile.name;
       document.body.appendChild(link); link.click(); link.remove();
+      document.dispatchEvent(new Event('personal-card-saved'));
       $id('personalSaveStatus').textContent = '图片已保存；若未自动下载，可长按卡片保存。';
     });
     $id('personalNativeShare').addEventListener('click', async () => {
@@ -177,6 +178,7 @@
 
   function open() {
     if (invalid.size) { showToast('请先修正车价和里程输入'); return; }
+    document.dispatchEvent(new Event('calculation-viewed'));
     if (!dialog) createDialog();
     const d = readInputs(), r = calculate(d);
     snapshot = { d, r, analysis: analyzePersonality(d, r, currentType) };

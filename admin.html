@@ -90,7 +90,7 @@
 
     <section class="dashboard" id="dashboard" hidden aria-live="polite">
       <div class="dashboard-bar">
-        <h2>累计行为</h2>
+        <h2>新版行为统计</h2>
         <div class="dashboard-actions">
           <button class="secondary-button" type="button" id="refreshButton">刷新</button>
           <button class="secondary-button" type="button" id="logoutButton">退出</button>
@@ -98,20 +98,24 @@
       </div>
       <div class="dashboard-body">
         <div class="metric-grid">
-          <article class="metric"><p class="metric-label">累计访问</p><p class="metric-value" data-metric="visit">0</p><p class="metric-hint">页面打开总次数</p></article>
-          <article class="metric"><p class="metric-label">完成计算</p><p class="metric-value" data-metric="calculation_completed">0</p><p class="metric-hint">修改参数后获得结果</p></article>
-          <article class="metric"><p class="metric-label">图片分享</p><p class="metric-value" data-metric="result_card_generated">0</p><p class="metric-hint">点击图片分享</p></article>
-          <article class="metric"><p class="metric-label">文字分享</p><p class="metric-value" data-metric="result_shared">0</p><p class="metric-hint">点击文字分享或系统分享</p></article>
+          <article class="metric"><p class="metric-label">访问人次</p><p class="metric-value" data-metric="page_view">0</p><p class="metric-hint">同浏览器每天计一次</p></article>
+          <article class="metric"><p class="metric-label">有效测算</p><p class="metric-value" data-metric="calculation_completed">0</p><p class="metric-hint">手机开始测算；电脑修改参数获得有效结果或揭晓人格</p></article>
+          <article class="metric"><p class="metric-label">生成车格卡</p><p class="metric-value" data-metric="result_card_generated">0</p><p class="metric-hint">成功生成图片，换色不重复计数</p></article>
+          <article class="metric"><p class="metric-label">点击保存</p><p class="metric-value" data-metric="result_saved">0</p><p class="metric-hint">触发下载，不能确认实际保存或转发</p></article>
+          <article class="metric"><p class="metric-label">系统分享成功</p><p class="metric-value" data-metric="result_shared">0</p><p class="metric-hint">系统分享接口返回成功</p></article>
           <article class="metric"><p class="metric-label">反馈意愿</p><p class="metric-value" data-metric="feedback_clicked">0</p><p class="metric-hint">点击提交反馈</p></article>
           <article class="metric"><p class="metric-label">再次访问</p><p class="metric-value" data-metric="return_visit">0</p><p class="metric-hint">同浏览器隔天回访</p></article>
         </div>
 
         <h3 class="section-title">核心转化</h3>
         <div class="insight-grid">
-          <article class="insight"><p>访问后开始计算</p><strong data-conversion="calculationRate">0.0%</strong></article>
-          <article class="insight"><p>计算后图片分享</p><strong data-conversion="cardRate">0.0%</strong></article>
-          <article class="insight"><p>计算后文字分享</p><strong data-conversion="shareRate">0.0%</strong></article>
+          <article class="insight"><p>访问 → 有效测算</p><strong data-conversion="calculationRate">0.0%</strong></article>
+          <article class="insight"><p>测算 → 生成车格卡</p><strong data-conversion="cardRate">0.0%</strong></article>
+          <article class="insight"><p>测算 → 系统分享成功</p><strong data-conversion="shareRate">0.0%</strong></article>
         </div>
+        <p class="metric-hint">北京时间按匿名浏览器每日去重，累计值为每日人数之和，并非历史独立用户数。新版从升级后开始记录，旧版数据保留但不混算。不上传车辆参数。</p>
+        <h3 class="section-title">近七天趋势</h3>
+        <div style="overflow-x:auto"><table style="width:100%;min-width:560px;text-align:right;border-spacing:0 12px"><thead><tr><th scope="col">日期</th><th scope="col">访问</th><th scope="col">测算</th><th scope="col">生成卡片</th><th scope="col">点击保存</th><th scope="col">系统分享</th></tr></thead><tbody id="dailyRows"></tbody></table></div>
         <p class="updated-at" id="updatedAt"></p>
       </div>
     </section>
@@ -138,7 +142,17 @@
         document.querySelectorAll('[data-conversion]').forEach((element) => {
           element.textContent = formatPercent(payload.conversion[element.dataset.conversion]);
         });
-        document.querySelector('#updatedAt').textContent = `更新时间：${new Date(payload.updatedAt).toLocaleString('zh-CN')}`;
+        const rows = (payload.daily || []).map(day => {
+          const row = document.createElement('tr');
+          ['day', 'page_view', 'calculation_completed', 'result_card_generated', 'result_saved', 'result_shared'].forEach(key => {
+            const cell = document.createElement('td');
+            cell.textContent = key === 'day' ? day.day : formatNumber(day[key]);
+            row.append(cell);
+          });
+          return row;
+        });
+        document.querySelector('#dailyRows').replaceChildren(...rows);
+        document.querySelector('#updatedAt').textContent = `更新时间：${new Date(payload.updatedAt).toLocaleString('zh-CN', {timeZone: 'Asia/Shanghai'})}（北京时间）`;
       }
 
       async function loadStats() {

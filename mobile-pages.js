@@ -65,6 +65,7 @@
     calculateAction.querySelector('button').addEventListener('click', () => {
       if (PersonalCarShare.hasInvalid()) return;
       render(); stage = 'results'; select(3);
+      document.dispatchEvent(new Event('calculation-viewed'));
     });
     const resultActions = document.createElement('div'); resultActions.className = 'mobile-card-actions mobile-result-actions';
     resultActions.innerHTML = '<span class="mobile-action-caption">账算清了，看看我的另一面</span><div><button type="button" class="mobile-refill">重新填写</button><button type="button" class="mobile-reveal">揭晓用车人格 <span aria-hidden="true">↗</span></button></div>';
