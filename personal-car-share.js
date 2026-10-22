@@ -131,19 +131,24 @@
     dialog.setAttribute('aria-labelledby', 'personalShareTitle');
     dialog.innerHTML = `<header class="personal-header"><div><span class="personal-eyebrow">MY CAR PERSONALITY</span><h2 id="personalShareTitle">我的车格，已揭晓</h2></div><button type="button" class="personal-close" aria-label="关闭车格分析" autofocus>×</button></header>
       <div class="personal-themes" role="group" aria-label="卡片主题色"><span>换个心情色</span><div id="personalThemeDots"></div></div>
-      <form class="personal-nickname"><label for="cardNickname">这张卡片的主人</label><div><input id="cardNickname" autocomplete="nickname" aria-describedby="cardNicknameHint" required><button type="submit">换个昵称 ↗</button></div><small id="cardNicknameHint" role="status">昵称会出现在卡片与使用统计中，1～16 个字，不用真名也很酷。</small></form>
-      <div class="personal-preview"><canvas id="personalCardCanvas" width="1080" height="1920" hidden></canvas><img class="personal-export" alt="正在生成我的车格卡片" hidden><p id="personalSaveStatus" role="status">正在生成我的专属车格卡片…</p></div>
+      <div class="personal-preview"><canvas id="personalCardCanvas" width="1080" height="1920" hidden></canvas><div class="personal-card-surface"><img class="personal-export" alt="正在生成我的车格卡片" hidden><input id="cardNickname" class="personal-inline-nickname" autocomplete="nickname" aria-label="编辑卡片昵称" maxlength="32" hidden></div><p id="personalSaveStatus" role="status">正在生成我的专属车格卡片…</p></div>
       <footer class="personal-footer"><span>把我的车格晒出去<br><small>也让朋友测测 TA 的</small></span><div class="personal-actions"><button type="button" id="personalSave" class="personal-save" disabled>保存图片</button><button type="button" id="personalNativeShare" class="personal-native" hidden>分享卡片</button></div></footer>`;
     document.body.appendChild(dialog);
     canvas = $id('personalCardCanvas');
     $id('cardNickname').value = root.VisitorProfile.nickname;
-    dialog.querySelector('.personal-nickname').addEventListener('submit', event => {
-      event.preventDefault();
-      if (!root.VisitorProfile.setNickname($id('cardNickname').value)) { $id('cardNicknameHint').textContent = '昵称要在 1～16 个字之间哦。'; return; }
-      $id('cardNickname').value = root.VisitorProfile.nickname;
-      $id('cardNicknameHint').textContent = '已更新，这张卡片现在属于你。昵称会用于使用统计。';
-      generateCard();
+    const nickname = $id('cardNickname');
+    let nicknameTimer;
+    const saveNickname = () => {
+      clearTimeout(nicknameTimer);
+      if (nickname.value === root.VisitorProfile.nickname) return;
+      if (root.VisitorProfile.setNickname(nickname.value)) generateCard();
+    };
+    nickname.addEventListener('input', event => {
+      if (!event.isComposing) { clearTimeout(nicknameTimer); nicknameTimer = setTimeout(saveNickname, 450); }
     });
+    nickname.addEventListener('compositionend', () => { clearTimeout(nicknameTimer); nicknameTimer = setTimeout(saveNickname, 450); });
+    nickname.addEventListener('blur', () => { saveNickname(); nickname.value = root.VisitorProfile.nickname; });
+    nickname.addEventListener('keydown', event => { if (event.key === 'Enter' && !event.isComposing) { event.preventDefault(); nickname.blur(); } });
     Object.entries(themes).forEach(([id, theme]) => {
       const button = document.createElement('button');
       button.type = 'button'; button.dataset.theme = id;
@@ -206,7 +211,7 @@
     dialog.querySelectorAll('[data-theme]').forEach(button => button.setAttribute('aria-pressed', String(button.dataset.theme === themeId)));
     cardFile = null;
     const image = dialog.querySelector('.personal-export');
-    image.hidden = true;
+    if (!image.src) image.hidden = true;
     $id('personalSave').disabled = true;
     $id('personalNativeShare').hidden = true;
     $id('personalSaveStatus').textContent = '正在生成我的专属车格卡片…';
@@ -221,6 +226,11 @@
         image.src = imageUrl;
         image.alt = canvas.getAttribute('aria-label') + ' 可长按保存。';
         image.hidden = false;
+        const nickname = $id('cardNickname');
+        nickname.hidden = false;
+        nickname.style.color = themes[themeId].colors[2];
+        nickname.style.backgroundColor = themes[themeId].colors[0];
+        if (document.activeElement !== nickname) nickname.value = root.VisitorProfile.nickname;
         $id('personalSave').disabled = false;
         let canShare = false;
         try { canShare = !!(navigator.share && navigator.canShare && navigator.canShare({ files: [cardFile] })); } catch (_) { /* Save remains available. */ }
@@ -261,7 +271,11 @@
     text('车 格 鉴 定 所', 94, 119, 29, pop, 700);
     text('MY CAR PERSONALITY', 650, 117, 19, pop, 600, 330);
     stroke(94, 154, 986, 154, pop);
-    text((root.VisitorProfile ? root.VisitorProfile.nickname : '我') + ' 的用车人格', 94, 219, 27, '#FFFEF7', 500, 860);
+    const nickname = root.VisitorProfile ? root.VisitorProfile.nickname : '我';
+    text(nickname, 94, 219, 27, '#FFFEF7', 700, 650);
+    const nicknameWidth = ctx.measureText(nickname).width;
+    stroke(94, 226, 94 + nicknameWidth, 226, '#FFFEF7', 2);
+    text(' 的用车人格', 94 + nicknameWidth, 219, 27, '#FFFEF7', 500, 210);
     text(identity.name, 86, 351, 112, pop, 800);
     wrap(identity.declaration, 94, 418, 32, 860, 48, '#FFFEF7');
 

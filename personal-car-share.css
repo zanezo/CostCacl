@@ -52,3 +52,7 @@
   .personal-footer { padding:12px 14px max(12px,env(safe-area-inset-bottom)); }
   .personal-actions button { padding:11px 12px; font-size:12px; }
 }
+
+.personal-card-surface { position:relative; width:100%; max-width:355px; }
+.personal-inline-nickname { position:absolute; left:8.7%; top:9.55%; width:64%; height:2.6%; padding:0; margin:0; border:0; border-radius:0; outline:none; font:700 clamp(7px,2.1vw,9px)/1.2 "Microsoft YaHei","PingFang SC",sans-serif; text-decoration:underline; text-underline-offset:3px; cursor:text; opacity:0; }
+.personal-inline-nickname:focus { opacity:1; text-decoration:underline; }
