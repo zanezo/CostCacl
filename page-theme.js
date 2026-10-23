@@ -11,6 +11,7 @@
     Object.entries({ '--theme-ink':ink, '--theme-pop':pop, '--theme-paper':paper, '--blue':ink, '--bg':paper, '--green':ink }).forEach(([key, value]) => root.style.setProperty(key, value));
     picker.querySelectorAll('button').forEach(button => button.setAttribute('aria-pressed', String(button.dataset.pageTheme === id)));
     try { localStorage.setItem('costcalc:theme', id); } catch (_) { /* Theme still works without storage. */ }
+    document.dispatchEvent(new Event('page-theme-changed'));
   };
   Object.entries(themes).forEach(([id, theme]) => {
     const button = document.createElement('button'); button.type = 'button'; button.dataset.pageTheme = id;
@@ -19,6 +20,7 @@
     picker.querySelector('.page-theme-options').appendChild(button);
   });
   let initial = 'blue'; try { initial = localStorage.getItem('costcalc:theme') || initial; } catch (_) {}
+  window.PageTheme = {apply};
   apply(initial);
   document.addEventListener('click', event => { if (!picker.contains(event.target)) picker.open = false; });
 })();

@@ -44,6 +44,17 @@ const { chromium } = require('playwright');
       }
       await page.evaluate(() => PersonalCarShare.open());
       await page.waitForFunction(() => !document.querySelector('#personalSave').disabled);
+      for (const theme of ['rose','mono','ocean','blue']) {
+        await page.locator(`#personalThemeDots [data-theme="${theme}"]`).click();
+        await page.waitForFunction(id => document.querySelector('#personalCardCanvas').dataset.theme === id && !document.querySelector('#personalSave').disabled, theme);
+        assert.equal(await page.evaluate(() => document.documentElement.dataset.theme), theme);
+        assert.equal(await page.evaluate(() => localStorage.getItem('costcalc:theme')), theme);
+        assert.equal(await page.locator(`[data-page-theme="${theme}"]`).getAttribute('aria-pressed'), 'true');
+      }
+      await page.evaluate(() => PageTheme.apply('violet'));
+      await page.waitForFunction(() => document.querySelector('#personalCardCanvas').dataset.theme === 'violet' && !document.querySelector('#personalSave').disabled);
+      assert.equal(await page.locator('#personalThemeDots [data-theme="violet"]').getAttribute('aria-pressed'), 'true');
+      assert.equal(await page.locator('#personalShareDialog').evaluate(el => getComputedStyle(el).backgroundColor), 'rgb(244, 238, 250)');
       assert.equal(await page.locator('.visitor-name').count(), 0, 'nickname entry should only appear in card preview');
       const visitorBefore = await page.evaluate(() => VisitorProfile.id);
       assert.match(await page.locator('#cardNickname').inputValue(), /^车主[A-Z0-9]{6}$/);

@@ -69,7 +69,7 @@
   const values = { carPrice: 15, mileage: 12500 };
   const invalid = new Set();
   let dialog, canvas, snapshot, opener, oldOverflow, imageUrl, cardFile, generation = 0;
-  let selectedTheme = null;
+  document.addEventListener('page-theme-changed', () => { if (dialog?.open && snapshot) generateCard(); });
   let updateNicknameHint = () => {};
 
   function syncControls(id) {
@@ -163,7 +163,7 @@
       button.title = theme.name; button.setAttribute('aria-label', theme.name);
       button.style.setProperty('--swatch', theme.colors[0]);
       button.style.setProperty('--swatch-pop', theme.colors[1]);
-      button.addEventListener('click', () => { selectedTheme = id; generateCard(); });
+      button.addEventListener('click', () => { root.PageTheme.apply(id); });
       $id('personalThemeDots').appendChild(button);
     });
     dialog.querySelector('.personal-close').addEventListener('click', () => dialog.close());
@@ -215,7 +215,7 @@
   function generateCard() {
     const token = ++generation;
     const { d, r, analysis } = snapshot;
-    const themeId = selectedTheme || document.documentElement.dataset.theme || identityThemes[analysis.identity.id];
+    const themeId = document.documentElement.dataset.theme || 'blue';
     dialog.querySelectorAll('[data-theme]').forEach(button => button.setAttribute('aria-pressed', String(button.dataset.theme === themeId)));
     cardFile = null;
     const image = dialog.querySelector('.personal-export');

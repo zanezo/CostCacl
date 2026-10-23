@@ -60,3 +60,15 @@
 .personal-name-hint span { font-size:9px; white-space:nowrap; }
 .personal-name-hint svg { width:38px; height:25px; fill:none; stroke:currentColor; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; }
 .personal-name-hint[hidden] { display:none; }
+.personal-share { --car-ink:var(--theme-ink,#274977); --car-paper:var(--theme-paper,#eaf0f8); --car-pop:var(--theme-pop,#bfd9ff); color:var(--car-ink); background:var(--car-paper); border-color:color-mix(in srgb,var(--car-ink) 18%,var(--car-paper)); box-shadow:0 28px 100px color-mix(in srgb,var(--car-ink) 35%,transparent); }
+.personal-share::backdrop { background:color-mix(in srgb,var(--theme-ink,#274977) 65%,transparent); }
+.personal-header,.personal-footer { background:color-mix(in srgb,var(--car-paper) 96%,transparent); border-color:color-mix(in srgb,var(--car-ink) 15%,var(--car-paper)); }
+.personal-preview { background:radial-gradient(ellipse at top,color-mix(in srgb,var(--car-pop) 35%,var(--car-paper)),var(--car-paper) 70%); }
+.personal-eyebrow,.personal-themes>span,#personalSaveStatus,.personal-footer small { color:color-mix(in srgb,var(--car-ink) 70%,var(--car-paper)); }
+.personal-close,.personal-actions button { border-color:color-mix(in srgb,var(--car-ink) 25%,var(--car-paper)); }
+.personal-save { background:var(--car-ink); color:var(--car-paper); }
+.personal-native { background:var(--car-pop); color:var(--car-ink); }
+.personal-share :focus-visible { outline-color:var(--car-ink); }
+.personal-export { box-shadow:0 10px 28px color-mix(in srgb,var(--car-ink) 15%,transparent); }
+#personalThemeDots button[aria-pressed=true] { border-color:var(--car-ink); }
+#personalThemeDots button[aria-pressed=true]::after { color:var(--car-ink); background:var(--car-paper); }
