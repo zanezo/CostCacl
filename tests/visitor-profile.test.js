@@ -10,7 +10,8 @@ function boot(localStorage = storage) {
   return context.window.VisitorProfile;
 }
 const first = boot();
-assert.ok(first.nickname.length > 0);
+assert.match(first.nickname, /^车主[A-Z0-9]{6}$/);
+assert.equal(boot().nickname, first.nickname);
 assert.equal(first.revealed, false);
 assert.equal(first.setNickname(''), false);
 assert.equal(first.setNickname('车'.repeat(17)), false);
@@ -20,6 +21,11 @@ const second = boot();
 assert.equal(second.id, first.id);
 assert.equal(second.nickname, '快乐小车主');
 assert.equal(second.revealed, false);
+assert.equal(second.setNickname('快乐不打表'), true);
+assert.equal(boot().nickname, '快乐不打表', 'explicit custom names should remain');
+values.delete('costcalc:nickname-custom');
+values.set('costcalc:nickname', '钱包漏风的车主');
+assert.match(boot().nickname, /^车主[A-Z0-9]{6}$/, 'legacy automatic names should migrate');
 const fallback = boot({getItem() {throw new Error('Blocked');}, setItem() {throw new Error('Blocked');}});
 assert.ok(fallback.id);
 assert.ok(fallback.nickname);
