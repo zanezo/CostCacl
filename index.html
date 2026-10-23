@@ -7,15 +7,15 @@
 <meta name="theme-color" content="#007AFF">
 <link rel="canonical" href="https://cost.ahopig.com/">
 <meta property="og:type" content="website">
-<meta property="og:title" content="&#36710;&#36742;&#25104;&#26412;&#35745;&#31639;&#22120;">
+<meta property="og:title" content="&#29992;&#36710;&#25104;&#26412;&#35745;&#31639;&#22120;">
 <meta property="og:description" content="&#35745;&#31639;&#36710;&#36742;&#27599;&#21608;/&#27599;&#24180;&#30340;&#25345;&#26377;&#21644;&#20986;&#34892;&#25104;&#26412;">
 <meta property="og:url" content="https://cost.ahopig.com/">
 <meta property="og:image" content="https://cost.ahopig.com/social-preview.svg">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
-<meta property="og:image:alt" content="&#36710;&#36742;&#25104;&#26412;&#35745;&#31639;&#22120;">
+<meta property="og:image:alt" content="&#29992;&#36710;&#25104;&#26412;&#35745;&#31639;&#22120;">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="&#36710;&#36742;&#25104;&#26412;&#35745;&#31639;&#22120;">
+<meta name="twitter:title" content="&#29992;&#36710;&#25104;&#26412;&#35745;&#31639;&#22120;">
 <meta name="twitter:description" content="&#35745;&#31639;&#36710;&#36742;&#27599;&#21608;/&#27599;&#24180;&#30340;&#25345;&#26377;&#21644;&#20986;&#34892;&#25104;&#26412;">
 <meta name="twitter:image" content="https://cost.ahopig.com/social-preview.svg">
 <meta name="description" content="计算车辆每周/每年的持有和出行成本">
@@ -24,7 +24,7 @@
 <link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32.png">
 <link rel="icon" type="image/svg+xml" href="/icons/favicon.svg">
 
-<title>车辆成本计算器</title>
+<title>用车成本计算器</title>
 
 
 
@@ -466,7 +466,7 @@
 <body>
 <div class="wrap">
 
-  <div class="nav-title"><span class="brand-mark">&#128663;</span><span>&#36710;&#36742;&#25104;&#26412;&#35745;&#31639;&#22120;</span><span class="visit-counter hidden" id="visitCounter"><span class="visit-counter-label">&#32047;&#35745;&#35775;&#38382;</span><strong class="visit-counter-value" id="visitCount">0</strong><span class="visit-counter-unit">&#27425;</span></span><div class="visit-milestone" id="visitMilestone" role="status" aria-live="polite"><span class="visit-milestone-spark">&#10024;</span><span>&#31532; <strong id="visitMilestoneCount">0</strong> &#27425;&#35775;&#38382;&#65281;&#24863;&#35874;&#20320;&#20154;&#27668;&#21152;&#25345;&#12290;</span></div></div>
+  <div class="nav-title"><span class="brand-mark">&#128663;</span><span>&#29992;&#36710;&#25104;&#26412;&#35745;&#31639;&#22120;</span><span class="visit-counter hidden" id="visitCounter"><span class="visit-counter-label">&#32047;&#35745;&#35775;&#38382;</span><strong class="visit-counter-value" id="visitCount">0</strong><span class="visit-counter-unit">&#27425;</span></span><div class="visit-milestone" id="visitMilestone" role="status" aria-live="polite"><span class="visit-milestone-spark">&#10024;</span><span>&#31532; <strong id="visitMilestoneCount">0</strong> &#27425;&#35775;&#38382;&#65281;&#24863;&#35874;&#20320;&#20154;&#27668;&#21152;&#25345;&#12290;</span></div></div>
 
   <!-- 顶部概览 -->
   <div class="card hero">
@@ -643,7 +643,7 @@
 <div class="footer-bar">
   <div class="inner">
     <button class="btn btn-secondary" id="resetBtn">参数重置</button>
-    <button class="btn btn-primary" id="imageCardBtn">车格分析</button>
+    <button class="btn btn-primary" id="imageCardBtn">揭晓用车人格</button>
   </div>
 </div>
 
@@ -654,7 +654,7 @@
 <script src="visitor-profile.js"></script><script src="personal-car-share.js"></script>
 <script>
 /* =========================================================
-   车辆成本计算器 - 逻辑层
+   用车成本计算器 - 逻辑层
    ========================================================= */
 
 // 预设默认值
@@ -1069,7 +1069,7 @@ async function shareResult() {
     const pct = (it.value / r.yearTotal * 100).toFixed(1);
     lines.push('\u2022 ' + LABELS[it.key] + '\uff1a\u00a5' + fmt(it.value) + '\uff08' + pct + '%\uff09');
   });
-  lines.push('', '\u2014\u2014 \u7531\u300c\u8f66\u8f86\u6210\u672c\u8ba1\u7b97\u5668\u300d\u8ba1\u7b97');
+  lines.push('', '\u2014\u2014 \u7531\u300c\u7528\u8f66\u6210\u672c\u8ba1\u7b97\u5668\u300d\u8ba1\u7b97');
   lines.push('\u67e5\u770b\u6216\u590d\u7b97\uff1a' + shareUrl);
   const text = lines.join('\n');
 
@@ -1297,7 +1297,7 @@ if ('serviceWorker' in navigator) {
     const breakdown=document.createElement('aside'); breakdown.className='desktop-breakdown';
     toolbar.append(nav,typeCard,actions);
     reset.textContent='参数重置';
-    imageCard.textContent='车格分析';
+    imageCard.textContent='揭晓用车人格';
     parameters.append(...groups); analysis.append(hero,chart); breakdown.append(detail,taxiCard);
     workspace.append(parameters,analysis,breakdown); wrap.append(toolbar,workspace);
     groups.forEach(group=>{group.open=true;});

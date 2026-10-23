@@ -9,6 +9,6 @@ const renderedPage = page
 
 assert.doesNotMatch(page, /私家车|\\u79c1\\u5bb6\\u8f66|&#31169;&#23478;&#36710;/, 'source should not retain any private-car wording form');
 assert.doesNotMatch(renderedPage, /私家车/, 'rendered wording should avoid private-car phrasing');
-assert.match(renderedPage, /车辆成本计算器/, 'rendered wording should use the broader vehicle calculator name');
+assert.match(renderedPage, /用车成本计算器/, 'rendered wording should use the agreed product name');
 
 console.log('vehicle wording contract passed');

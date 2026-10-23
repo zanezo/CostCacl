@@ -9,12 +9,12 @@ assert.ok(
   'reset button should say 参数重置'
 );
 assert.ok(
-  page.includes('id="imageCardBtn">车格分析</button>') || page.includes('id="imageCardBtn">&#22270;&#29255;&#20998;&#20139;</button>'),
+  page.includes('id="imageCardBtn">揭晓用车人格</button>') || page.includes('id="imageCardBtn">&#22270;&#29255;&#20998;&#20139;</button>'),
   'image button should say 图片分享'
 );
 assert.ok(!page.includes('id="shareBtn"'), 'text share entry should be removed');
 assert.ok(page.includes("reset.textContent='参数重置'"), 'desktop should preserve reset label');
-assert.ok(page.includes("imageCard.textContent='车格分析'"), 'desktop should expose car personality analysis');
+assert.ok(page.includes("imageCard.textContent='揭晓用车人格'"), 'desktop should expose car personality analysis');
 
 console.log('button label contract passed');
 

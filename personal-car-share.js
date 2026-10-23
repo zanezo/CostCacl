@@ -130,10 +130,10 @@
     dialog.id = 'personalShareDialog';
     dialog.className = 'personal-share';
     dialog.setAttribute('aria-labelledby', 'personalShareTitle');
-    dialog.innerHTML = `<header class="personal-header"><div><span class="personal-eyebrow">MY CAR PERSONALITY</span><h2 id="personalShareTitle">我的车格，已揭晓</h2></div><button type="button" class="personal-close" aria-label="关闭车格分析" autofocus>×</button></header>
+    dialog.innerHTML = `<header class="personal-header"><div><span class="personal-eyebrow">MY CAR PERSONALITY</span><h2 id="personalShareTitle">我的用车人格</h2></div><button type="button" class="personal-close" aria-label="关闭揭晓用车人格" autofocus>×</button></header>
       <div class="personal-themes" role="group" aria-label="卡片主题色"><span>换个心情色</span><div id="personalThemeDots"></div></div>
-      <div class="personal-preview"><canvas id="personalCardCanvas" width="1080" height="1920" hidden></canvas><div class="personal-card-surface"><img class="personal-export" alt="正在生成我的车格卡片" hidden><input id="cardNickname" class="personal-inline-nickname" autocomplete="nickname" aria-label="编辑卡片昵称" maxlength="32" hidden></div><p id="personalSaveStatus" role="status">正在生成我的专属车格卡片…</p></div>
-      <footer class="personal-footer"><span>把我的车格晒出去<br><small>也让朋友测测 TA 的</small></span><div class="personal-actions"><button type="button" id="personalSave" class="personal-save" disabled>保存图片</button><button type="button" id="personalNativeShare" class="personal-native" hidden>分享卡片</button></div></footer>`;
+      <div class="personal-preview"><canvas id="personalCardCanvas" width="1080" height="1920" hidden></canvas><div class="personal-card-surface"><img class="personal-export" alt="正在生成我的人格卡片" hidden><input id="cardNickname" class="personal-inline-nickname" autocomplete="nickname" aria-label="编辑卡片昵称" maxlength="32" hidden></div><p id="personalSaveStatus" role="status">正在生成我的专属用车人格卡片…</p></div>
+      <footer class="personal-footer"><span>把我的用车人格晒出去<br><small>也让朋友测测 TA 的</small></span><div class="personal-actions"><button type="button" id="personalSave" class="personal-save" disabled>保存图片</button><button type="button" id="personalNativeShare" class="personal-native" hidden>分享卡片</button></div></footer>`;
     document.body.appendChild(dialog);
     canvas = $id('personalCardCanvas');
     $id('cardNickname').value = root.VisitorProfile.nickname;
@@ -189,9 +189,9 @@
       const button = $id('personalNativeShare');
       button.disabled = true;
       try {
-        await navigator.share({ files: [cardFile], title: '我的车格是' + snapshot.analysis.identity.name });
+        await navigator.share({ files: [cardFile], title: '我的用车人格是' + snapshot.analysis.identity.name });
         document.dispatchEvent(new Event('personal-card-shared'));
-        $id('personalSaveStatus').textContent = '我的车格，已经出发。';
+        $id('personalSaveStatus').textContent = '我的用车人格，已经出发。';
       } catch (error) {
         $id('personalSaveStatus').textContent = error.name === 'AbortError' ? '分享已取消，卡片还在这里。' : '当前无法直接分享，可保存图片后发送给朋友。';
       } finally { button.disabled = false; }
@@ -222,7 +222,7 @@
     if (!image.src) image.hidden = true;
     $id('personalSave').disabled = true;
     $id('personalNativeShare').hidden = true;
-    $id('personalSaveStatus').textContent = '正在生成我的专属车格卡片…';
+    $id('personalSaveStatus').textContent = '正在生成我的专属用车人格卡片…';
     try {
       drawCard(canvas, d, r, analysis, themeId);
       canvas.toBlob(blob => {
@@ -230,7 +230,7 @@
         if (!blob) { $id('personalSaveStatus').textContent = '图片生成失败，请关闭后重试。'; return; }
         if (imageUrl) URL.revokeObjectURL(imageUrl);
         imageUrl = URL.createObjectURL(blob);
-        cardFile = new File([blob], '我的车格-' + snapshot.analysis.identity.name + '.png', { type: 'image/png' });
+        cardFile = new File([blob], '我的用车人格-' + snapshot.analysis.identity.name + '.png', { type: 'image/png' });
         image.src = imageUrl;
         image.alt = canvas.getAttribute('aria-label') + ' 可长按保存。';
         image.hidden = false;
@@ -280,7 +280,7 @@
     box(40, 40, 1000, 1840, 38, '#FFFEF7');
     box(40, 40, 1000, 740, 38, ink);
     ctx.fillStyle = ink; ctx.fillRect(40, 700, 1000, 80);
-    text('车 格 鉴 定 所', 94, 119, 29, pop, 700);
+    text('用 车 人 格 报 告', 94, 119, 29, pop, 700);
     text('MY CAR PERSONALITY', 650, 117, 19, pop, 600, 330);
     stroke(94, 154, 986, 154, pop);
     const nickname = root.VisitorProfile ? root.VisitorProfile.nickname : '我';
@@ -325,7 +325,7 @@
     // Ticket perforation separates the personal result from the invitation to friends.
     ctx.setLineDash([10, 10]); stroke(80, 1451, 1000, 1451, '#C8CEC4', 2); ctx.setLineDash([]);
     for (const x of [40, 1040]) { ctx.fillStyle = paper; ctx.beginPath(); ctx.arc(x, 1451, 21, 0, Math.PI * 2); ctx.fill(); }
-    text('你是什么车格？', 94, 1541, 47, ink, 800, 610);
+    text('你的用车人格是什么？', 94, 1541, 47, ink, 800, 610);
     text('扫码测测，看看我们是不是同路人。', 94, 1599, 27, ink, 500, 620);
     box(94, 1640, 540, 57, 28, pop);
     text('不用登录 · 调好参数 · 一键揭晓', 118, 1677, 23, ink, 700, 493);
@@ -336,12 +336,13 @@
     ctx.fillStyle = '#FFFFFF'; ctx.fillRect(qx, qy, side, side);
     ctx.fillStyle = '#14251F';
     for (let row = 0; row < count; row++) for (let col = 0; col < count; col++) if (qr.isDark(row, col)) ctx.fillRect(qx + (col + quiet) * cell, qy + (row + quiet) * cell, cell, cell);
-    text('长按识别，测测你的车格', qx - 4, qy + side + 36, 20, ink, 500, side + 30);
+    text('长按识别', qx + 53, qy + side + 30, 20, ink, 500, side);
+    text('测测你的用车人格', qx + 13, qy + side + 58, 20, ink, 500, side + 10);
     text('基于填写参数的趣味归类，不代表真实驾驶记录或人群排名', 94, 1812, 19, '#798276', 400, 890);
     text('费用为估算，含折旧与资金机会成本', 94, 1844, 19, '#798276');
     target.dataset.identity = identity.id;
     target.dataset.theme = themeId;
-    target.setAttribute('aria-label', '我是' + identity.name + '。' + identity.declaration + ' 我的车每周预计花 ' + fmt(r.weekTotal) + ' 元。' + comment + ' 你是什么车格？扫码测测。');
+    target.setAttribute('aria-label', '我是' + identity.name + '。' + identity.declaration + ' 我的车每周预计花 ' + fmt(r.weekTotal) + ' 元。' + comment + ' 你的用车人格是什么？扫码测测。');
   }
   root.PersonalCarShare = Object.assign(api, { open, bindInput, setValue, value: id => values[id], hasInvalid: () => invalid.size > 0 });
 })(typeof window === 'object' ? window : globalThis);
