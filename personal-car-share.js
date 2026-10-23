@@ -284,12 +284,10 @@
     text('MY CAR PERSONALITY', 650, 117, 19, pop, 600, 330);
     stroke(94, 154, 986, 154, pop);
     const nickname = root.VisitorProfile ? root.VisitorProfile.nickname : '我';
-    text('亲爱的', 94, 222, 26, '#FFFEF7', 500);
-    text(nickname, 188, 222, 38, '#FFFEF7', 700, 650);
+    text(nickname, 94, 222, 38, '#FFFEF7', 700, 650);
     const nicknameWidth = ctx.measureText(nickname).width;
     target.dataset.nicknameWidth = String(nicknameWidth);
-    ctx.strokeStyle = '#FFFEF7'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(188, 232); ctx.quadraticCurveTo(188 + nicknameWidth / 2, 235, 188 + nicknameWidth, 231); ctx.stroke();
-    text('：', 196 + nicknameWidth, 222, 26, '#FFFEF7', 500);
+    ctx.strokeStyle = '#FFFEF7'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(94, 232); ctx.quadraticCurveTo(94 + nicknameWidth / 2, 235, 94 + nicknameWidth, 231); ctx.stroke();
     text(identity.name, 86, 351, 112, pop, 800);
     wrap(identity.declaration, 94, 418, 32, 860, 48, '#FFFEF7');
 
@@ -318,11 +316,11 @@
     text('¥' + fmt(r.yearTotal), 94, 1114, 41, ink, 700, 428);
     text(d.mileage > 0 ? '¥' + fmt2(r.perKm) : '暂无 · 尚未行驶', 573, 1114, 39, ink, 700, 413);
     box(80, 1161, 920, 236, 24, paper);
-    text('车格鉴定 · 有数，也有态度', 108, 1210, 23, ink, 700);
-    wrap(comment, 108, 1266, 30, 860, 45);
     const top = r.items.filter(item => item.value > 0).sort((a, b) => b.value - a.value)[0];
-    const topCopy = top ? '我的最大开销：' + LABELS[top.key] + ' · 预计 ¥' + fmt(top.value) + '/年' : '当前未计入费用，填写完整参数后再看账单';
-    text(topCopy, 108, 1360, 22, ink, 500, 860);
+    text('我的最大开销', 108, 1210, 23, ink, 600);
+    text(top ? LABELS[top.key] : '账单待补充', 108, 1280, 43, ink, 800, 410);
+    text(top ? '预计 ¥' + fmt(top.value) + '/年' : '填写完整参数后再看', 510, 1280, 32, ink, 700, 450);
+    text(top && r.yearTotal > 0 ? '占年度总成本 ' + Math.round(top.value / r.yearTotal * 100) + '%' : '当前未计入费用', 108, 1345, 24, ink, 500, 860);
 
     // Ticket perforation separates the personal result from the invitation to friends.
     ctx.setLineDash([10, 10]); stroke(80, 1451, 1000, 1451, '#C8CEC4', 2); ctx.setLineDash([]);
@@ -338,7 +336,7 @@
     ctx.fillStyle = '#FFFFFF'; ctx.fillRect(qx, qy, side, side);
     ctx.fillStyle = '#14251F';
     for (let row = 0; row < count; row++) for (let col = 0; col < count; col++) if (qr.isDark(row, col)) ctx.fillRect(qx + (col + quiet) * cell, qy + (row + quiet) * cell, cell, cell);
-    text('长按识别 · 测测我的', qx - 4, qy + side + 36, 20, ink, 500, side + 30);
+    text('长按识别，测测你的车格', qx - 4, qy + side + 36, 20, ink, 500, side + 30);
     text('基于填写参数的趣味归类，不代表真实驾驶记录或人群排名', 94, 1812, 19, '#798276', 400, 890);
     text('费用为估算，含折旧与资金机会成本', 94, 1844, 19, '#798276');
     target.dataset.identity = identity.id;
