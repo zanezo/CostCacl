@@ -96,10 +96,10 @@ async function redisCommand(command) {
   return payload;
 }
 
-async function loadMetrics() {
-  const now = Date.now();
+async function loadMetrics(prefix = 'stats:v2:', endTime = Date.now()) {
+  const now = endTime;
   const days = Array.from({length: 7}, (_, i) => new Date(now + 8 * 3600000 - (6 - i) * 86400000).toISOString().slice(0,10));
-  const keys = [...METRICS.map(name => 'stats:v2:' + name), ...days.flatMap(day => METRICS.map(name => 'stats:v2:daily:' + day + ':' + name))];
+  const keys = [...METRICS.map(name => prefix + name), ...days.flatMap(day => METRICS.map(name => prefix + 'daily:' + day + ':' + name))];
   const payload = await redisCommand(['MGET', ...keys]);
   const values = payload.result || [];
   const metrics = Object.fromEntries(METRICS.map((name, i) => [name, Number(values[i] || 0)]));
@@ -110,7 +110,7 @@ async function loadMetrics() {
 export default {
   async fetch(request) {
     const req = request;
-    if (!['GET', 'POST', 'DELETE'].includes(req.method)) return response({ error: 'Method not allowed' }, 405, { Allow: 'GET, POST, DELETE' });
+    if (!['GET', 'POST', 'DELETE', 'PATCH'].includes(req.method)) return response({ error: 'Method not allowed' }, 405, { Allow: 'GET, POST, DELETE, PATCH' });
 
     if (!process.env.ANALYTICS_ADMIN_TOKEN) {
       return response({ error: 'Analytics protection is not configured' }, 503);
@@ -132,17 +132,40 @@ export default {
       if (!session?.result || !(await timingSafeEqual(session.result, await digest(process.env.ANALYTICS_ADMIN_TOKEN)))) {
         return response({error: 'Unauthorized'}, 401, {'Set-Cookie': cookie('', 0)});
       }
-      const {metrics, daily} = await loadMetrics();
-      const recent = await redisCommand(['ZREVRANGE', 'stats:v2:profiles', 0, 49]);
+      const catalog = await redisCommand(['GET', 'stats:round:catalog']);
+      let rounds = catalog.result ? JSON.parse(catalog.result) : [{id:'legacy',name:'历史／开发测试',startedAt:null,endedAt:null}];
+      const activeId = rounds.find(round => !round.endedAt)?.id || 'legacy';
+      if (req.method === 'PATCH') {
+        const body = await request.json();
+        const name = typeof body.name === 'string' ? body.name.trim() : '';
+        if (!name || Array.from(name).length > 30 || /[\u0000-\u001f]/.test(name)) return response({error:'Invalid round name'},400);
+        if (body.expectedActive !== activeId) return response({error:'Round changed; refresh first'},409);
+        const now = Date.now();
+        const next = {id:crypto.randomUUID(),name,startedAt:now,endedAt:null};
+        const updated = rounds.map(round => round.id === activeId ? {...round,endedAt:now} : round).concat(next);
+        const result = await redisCommand(['EVAL', `
+local active = redis.call('GET', KEYS[1]) or 'legacy'
+if active ~= ARGV[1] then return 0 end
+redis.call('SET', KEYS[2], ARGV[3])
+redis.call('SET', KEYS[1], ARGV[2])
+return 1`, 2, 'stats:round:active', 'stats:round:catalog', activeId, next.id, JSON.stringify(updated)]);
+        return Number(result.result) === 1 ? response({ok:true,round:next}) : response({error:'Round changed; refresh first'},409);
+      }
+      const requestedId = new URL(request.url).searchParams.get('round') || activeId;
+      const selectedRound = rounds.find(round => round.id === requestedId);
+      if (!selectedRound) return response({error:'Unknown round'},404);
+      const prefix = requestedId === 'legacy' ? 'stats:v2:' : 'stats:round:' + requestedId + ':';
+      const {metrics, daily} = await loadMetrics(prefix, selectedRound.endedAt || Date.now());
+      const recent = await redisCommand(['ZREVRANGE', prefix + 'profiles', 0, 49]);
       const ids = Array.isArray(recent.result) ? recent.result.filter(id => typeof id === 'string' && /^[a-zA-Z0-9_-]{16,80}$/.test(id)) : [];
-      const profiles = ids.length ? await redisCommand(['MGET', ...ids.map(id => 'stats:v2:profile:' + id)]) : {result: []};
+      const profiles = ids.length ? await redisCommand(['MGET', ...ids.map(id => prefix + 'profile:' + id)]) : {result: []};
       const visitors = (profiles.result || []).flatMap(raw => { try { const p = JSON.parse(raw); return p && p.id && p.nickname ? [p] : []; } catch { return []; } });
       const conversion = {
         calculationRate: metrics.page_view ? metrics.calculation_completed / metrics.page_view : 0,
         cardRate: metrics.calculation_completed ? metrics.result_card_generated / metrics.calculation_completed : 0,
         shareRate: metrics.calculation_completed ? metrics.result_shared / metrics.calculation_completed : 0
       };
-      return response({ version: 2, timezone: 'Asia/Shanghai', metrics, daily, visitors, conversion, updatedAt: new Date().toISOString() });
+      return response({ version: 2, timezone: 'Asia/Shanghai', rounds, activeId, selectedRound, metrics, daily, visitors, conversion, updatedAt: new Date().toISOString() });
     } catch (error) {
       console.error('Stats dashboard request failed');
       return response({ error: 'Stats unavailable' }, 503);

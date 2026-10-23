@@ -99,6 +99,13 @@
         </div>
       </div>
       <div class="dashboard-body">
+        <div style="display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:12px">
+          <label for="roundSelect">统计轮次</label><select id="roundSelect" style="max-width:100%;padding:10px;border:1px solid #ced9e7;border-radius:7px"></select>
+          <button type="button" class="secondary-button" id="newRoundButton">开启新一轮</button>
+          <button type="button" class="secondary-button" id="exportRoundButton">下载本轮备份</button>
+        </div>
+        <p class="metric-hint" id="roundInfo"></p>
+        <p class="metric-hint">备份包含当前轮次累计指标、近七天趋势和最近 50 位昵称记录；昵称档案仍保留 180 天，重要记录请及时下载。</p>
         <div class="metric-grid">
           <article class="metric"><p class="metric-label">访问人次</p><p class="metric-value" data-metric="page_view">0</p><p class="metric-hint">同浏览器每天计一次</p></article>
           <article class="metric"><p class="metric-label">有效测算</p><p class="metric-value" data-metric="calculation_completed">0</p><p class="metric-hint">手机开始测算；电脑修改参数获得有效结果或揭晓人格</p></article>
@@ -140,6 +147,8 @@
       let challengeToken = '';
       let widgetId;
       let busy = false;
+      let currentPayload;
+      let selectedRound = '';
 
       function updateSubmit() {
         submit.disabled = busy || !challengeToken;
@@ -153,7 +162,8 @@
       }
 
       async function api(options = {}) {
-        const result = await fetch('/api/stats', {cache: 'no-store', credentials: 'same-origin', ...options});
+        const query = options.method ? '' : selectedRound ? '?round=' + encodeURIComponent(selectedRound) : '';
+        const result = await fetch('/api/stats' + query, {cache: 'no-store', credentials: 'same-origin', ...options});
         const payload = await result.json();
         if (!result.ok) {
           const messages = {
@@ -198,6 +208,16 @@
       const formatPercent = (value) => `${(Number(value || 0) * 100).toFixed(1)}%`;
 
       function render(payload) {
+        currentPayload = payload;
+        const select = document.querySelector('#roundSelect');
+        select.replaceChildren(...(payload.rounds || []).map(round => {
+          const option = document.createElement('option'); option.value = round.id;
+          option.textContent = round.name + (round.id === payload.activeId ? '（当前）' : '（已结束）'); return option;
+        }));
+        selectedRound = payload.selectedRound?.id || '';
+        select.value = selectedRound;
+        const date = value => value ? new Date(value).toLocaleString('zh-CN', {timeZone:'Asia/Shanghai'}) : '历史记录';
+        document.querySelector('#roundInfo').textContent = payload.selectedRound ? `开始：${date(payload.selectedRound.startedAt)}；${payload.selectedRound.endedAt ? '结束：' + date(payload.selectedRound.endedAt) : '正在统计'}。新轮次独立计数，旧数据不删除。` : '';
         document.querySelectorAll('[data-metric]').forEach((element) => {
           element.textContent = formatNumber(payload.metrics[element.dataset.metric]);
         });
@@ -226,6 +246,28 @@
       async function loadStats() {
         return api();
       }
+      document.querySelector('#roundSelect').addEventListener('change', async event => {
+        selectedRound = event.target.value;
+        try { render(await loadStats()); dashboardError.textContent = ''; } catch (failure) { dashboardError.textContent = failure.message; }
+      });
+      document.querySelector('#newRoundButton').addEventListener('click', async event => {
+        const name = prompt('给新一轮起个名字，例如“小范围内测第 1 轮”。当前轮次会自动结束并保留。');
+        if (!name?.trim()) return;
+        if (Array.from(name.trim()).length > 30) { dashboardError.textContent = '轮次名称最多 30 个字。'; return; }
+        if (!confirm(`结束当前轮次并开启“${name.trim()}”？旧数据会保留，新轮次从零计数。`)) return;
+        event.target.disabled = true;
+        try {
+          const result = await api({method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:name.trim(),expectedActive:currentPayload.activeId})});
+          selectedRound = result.round.id; render(await loadStats()); dashboardError.textContent = '';
+        } catch (failure) { dashboardError.textContent = failure.message; }
+        finally { event.target.disabled = false; }
+      });
+      document.querySelector('#exportRoundButton').addEventListener('click', () => {
+        if (!currentPayload) return;
+        const url = URL.createObjectURL(new Blob([JSON.stringify(currentPayload,null,2)], {type:'application/json'}));
+        const link = document.createElement('a'); link.href = url; link.download = '统计备份-' + (currentPayload.selectedRound?.id || 'legacy') + '.json'; link.click();
+        setTimeout(() => URL.revokeObjectURL(url),1000);
+      });
 
       form.addEventListener('submit', async (event) => {
         event.preventDefault();

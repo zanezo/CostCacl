@@ -1,6 +1,11 @@
 const EVENT_CONFIG = Object.fromEntries(['page_view', 'calculation_completed', 'result_card_generated', 'result_saved', 'result_shared', 'feedback_clicked', 'return_visit'].map(name => [name, { key: 'stats:v2:' + name, limit: 40, window: 60 }]));
 // Same China-calendar-day browser counting for every funnel stage.
 const COUNT_SCRIPT = `
+local round = redis.call('GET', 'stats:round:active') or 'legacy'
+if round ~= 'legacy' then
+  local prefix = 'stats:round:' .. round .. ':'
+  for i = 1, 5 do KEYS[i] = string.gsub(KEYS[i], '^stats:v2:', prefix) end
+end
 local duplicate = redis.call('EXISTS', KEYS[1])
 if ARGV[1] ~= '' then
   local raw = redis.call('GET', KEYS[4])
