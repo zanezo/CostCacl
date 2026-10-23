@@ -7,16 +7,6 @@ assert.ok(summary.comment.length > 10);
 assert.ok(summary.tags.includes('燃油搭子'));
 assert.deepEqual(summary, analyzePersonality({ mileage: 30000, depYears: 6 }, { perKm: 2, yearTotal: 60000, items: [{key:'energy', value:30000}] }, 'gas'));
 assert.match(analyzePersonality({mileage:0,depYears:6},{perKm:0,yearTotal:0,items:[]},'ev').comment, /未计入/);
-const ids = (mileage, depYears = 6, perKm = 2) => eligibleIdentities({ mileage, depYears }, { perKm }).map(x => x.id);
-assert.equal(ids(7999)[0], 'freedom');
-assert.equal(ids(8000)[0], 'everyday');
-assert.equal(ids(24999)[0], 'everyday');
-assert.equal(ids(25000)[0], 'explorer');
-assert.equal(ids(12500, 8)[0], 'companion');
-assert.equal(ids(12500, 7, 1)[0], 'saver');
-assert.equal(ids(12500, 7, 1.01)[0], 'everyday');
-assert.ok(!ids(0, 8, 0).includes('saver'));
-assert.ok(ids(30000, 8, 0.5).includes('everyday'));
 for (const [id, values] of [['carPrice', [0, 30, 100, 300]], ['mileage', [0, 20000, 50000, 100000]]]) {
   values.forEach((v, i) => {
     assert.equal(rangeToValue(id, i * 100), v);

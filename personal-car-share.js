@@ -1,18 +1,11 @@
 /* Personal expression and precise inputs. No network, account or external assets. */
 (function (root) {
   'use strict';
-  const identityList = [
-    { id: 'explorer', name: '远方探索家', declaration: '世界那么大，我想亲自开过去看看。', color: '#285E76', paper: '#F3F5ED', motif: 'route', match: d => d.mileage >= 25000 },
-    { id: 'freedom', name: '自在随行家', declaration: '不必天天出发，但想走的时候，我有答案。', color: '#786039', paper: '#FAF4E8', motif: 'compass', match: d => d.mileage < 8000 },
-    { id: 'companion', name: '长情伙伴', declaration: '陪我走得久，才算真的合拍。', color: '#89604E', paper: '#F9F0E9', motif: 'route', match: d => d.depYears >= 8 },
-    { id: 'saver', name: '精打细算家', declaration: '每一公里的快乐，都要花得漂亮。', color: '#387364', paper: '#F0F5ED', motif: 'compass', match: (d, r) => d.mileage >= 8000 && r.perKm > 0 && r.perKm <= 1 },
-    { id: 'everyday', name: '日常同行家', declaration: '我的生活半径，由我自己拓宽。', color: '#466A9A', paper: '#F2F3EF', motif: 'route', match: () => true }
-  ];
+  const { analyzePersonality, eligibleIdentities } = typeof module === 'object' && module.exports ? require('./personality-rules.js') : root.CarPersonalityRules;
   const configs = {
     carPrice: { stops: [0, 30, 100, 300], steps: [0.5, 1, 5], max: 10000, precision: 2, unit: '万元', defaultValue: 15, ticks: ['0', '30', '100', '300 万'] },
     mileage: { stops: [0, 20000, 50000, 100000], steps: [500, 1000, 5000], max: 1000000, precision: 0, unit: '公里 / 年', defaultValue: 12500, ticks: ['0', '2 万', '5 万', '10 万'] }
   };
-  function eligibleIdentities(d, r) { return identityList.filter(item => item.match(d, r)); }
   function validateValue(id, raw) {
     const c = configs[id];
     if (String(raw).trim() === '') return null;
@@ -43,25 +36,6 @@
     rose: { name: '莓果粉', colors: ['#733C56', '#FFD5E4', '#F8ECF1'] },
     mono: { name: '极简黑白', colors: ['#292D30', '#F0EEE6', '#E7E7E3'] }
   };
-  const identityThemes = { explorer: 'forest', freedom: 'violet', companion: 'sunset', saver: 'ocean', everyday: 'blue' };
-  function analyzePersonality(d, r, type) {
-    const identity = eligibleIdentities(d, r)[0];
-    const comments = {
-      explorer: '别人看地图，我给地图攒里程。车轮一转，生活就有了新章节。',
-      freedom: '我买的不只是公里数，还有一句“现在就走”的底气。',
-      companion: '别人追新款，我和老搭档慢慢攒故事。合拍，比新鲜更难得。',
-      saver: '该出发就出发，该算账就算账。我的快乐，有自己的性价比。',
-      everyday: '通往生活的路很多，我偏爱自己掌舵的这一条。'
-    };
-    const tags = [type === 'ev' ? '电力出行' : '燃油搭子'];
-    if (d.mileage >= 25000) tags.push('里程拓荒者');
-    else if (d.mileage < 8000) tags.push('随时出发派');
-    else tags.push('日常好搭档');
-    if (d.depYears >= 8) tags.push('长久相伴派');
-    else if (d.mileage > 0 && r.perKm > 0 && r.perKm <= 1) tags.push('每公里都精打细算');
-    else tags.push('生活自己掌舵');
-    return { identity, tags, comment: r.yearTotal > 0 ? comments[identity.id] : '当前未计入费用。先把账补齐，再看看我的出发方式。' };
-  }
   const api = { themes, analyzePersonality, SHARE_DESTINATION, eligibleIdentities, rangeToValue, valueToRange, validateValue };
   if (typeof module === 'object' && module.exports) { module.exports = api; return; }
 
@@ -271,7 +245,7 @@
       ctx.font = '500 ' + size + 'px ' + font; ctx.fillStyle = color; ctx.textAlign = 'left';
       let row = '', cursor = y;
       for (const char of Array.from(str)) {
-        if (row && ctx.measureText(row + char).width > width) { ctx.fillText(row, x, cursor); row = ''; cursor += leading; }
+        if (row && ctx.measureText(row + char).width > width && !/[，。！？、；：]/.test(char)) { ctx.fillText(row, x, cursor); row = ''; cursor += leading; }
         row += char;
       }
       if (row) ctx.fillText(row, x, cursor);
@@ -305,8 +279,8 @@
     [20, 158].forEach(x => { ctx.beginPath(); ctx.arc(x, 135, 27, 0, Math.PI * 2); ctx.fillStyle = '#FFFEF7'; ctx.fill(); ctx.beginPath(); ctx.arc(x, 135, 13, 0, Math.PI * 2); ctx.fillStyle = ink; ctx.fill(); });
     stroke(270, 7, 270, 49, pop, 5); stroke(249, 28, 291, 28, pop, 5);
     ctx.restore();
-    text('我的出发方式', 94, 558, 22, pop);
-    text(d.mileage > 0 ? '每年 ' + fmt(d.mileage) + ' 公里' : '随时准备出发', 94, 607, 31, '#FFFEF7', 700, 430);
+    text('为什么是我？', 94, 534, 22, pop);
+    wrap(analysis.reason, 94, 573, 22, 400, 31, '#FFFEF7');
     tags.forEach((tag, i) => { const x = 94 + i * 301; box(x, 704, 284, 48, 24, pop); text(tag, x + 19, 736, 21, ink, 600, 247); });
 
     text('我的车，每周预计花', 94, 856, 29, ink, 600);
