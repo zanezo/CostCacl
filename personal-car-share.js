@@ -70,6 +70,7 @@
   const invalid = new Set();
   let dialog, canvas, snapshot, opener, oldOverflow, imageUrl, cardFile, generation = 0;
   let selectedTheme = null;
+  let updateNicknameHint = () => {};
 
   function syncControls(id) {
     const c = configs[id], range = $id(id + 'Range');
@@ -137,11 +138,18 @@
     canvas = $id('personalCardCanvas');
     $id('cardNickname').value = root.VisitorProfile.nickname;
     const nickname = $id('cardNickname');
+    const surface = dialog.querySelector('.personal-card-surface');
+    const hint = document.createElement('button'); hint.type = 'button'; hint.className = 'personal-name-hint';
+    hint.innerHTML = '<span>怎么称呼你？</span><svg viewBox="0 0 92 40" aria-hidden="true"><path d="M67 5l8 8-17 17-10 2 2-10zM52 20l8 8M39 12C15 4 8 21 21 31m-8-2 8 2-1-8"/></svg>';
+    hint.setAttribute('aria-label', '修改卡片昵称'); surface.append(hint);
+    updateNicknameHint = () => { let custom = false; try { custom = localStorage.getItem('costcalc:nickname-custom') === '1'; } catch {} hint.hidden = custom; };
+    hint.addEventListener('click', () => { nickname.focus(); nickname.select(); });
+    nickname.addEventListener('focus', () => nickname.select());
     let nicknameTimer;
     const saveNickname = () => {
       clearTimeout(nicknameTimer);
       if (nickname.value === root.VisitorProfile.nickname) return;
-      if (root.VisitorProfile.setNickname(nickname.value)) generateCard();
+      if (root.VisitorProfile.setNickname(nickname.value)) { hint.hidden = true; generateCard(); }
     };
     nickname.addEventListener('input', event => {
       if (!event.isComposing) { clearTimeout(nicknameTimer); nicknameTimer = setTimeout(saveNickname, 450); }
@@ -230,6 +238,10 @@
         nickname.hidden = false;
         nickname.style.color = themes[themeId].colors[2];
         nickname.style.backgroundColor = themes[themeId].colors[0];
+        const nameWidth = Math.min(650, Math.max(130, Number(canvas.dataset.nicknameWidth)));
+        nickname.style.width = (nameWidth / 1080 * 100) + '%';
+        dialog.querySelector('.personal-card-surface').style.setProperty('--name-hint-color', themes[themeId].colors[1]);
+        updateNicknameHint();
         if (document.activeElement !== nickname) nickname.value = root.VisitorProfile.nickname;
         $id('personalSave').disabled = false;
         let canShare = false;
@@ -272,10 +284,12 @@
     text('MY CAR PERSONALITY', 650, 117, 19, pop, 600, 330);
     stroke(94, 154, 986, 154, pop);
     const nickname = root.VisitorProfile ? root.VisitorProfile.nickname : '我';
-    text(nickname, 94, 219, 27, '#FFFEF7', 700, 650);
+    text('亲爱的', 94, 222, 26, '#FFFEF7', 500);
+    text(nickname, 188, 222, 38, '#FFFEF7', 700, 650);
     const nicknameWidth = ctx.measureText(nickname).width;
-    stroke(94, 226, 94 + nicknameWidth, 226, '#FFFEF7', 2);
-    text(' 的用车人格', 94 + nicknameWidth, 219, 27, '#FFFEF7', 500, 210);
+    target.dataset.nicknameWidth = String(nicknameWidth);
+    ctx.strokeStyle = '#FFFEF7'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(188, 232); ctx.quadraticCurveTo(188 + nicknameWidth / 2, 235, 188 + nicknameWidth, 231); ctx.stroke();
+    text('：', 196 + nicknameWidth, 222, 26, '#FFFEF7', 500);
     text(identity.name, 86, 351, 112, pop, 800);
     wrap(identity.declaration, 94, 418, 32, 860, 48, '#FFFEF7');
 

@@ -47,6 +47,9 @@ const { chromium } = require('playwright');
       assert.equal(await page.locator('.visitor-name').count(), 0, 'nickname entry should only appear in card preview');
       const visitorBefore = await page.evaluate(() => VisitorProfile.id);
       assert.match(await page.locator('#cardNickname').inputValue(), /^车主[A-Z0-9]{6}$/);
+      assert.equal(await page.locator('.personal-name-hint').isVisible(), true);
+      await page.locator('.personal-name-hint').click();
+      assert.equal(await page.locator('#cardNickname').evaluate(el => el.selectionEnd - el.selectionStart), 8);
       await page.locator('#cardNickname').fill('长'.repeat(17));
       await page.locator('#cardNickname').blur();
       assert.match(await page.evaluate(() => VisitorProfile.nickname), /^车主[A-Z0-9]{6}$/);
@@ -55,6 +58,7 @@ const { chromium } = require('playwright');
       await page.waitForFunction(() => !document.querySelector('#personalSave').disabled);
       assert.equal(await page.evaluate(() => VisitorProfile.id), visitorBefore);
       assert.equal(await page.evaluate(() => localStorage.getItem('costcalc:nickname')), '今天也是快乐车主');
+      assert.equal(await page.locator('.personal-name-hint').isVisible(), false);
       assert.equal(await page.locator('.personal-card-surface').evaluate(el => el.scrollWidth <= el.clientWidth), true, 'nickname editor must fit the preview');
       if (width === 390) {
         await page.locator('#personalShareDialog').evaluate(el => { el.scrollTop = 0; });
