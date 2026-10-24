@@ -2,19 +2,23 @@
 (() => {
   const media = matchMedia('(max-width: 959px)');
   let shell, panels, dots, current = 0, stage = 'config', originals = [], start;
-  const names = ['车辆信息', '日常开销', '长期成本', '费用总览', '费用明细', '打车参考'];
+  const names = ['选择车型', '日常开销', '长期成本', '费用总览', '费用明细', '打车参考','电耗与保养','用油成本','车价与里程'];
+  const order = () => stage === 'results' ? [3,4,5] : CarEnergy.hybrid(currentType) ? [0,8,1,6,7,2] : [0,8,1,6,2];
   function select(index, focus = false) {
-    current = Math.max(stage === 'config' ? 0 : 3, Math.min(stage === 'config' ? 2 : 5, index));
+    const sequence = order();
+    current = sequence.includes(index) ? index : sequence[0];
+    const position = sequence.indexOf(current);
     panels.forEach((panel, i) => {
-      panel.dataset.position = i < current ? 'before' : i > current ? 'after' : 'active';
+      const rank = sequence.indexOf(i);
+      panel.dataset.position = rank < position ? 'before' : rank > position ? 'after' : 'active';
       panel.inert = i !== current;
       panel.setAttribute('aria-hidden', String(i !== current));
-      panel.style.setProperty('--distance', Math.min(3, Math.abs(i - current)));
-      panel.style.visibility = (stage === 'config' ? i < 3 : i >= 3) && Math.abs(i - current) <= 1 ? 'visible' : 'hidden';
+      panel.style.setProperty('--distance', Math.min(3, Math.abs(rank - position)));
+      panel.style.visibility = rank >= 0 && Math.abs(rank - position) <= 1 ? 'visible' : 'hidden';
     });
-    dots.forEach((dot, i) => { dot.setAttribute('aria-current', String(i === current)); dot.hidden = stage === 'config' ? i >= 3 : i < 3; });
-    shell.querySelector('.mobile-deck-title').textContent = names[current];
-    shell.querySelector('.mobile-deck-count').textContent = String(current % 3 + 1).padStart(2, '0') + ' / 3';
+    dots.forEach((dot, i) => { dot.setAttribute('aria-current', String(i === current)); dot.hidden = !sequence.includes(i); dot.style.order = sequence.indexOf(i); });
+    shell.querySelector('.mobile-deck-title').textContent = current === 6 && currentType === 'gas' ? '油耗与保养' : names[current];
+    shell.querySelector('.mobile-deck-count').textContent = String(position + 1).padStart(2, '0') + ' / ' + sequence.length;
     shell.dataset.stage = stage;
     shell.querySelector('.mobile-phase').textContent = stage === 'config' ? '01 / 配置我的车' : '02 / 看懂我的账';
     shell.querySelector('.mobile-calculate').disabled = PersonalCarShare.hasInvalid();
@@ -48,7 +52,7 @@
       const marker = document.createComment('mobile-original'); node.before(marker); originals.push([node, marker]);
       panels[page].firstChild.appendChild(node);
     };
-    move(document.querySelector('#typeSegment').closest('.card'), 0); move(groups[0], 0);
+    move(document.querySelector('#typeSegment').closest('.card'), 0); move(groups[0], 8);
     const fixedRows = [...groups[1].querySelectorAll('.group-body > .row')];
     move(groups[1], 1);
     const long = document.createElement('div'); long.className = 'mobile-long-cost';
@@ -56,7 +60,9 @@
     fixedRows.slice(3).forEach(row => {
       const marker = document.createComment('mobile-original'); row.before(marker); originals.push([row, marker]); long.appendChild(row);
     });
-    move(groups[2], 1);
+    move(groups[2], 6);
+    move(document.getElementById('mixedEnergy'), 1);
+    move(document.getElementById('mixedFuel'), 7);
     move(document.querySelector('.hero'), 3); move(document.querySelector('.chart-card'), 3);
     move(document.querySelector('.detail-card'), 4); move(document.querySelector('.taxi-card'), 5);
     const calculateAction = document.createElement('div'); calculateAction.className = 'mobile-card-actions';
@@ -75,7 +81,8 @@
     shell.addEventListener('keydown', event => {
       if (event.target.closest('input,textarea,select,summary')) return;
       if (['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) {
-        event.preventDefault(); select(event.key === 'Home' ? 0 : event.key === 'End' ? names.length - 1 : current + (event.key === 'ArrowRight' ? 1 : -1), true);
+        const sequence = order(), at = sequence.indexOf(current);
+        event.preventDefault(); select(sequence[event.key === 'Home' ? 0 : event.key === 'End' ? sequence.length - 1 : Math.max(0,Math.min(sequence.length-1,at+(event.key === 'ArrowRight' ? 1 : -1)))], true);
       }
     });
     // Gesture ownership is chosen once at pointer-down, never while crossing a slider.
@@ -128,18 +135,21 @@
         gesture.slider.dispatchEvent(new Event('change', {bubbles:true}));
       } else if (event.type === 'pointerup') {
         const dx = event.clientX - gesture.x, dy = event.clientY - gesture.y;
-        if (Math.abs(dx) > 30 && Math.abs(dx) > Math.abs(dy) * 1.25) select(current + (dx < 0 ? 1 : -1));
+        if (Math.abs(dx) > 30 && Math.abs(dx) > Math.abs(dy) * 1.25) { const sequence=order(); select(sequence[Math.max(0,Math.min(sequence.length-1,sequence.indexOf(current)+(dx<0?1:-1)))]); }
       }
     };
     shell.addEventListener('pointerup', finish);
     shell.addEventListener('pointercancel', finish);
     const guides = [
-      ['M12 37h65l-8-17H28z M22 37v9m43-9v9 M29 20l9-10h20l11 10', '先认识你的座驾', '车型、车价和年里程，组成测算的起点。'],
+      ['M12 37h65l-8-17H28z M22 37v9m43-9v9 M29 20l9-10h20l11 10', '先认识你的座驾', '选好动力类型，后面只填需要的参数。'],
       ['M21 11h48v42H21z M30 22h30 M30 32h20 M30 42h25', '把日常开销算进去', '保险、停车和能耗，都可以按实际情况调整。'],
       ['M15 42l19-13 15 8 25-26 M60 11h14v14', '最后一步，看看长期成本', '折旧和资金占用也算在内，账单才更完整。'],
       ['M18 41V26 M36 41V15 M54 41V7 M12 47h57', '账单已经为你算好', '先看总花费，再看看钱花在哪。'],
       ['M20 9h45v43H20z M29 21h27 M29 31h27 M29 41h18', '每一笔，都有去处', '这里是各项成本的每周分摊。'],
-      ['M15 34h57l-8-15H27z M24 35v9 M61 35v9 M75 13l6 6-6 6', '有账单，也有我的态度', '看完打车参考，再揭晓你的专属用车人格。']
+      ['M15 34h57l-8-15H27z M24 35v9 M61 35v9 M75 13l6 6-6 6', '有账单，也有我的态度', '看完打车参考，再揭晓你的专属用车人格。'],
+      ['M25 10h35v42H25z M35 18l-5 15h14l-6 12', '每一程，花多少能源', '填写对应行驶阶段的能耗与价格。'],
+      ['M20 13h30v39H20z M50 21h12l8 9v18', '用油的路，单独算', '只计算非纯电里程对应的油费。'],
+      ['M12 37h65l-8-17H28z M22 37v9m43-9v9', '这辆车，陪你走多远', '填入购车总价和计划年里程。']
     ];
     panels.forEach((panel, i) => {
       const guide = document.createElement('div'); guide.className = 'mobile-card-guide';
@@ -155,7 +165,7 @@
         'M25 90h67q20 0 20-23V46q0-23 23-23h83 M24 73h51 M174 68h58l-10-18h-36z M186 69v10m34-10v10 M43 22v24m-12-12h24'
       ];
       const captions = ['每一程，都从这里开始', '把日常，算得明明白白', '目光放远，账也算长一点', '心里有数，出发有底', '每一笔，都在自己的掌握里', '选择自己的出发方式'];
-      art.innerHTML = '<svg viewBox="0 0 260 125"><ellipse cx="130" cy="106" rx="100" ry="9" class="art-ground"/><circle cx="194" cy="34" r="28" class="art-orbit"/><path d="' + scenes[i] + '"/></svg><span>' + captions[i] + '</span>';
+      art.innerHTML = '<svg viewBox="0 0 260 125"><ellipse cx="130" cy="106" rx="100" ry="9" class="art-ground"/><circle cx="194" cy="34" r="28" class="art-orbit"/><path d="' + scenes[i % scenes.length] + '"/></svg><span>' + (captions[i] || '把每一程的能源算清楚') + '</span>';
       const actions = panel.querySelector('.mobile-card-actions');
       if (actions) actions.before(art); else panel.firstChild.appendChild(art);
     });
@@ -172,5 +182,6 @@
     }
   }
   media.addEventListener('change', update);
+  document.addEventListener('vehicle-type-changed', () => { if(shell) select(0); });
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', update); else update();
 })();

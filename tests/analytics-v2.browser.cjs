@@ -32,6 +32,45 @@ const { chromium } = require('playwright');
       await page.waitForFunction(() => document.documentElement.dataset.calculatorReady === 'true');
       assert.ok(events.some(e => e.event === 'page_view' && e.version === 2));
       assert.ok(!events.some(e => e.event === 'calculation_completed'), 'initial defaults are not an active calculation');
+      for (const type of ['phev','erev']) {
+        await page.evaluate(t => switchType(t),type);
+        const check = await page.evaluate(() => {
+          PersonalCarShare.setValue('mileage',10000);
+          document.getElementById('electricShare').value=50;
+          document.getElementById('energy1').value=16;document.getElementById('energy2').value=1;
+          document.getElementById('fuelConsumption').value=6;document.getElementById('fuelPrice').value=8;
+          render();const d=readInputs(),r=calculate(d);return {energy:r.items.find(x=>x.key==='energy').value,variable:getTaxiComparison(d,r).variableYear,url:buildShareUrl()};
+        });
+        assert.equal(check.energy,3200);assert.equal(check.variable,3800);
+        const target = new URL(check.url);assert.equal(target.searchParams.get('s'),'50');
+        assert.equal(target.searchParams.get('t'),type==='phev'?'p':'r');
+        await page.evaluate(url => {history.replaceState(null,'',url);applySharedScenario();},check.url);
+        assert.equal(await page.evaluate(() => readInputs().electricShare),50);
+        assert.equal(await page.evaluate(() => calculate(readInputs()).items.find(x=>x.key==='energy').value),3200);
+        if(width<960) {
+          await page.locator('.mobile-deck-dots button').nth(7).click();
+          assert.equal(await page.locator('.mobile-deck-count').textContent(),'05 / 6');
+          await page.locator('.mobile-deck-dots button').nth(0).click();
+          for (const height of [740,850]) {
+            await page.setViewportSize({width,height});
+            for(const index of [0,8,1,6,7,2]) {
+              await page.locator('.mobile-deck-dots button').nth(index).click();
+              const dims=await page.locator(`#mobilePanel${index} .mobile-card-content`).evaluate(el=>({height:el.clientHeight,content:el.scrollHeight}));
+              assert.ok(dims.content<=dims.height+3,`${type} height=${height} panel=${index} ${JSON.stringify(dims)}`);
+            }
+          }
+          await page.locator('.mobile-deck-dots button').nth(0).click();
+        }
+      }
+      await page.evaluate(()=>{history.replaceState(null,'','/');reset();});
+      if(width<960) {
+        assert.equal(await page.locator('#typeSegment svg').count(),4);
+        assert.equal(await page.locator('.mobile-deck-count').textContent(),'01 / 5');
+        await page.waitForTimeout(400);
+        await page.screenshot({path:path.join(require('node:os').tmpdir(),'costcalc-vehicle-mobile.png')});
+        const overflow=await page.locator('#mobilePanel0 .mobile-card-content').evaluate(el=>({height:el.clientHeight,content:el.scrollHeight}));
+        assert.ok(overflow.content <= overflow.height+2,JSON.stringify(overflow));
+      }
       if (width < 960) {
         await page.locator('.mobile-calculate').evaluate(button => button.click());
         await page.waitForTimeout(100);

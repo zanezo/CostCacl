@@ -2,6 +2,19 @@
   const number = value => Number.isFinite(value) && value > 0 ? value : 0;
   const fmt = value => Number(value).toLocaleString('zh-CN', {maximumFractionDigits:2});
   function candidates(d, r = {}, type = 'ev') {
+    if (type === 'phev' || type === 'erev') {
+      const share = Math.min(100,Math.max(0,Number(d.electricShare)||0))/100;
+      const electricMileage = number(d.mileage)*share, fuelMileage = number(d.mileage)*(1-share);
+      const totalEnergy = electricMileage/100*number(d.energy1)*number(d.energy2)+fuelMileage/100*number(d.fuelConsumption)*number(d.fuelPrice);
+      const dominantElectric = share >= .6, dominantFuel = share <= .4;
+      const normalized = {...d,energy1:dominantElectric?d.energy1:dominantFuel?d.fuelConsumption:0,energy2:dominantElectric?d.energy2:dominantFuel?d.fuelPrice:0,parking:0};
+      const list = candidates(normalized,r,dominantElectric?'ev':'gas').filter(item => !['parking'].includes(item.id));
+      for(const item of list) if (['consumption','price'].includes(item.dimension)) item.reason = (dominantElectric?'纯电里程占比 '+fmt(share*100)+'%；':'用油里程占比 '+fmt((1-share)*100)+'%；')+item.reason;
+      if (number(d.mileage) && share >= .85) list.push({id:'electricHybrid',name:'充电桩常驻混动',declaration:'买的时候两手准备，开起来基本靠电。',score:1.3+(share-.85)*4,tag:'混动开成纯电',reason:`纯电里程占比 ${fmt(share*100)}%，油箱主要负责给出发兜底。`,dimension:'mix'});
+      else if (number(d.mileage) && share >= .3 && share <= .7) list.push({id:'versatile',name:'两头都能接',declaration:'有电用电，没电也不耽误出发。',score:.9,tag:'油电都不闲',reason:`纯电里程占比 ${fmt(share*100)}%，其余按用油行驶计算，两种能源各有各的活。`,dimension:'mix'});
+      if(totalEnergy>0 && number(d.parking)>=2400 && d.parking>=totalEnergy*1.5) list.push({id:'parking',name:'车位包租侠',declaration:'车跑起来没多贵，停下来开始交租。',score:.8+Math.min(2.5,(d.parking/totalEnergy-1.5)/3),tag:'停车比能源贵',reason:`每年停车 ¥${fmt(d.parking)}，约是油电总能源费的 ${fmt(d.parking/totalEnergy)} 倍。`,dimension:'parking'});
+      return list.sort((a,b)=>b.score-a.score||a.id.localeCompare(b.id));
+    }
     const ev = type === 'ev', mileage = number(d.mileage), years = number(d.depYears);
     const consumption = number(d.energy1), price = number(d.energy2);
     const energy = mileage / 100 * consumption * price, parking = number(d.parking);
@@ -33,7 +46,7 @@
     }
     if (traits.length < 2) traits.push(number(d.mileage) >= 8000 ? '日常好搭档' : '随时准备出发');
     if (traits.length < 2) traits.push(number(d.depYears) >= 6 ? '慢慢攒故事' : '生活自己掌舵');
-    return {identity, tags:[type === 'ev' ? '电力出行' : '燃油搭子',...traits.slice(0,2)],reason:identity.reason,comment:r.yearTotal > 0 ? identity.declaration : '当前未计入费用。先把账补齐，再看看我的出发方式。'};
+    return {identity, tags:[{ev:'电力出行',gas:'燃油搭子',phev:'插混出行',erev:'增程出行'}[type] || '电力出行',...traits.slice(0,2)],reason:identity.reason,comment:r.yearTotal > 0 ? identity.declaration : '当前未计入费用。先把账补齐，再看看我的出发方式。'};
   }
   const api = {analyzePersonality,eligibleIdentities:candidates};
   if (typeof module === 'object' && module.exports) module.exports = api;

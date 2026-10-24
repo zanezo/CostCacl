@@ -26,4 +26,10 @@ assert.ok(!['hidden','cheap','efficient'].includes(analyze({mileage:0,energy1:0,
 assert.equal(analyze({depYears:15,energy1:0,energy2:0}).identity.id,'companion');
 assert.equal(analyze({energy1:13}).identity.id,'efficient');
 assert.equal(analyze({energy1:13.01}).identity.id,'everyday');
+for(const type of ['phev','erev']) {
+  assert.equal(analyze({electricShare:50,fuelConsumption:6,fuelPrice:8},type).identity.id,'versatile');
+  assert.equal(analyze({electricShare:90,fuelConsumption:6,fuelPrice:8},type).identity.id,'electricHybrid');
+  assert.notEqual(analyze({electricShare:0,energy2:.1,fuelConsumption:8,fuelPrice:8},type).identity.id,'cheap');
+  assert.ok(analyze({electricShare:80,fuelConsumption:6,fuelPrice:8},type).tags.includes(type==='phev'?'插混出行':'增程出行'));
+}
 console.log('personality rules: all 12 results, independent scoring, fuel types, boundaries and zero inputs passed');
