@@ -562,8 +562,8 @@
       <div class="row">
         <div class="label">机会成本利率<span class="hint">即理财收益</span></div>
         <div class="slider-wrap">
-          <input type="range" id="oppRate" min="0" max="8" step="0.1" value="3">
-          <div class="slider-val" id="oppRateVal">3.0%</div>
+          <input type="range" id="oppRate" min="0" max="8" step="0.1" value="1.5">
+          <div class="slider-val" id="oppRateVal">1.5%</div>
         </div>
       </div>
     </div>
@@ -671,7 +671,7 @@ const PRESETS = {
     energyUnit2: '元/L',
   },
   ev: {
-    insurance: 5000,
+    insurance: 4500,
     energy1: 15,   // 百公里电耗 kWh
     energy2: 0.8,  // 综合电价 元/kWh
     maintenance: 300,
@@ -826,9 +826,9 @@ const SHARE_PARAM_KEYS = {
 };
 const SHARE_INPUT_IDS = ['carPrice', 'mileage', 'insurance', 'parking', 'fine', 'depYears', 'residual', 'oppRate', 'energy1', 'energy2', 'maintenance'];
 const SHARE_DEFAULTS = {
-  carPrice: '15', mileage: '12500', parking: '4560', fine: '400', depYears: '6', oppRate: '3',
+  carPrice: '15', mileage: '12500', parking: '4560', fine: '400', depYears: '6', oppRate: '1.5',
   gas: { insurance: '4500', residual: '40', energy1: '8', energy2: '7.5', maintenance: '800' },
-  ev: { insurance: '5000', residual: '35', energy1: '15', energy2: '0.8', maintenance: '300' },
+  ev: { insurance: '4500', residual: '35', energy1: '15', energy2: '0.8', maintenance: '300' },
 };
 
 function buildShareUrl() {
@@ -1128,12 +1128,12 @@ function reset() {
   PersonalCarShare.setValue('carPrice', 15);
   PersonalCarShare.setValue('mileage', 12500);
   $('depYears').value = 6;
-  $('oppRate').value = 3;
+  $('oppRate').value = 1.5;
   // 刷新滑块显示
   $('carPriceVal').textContent = '15万';
   $('mileageVal').textContent = '12500km';
   $('depYearsVal').textContent = '6年';
-  $('oppRateVal').textContent = '3.0%';
+  $('oppRateVal').textContent = '1.5%';
   // 默认电车，自动应用电车参数
   switchType('ev');
   // 重置停车与罚单（switchType 不覆盖这两项）
